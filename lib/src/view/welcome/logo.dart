@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:holi/src/theme/colors/app_theme.dart';
-import 'package:holi/src/view/introducction_view.dart';
+import 'package:holi/src/view/welcome/introducction_view.dart';
 import 'package:holi/src/widget/logo/logo_widget.dart';
 
 class WelcomeView extends StatefulWidget {

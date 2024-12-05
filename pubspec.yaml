@@ -33,6 +33,10 @@ dependencies:
   flutter_svg: ^2.0.14
   flutter_carousel_slider: ^1.1.0
   image_picker: ^1.0.5
+  geolocator: ^13.0.2
+  google_maps_flutter: ^2.10.0
+  permission_handler: ^11.3.1
+  google_fonts: ^6.2.1
 
 
 
@@ -70,6 +74,8 @@ flutter:
     - assets/images/profile.jpg
     - assets/images/background-driver.svg
     - assets/images/passion.jpg
+    - assets/maps/maps_style.json
+
 
 
 

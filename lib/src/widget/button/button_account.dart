@@ -14,7 +14,6 @@ class ButtonRegister extends StatelessWidget {
     return ElevatedButton(
       onPressed: () {
         if (_formKey.currentState?.validate() ?? false) {
-          // Procesar el login
         }
       },
       style: ElevatedButton.styleFrom( 
@@ -26,7 +25,7 @@ class ButtonRegister extends StatelessWidget {
       ),
       child: const Text(
         "Registrarme",
-        style: TextStyle(color: Colors.white,fontSize: 20),
+        style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -47,7 +46,6 @@ class buttonLogin extends StatelessWidget {
         if (_formKey.currentState?.validate() ?? false) {
          Navigator.push(context,
                         MaterialPageRoute(builder: (context) => const HomeUser()));
-          // Procesar el login
         }
       },
       style: ElevatedButton.styleFrom( 
@@ -58,8 +56,8 @@ class buttonLogin extends StatelessWidget {
         ),
       ),
       child: const Text(
-        "Iniciar sesión",
-        style: TextStyle(color: Colors.white,fontSize: 20),
+        "Entrar",
+        style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.bold),
       ),
     );
   }

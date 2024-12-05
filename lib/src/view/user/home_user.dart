@@ -1,7 +1,9 @@
+
 import 'package:flutter/material.dart';
 import 'package:holi/src/view/user/history_move.dart';
 import 'package:holi/src/view/user/user.dart';
 import 'package:holi/src/widget/button/button_card_home.dart';
+import 'package:holi/src/widget/google_maps_widget.dart';
 
 class HomeUser extends StatefulWidget {
   const HomeUser({Key? key}) : super(key: key);
@@ -37,6 +39,7 @@ class _HomeUserState extends State<HomeUser> {
           NavigationDestination(
             icon: Icon(Icons.history),
             label: 'Historial',
+
           ),
           NavigationDestination(
             icon: Icon(Icons.supervised_user_circle),
@@ -44,72 +47,58 @@ class _HomeUserState extends State<HomeUser> {
           ),
         ],
       ),
-      body: Stack(
+      body: IndexedStack(
+        index: currentPageIndex,
         children: [
-          // Contenido principal
-          Padding(
-            padding: EdgeInsets.only(
-              bottom: currentPageIndex == 0
-                  ? MediaQuery.of(context).size.height * 0.22
-                  : 0, // Espacio solo para la vista principal
-            ),
-            child: IndexedStack(
-              index: currentPageIndex,
-              children: const [
-                // Página principal
-                Center(
-                  child: Text(
-                    'Página de Inicio',
-                    style: TextStyle(fontSize: 20),
-                  ),
-                ),
-
-                // Página de historial
-                HistoryMove(),
-                User(),
-              ],
-            ),
-          ),
-
-          // Card fijo solo en la vista principal
-          if (currentPageIndex == 0)
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                height: MediaQuery.of(context).size.height *
-                    0.22, // Altura relativa
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: const BorderRadius.only(
-                    topRight: Radius.circular(20),
-                    topLeft: Radius.circular(20),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 8,
+          // Página inicial con el mapa
+          Stack(
+            children: [
+              GoogleMapsWidget(), // Mapa en la vista principal
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  height: MediaQuery.of(context).size.height * 0.22,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: const BorderRadius.only(
+                      topRight: Radius.circular(20),
+                      topLeft: Radius.circular(20),
                     ),
-                  ],
-                ),
-                child: const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: 10),
-                      buttonRequestVehicle(),
-                      SizedBox(height: 20),
-                      scheduleMove(),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                      ),
                     ],
+                  ),
+                  child: const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: 10),
+                        ButtonRequestVehicle(),
+                        SizedBox(height: 20),
+                        ScheduleMove(),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
+            ],
+          ),
+
+          // Página de historial
+          const HistoryMove(),
+
+          // Página de perfil de usuario
+          const User(),
         ],
       ),
     );
   }
 }
+

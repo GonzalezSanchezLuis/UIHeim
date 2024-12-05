@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/theme/colors/app_theme.dart';
 import 'package:holi/src/view/configuration/configuration_user.dart';
-import 'package:holi/src/view/join_driver.dart';
+import 'package:holi/src/view/driver/join_driver.dart';
 import 'package:holi/src/widget/card/account_card.dart';
 
 class User extends StatefulWidget {

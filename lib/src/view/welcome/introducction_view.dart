@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:holi/src/theme/colors/app_theme.dart';
+import 'package:holi/src/theme/fonts/style_fonts_welcome.dart';
 import 'package:holi/src/view/account/create_account.dart';
 import 'dart:async';
 
 import 'package:holi/src/view/account/login.dart';
 
 class IntroductionView extends StatefulWidget {
-  const IntroductionView({Key? key}) : super(key: key);
+  const IntroductionView({super.key});
 
   @override
   _IntroductionViewState createState() => _IntroductionViewState();
@@ -70,40 +71,58 @@ class _IntroductionViewState extends State<IntroductionView> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20),
+            padding: const EdgeInsets.only(bottom: 200.0), // Mueve los botones hacia arriba
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Espacio igual entre los botones
               children: [
-                ElevatedButton(
-                  onPressed: () {
-                    // Acción para el botón de Iniciar sesión
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => const Login()));
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+                Container(
+                  width: 200,
+                  height: 50,
+                  child:  ElevatedButton(
+                    onPressed: () {
+                      // Acción para el botón de Iniciar sesión
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const Login()),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    child: const Text(
+                      "Iniciar sesión",
+                      style: StyleFonts.textColorButton,
                     ),
                   ),
-                  child: const Text("Iniciar sesión",
-                      style: AppTheme.textcolorbuttomblack),
                 ),
-                ElevatedButton(
-                  onPressed: () {
-                    // Acción para el botón de Registrarme
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => const CreateAccount()));
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+                Container(
+                  width: 200,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Acción para el botón de Registrarme
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const CreateAccount()),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    child: const Text(
+                      "Registrarme",
+                      style: StyleFonts.textColorButton,
                     ),
                   ),
-                  child: const Text("Registrarme",
-                      style: AppTheme.textcolorbuttomblack),
-                ),
+                )
+
+
               ],
             ),
           ),
@@ -126,20 +145,13 @@ Widget _buildPageContent(
         const SizedBox(height: 20),
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
+          style: StyleFonts.title,
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 10),
         Text(
           description,
-          style: const TextStyle(
-            fontSize: 16,
-            color: Colors.black,
-          ),
+          style: StyleFonts.descriptions,
           textAlign: TextAlign.center,
         ),
       ],

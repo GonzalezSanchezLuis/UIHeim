@@ -33,7 +33,7 @@ class _CreateAccountState extends State<CreateAccount> {
               top: 35,
               left: 15,
               child: const Text(
-                "Crear una cuenta en Holi",
+                "Crea una cuenta en Holi",
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -50,6 +50,29 @@ class _CreateAccountState extends State<CreateAccount> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    TextFormField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: const InputDecoration(
+                          labelText: "Ingresa tu nombre completo",
+                          border: OutlineInputBorder(),
+                          focusedBorder:  OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.black87,width: 2.0)
+                          ),
+                          floatingLabelStyle: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          )
+                      ),
+                      // validator: (value) {
+                      //   if (value == null || value.isEmpty) {
+                      //     return 'Por favor ingresa un email';
+                      //   }
+                      //   return null;
+                      // },
+                    ),
+                    const SizedBox(height: 20),
+
                     // Campo de correo
                     TextFormField(
                       controller: _emailController,
@@ -57,6 +80,13 @@ class _CreateAccountState extends State<CreateAccount> {
                       decoration: const InputDecoration(
                         labelText: "Ingresa tu email",
                         border: OutlineInputBorder(),
+                          focusedBorder:  OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.black87,width: 2.0)
+                          ),
+                          floatingLabelStyle: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          )
                       ),
                       // validator: (value) {
                       //   if (value == null || value.isEmpty) {
@@ -73,6 +103,13 @@ class _CreateAccountState extends State<CreateAccount> {
                       decoration: const InputDecoration(
                         labelText: "Ingresa tu contraseña",
                         border: OutlineInputBorder(),
+                          focusedBorder:  OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.black87,width: 2.0)
+                          ),
+                          floatingLabelStyle: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          )
                       ),
                       // validator: (value) {
                       //   if (value == null || value.isEmpty) {

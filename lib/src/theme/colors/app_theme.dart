@@ -3,11 +3,8 @@ import 'package:flutter/material.dart';
 class AppTheme {
   static const Color colorbackgroundwelcome = Color(0XFFffbc11);
   static const Color colorbackgroundview = Color(0XFFE2EAF3);
-  static const TextStyle textcolorbuttomblack = TextStyle(
-    fontSize: 15,
-    fontWeight: FontWeight.bold,
-    color: Colors.white,
-  );
+  static const Color colorButtonHomeDriver = Color(0XFFFF3D00);
+  static const Color colorButtonConnect = Color(0XFF0A837F);
 
    static const TextStyle paragraph = TextStyle(
     fontSize: 16,

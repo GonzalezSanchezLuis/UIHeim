@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/theme/colors/app_theme.dart';
 import 'package:holi/src/widget/button/button_account.dart';
+import 'package:holi/src/theme/fonts/style_fonts_account.dart';
 
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
@@ -34,10 +35,7 @@ class _LoginState extends State<Login> {
               left: 15,
               child: const Text(
                 "Ingresar a mi cuenta de Holi",
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: StyleFontsAccount.titleStyle,
               ),
             ),
             // Formulario para gestionar los inputs de manera optimizada
@@ -54,9 +52,20 @@ class _LoginState extends State<Login> {
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: "Ingresa tu correo electrónico",
-                        border: OutlineInputBorder(),
+                        labelStyle: TextStyle(fontWeight: FontWeight.w500,color: Colors.grey[600]),
+
+                        border: const OutlineInputBorder(),
+                          focusedBorder:  const OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.black87,width: 2.0)
+                          ),
+                          floatingLabelStyle: const TextStyle(
+                            color: Colors.black, // Cambia este color al que prefieras
+                            fontWeight: FontWeight.bold, // Opcional, para resaltar
+                          )
+
+
                       ),
                       // validator: (value) {
                       //   if (value == null || value.isEmpty) {
@@ -73,6 +82,14 @@ class _LoginState extends State<Login> {
                       decoration: const InputDecoration(
                         labelText: "Ingresa tu contraseña",
                         border: OutlineInputBorder(),
+                        focusedBorder:  OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black87,width: 2.0)
+                        ),
+                        floatingLabelStyle: TextStyle(
+                          color: Colors.black, // Cambia este color al que prefieras
+                          fontWeight: FontWeight.bold, // Opcional, para resaltar
+                        ),
+
                       ),
                       // validator: (value) {
                       //   if (value == null || value.isEmpty) {

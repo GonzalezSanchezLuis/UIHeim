@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:holi/src/view/welcome_view.dart';
+import 'package:holi/src/view/welcome/logo.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 
 
@@ -11,9 +12,15 @@ void main(){
     const App({Key? key}) : super(key: key);
     @override
     Widget build(BuildContext context) {
-      return const MaterialApp(
+      final textTheme = Theme.of(context).textTheme;
+      return MaterialApp(
+        theme: ThemeData(
+          textTheme: GoogleFonts.latoTextTheme(textTheme).copyWith(
+            bodyMedium: GoogleFonts.ubuntu(textStyle: textTheme.bodyMedium),
+          ),
+        ),
        debugShowCheckedModeBanner:  false,
-       home:  WelcomeView(),
+       home:  const WelcomeView(),
       );
     }
   }
