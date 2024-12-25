@@ -5,7 +5,7 @@ import 'package:holi/src/view/configuration/legal.dart';
 import 'package:holi/src/view/user/profile.dart';
 
 class ConfigurationUser extends StatefulWidget {
-  const ConfigurationUser({Key? key}) : super(key: key);
+  const ConfigurationUser({super.key});
 
   @override
   _ConfigurationUserState createState() => _ConfigurationUserState();

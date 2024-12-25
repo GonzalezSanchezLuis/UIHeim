@@ -23,7 +23,7 @@ class AccountCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
         onTap: onTap,
-        child: Container(
+        child: SizedBox(
             width: width,
             height: height,
             child: SizedBox(

@@ -4,7 +4,7 @@ import 'package:holi/src/theme/colors/app_theme.dart';
 import 'package:holi/src/widget/button/button.dart';
 
 class JoinDriver extends StatelessWidget {
-  const JoinDriver({Key? key}) : super(key: key);
+  const JoinDriver({super.key});
 
   @override
   Widget build(BuildContext context) {

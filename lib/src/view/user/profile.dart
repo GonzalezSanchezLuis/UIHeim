@@ -6,7 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io'; // Para manejar archivos locales
 
 class Profile extends StatefulWidget {
-  const Profile({Key? key}) : super(key: key);
+  const Profile({super.key});
 
   @override
   _ProfileState createState() => _ProfileState();

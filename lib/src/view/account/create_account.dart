@@ -3,7 +3,7 @@ import 'package:holi/src/theme/colors/app_theme.dart';
 import 'package:holi/src/widget/button/button_account.dart';
 
 class CreateAccount extends StatefulWidget {
-  const CreateAccount({ Key? key }) : super(key: key);
+  const CreateAccount({ super.key });
 
   @override
   _CreateAccountState createState() => _CreateAccountState();
@@ -18,8 +18,8 @@ class _CreateAccountState extends State<CreateAccount> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   // Variables de desplazamiento
-  double _emailYOffset = 100;
-  double _passwordYOffset = 180;
+  final double _emailYOffset = 100;
+  final double _passwordYOffset = 180;
   
   @override
   Widget build(BuildContext context) {
@@ -32,7 +32,7 @@ class _CreateAccountState extends State<CreateAccount> {
             const Positioned(
               top: 35,
               left: 15,
-              child: const Text(
+              child: Text(
                 "Crea una cuenta en Holi",
                 style: TextStyle(
                   fontSize: 24,

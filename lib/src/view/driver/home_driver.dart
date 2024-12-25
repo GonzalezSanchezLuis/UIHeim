@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/theme/colors/app_theme.dart';
 import 'package:holi/src/widget/button/button_card_home.dart';
-import 'package:holi/src/widget/google_maps_widget.dart';
+import 'package:holi/src/widget/maps/mapbox.dart';
 
 class HomeDriver extends StatefulWidget {
-  const HomeDriver({Key? key}) : super(key: key);
+  const HomeDriver({super.key});
 
   @override
   _HomeDriverState createState() => _HomeDriverState();
@@ -20,7 +20,7 @@ class _HomeDriverState extends State<HomeDriver> {
     return Scaffold(
       body: Stack(
         children: [
-          GoogleMapsWidget(),
+          
           Positioned(
             top: 50,
             left: 20,

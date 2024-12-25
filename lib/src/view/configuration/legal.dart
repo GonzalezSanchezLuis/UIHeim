@@ -4,7 +4,7 @@ import 'package:holi/src/view/tearm/privacy_policy.dart';
 import 'package:holi/src/view/tearm/tearm_and__condition.dart';
 
 class Legal extends StatelessWidget {
-  const Legal({Key? key}) : super(key: key);
+  const Legal({super.key});
 
   @override
   Widget build(BuildContext context) {

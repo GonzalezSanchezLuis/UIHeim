@@ -37,6 +37,11 @@ dependencies:
   google_maps_flutter: ^2.10.0
   permission_handler: ^11.3.1
   google_fonts: ^6.2.1
+  http: ^1.2.2
+  location: ^7.0.1
+  mapbox_maps_flutter: ^2.5.0
+  flutter_polyline_points: ^2.1.0
+  
 
 
 
@@ -74,6 +79,7 @@ flutter:
     - assets/images/profile.jpg
     - assets/images/background-driver.svg
     - assets/images/passion.jpg
+    - assets/images/location.png
     - assets/maps/maps_style.json
 
 

@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/theme/colors/app_theme.dart';
+import 'package:holi/src/view/move/request_vehicle.dart';
+import 'package:holi/src/view/move/schedule_move.dart';
+
+
+
 
 class ButtonRequestVehicle extends StatelessWidget {
   const ButtonRequestVehicle({
@@ -9,7 +14,9 @@ class ButtonRequestVehicle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: () {},
+      onPressed: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const RequestVehicle()));
+      },
       style: ElevatedButton.styleFrom(
         minimumSize: Size(MediaQuery.of(context).size.width * 0.9, 60),
         backgroundColor: Colors.black,
@@ -27,15 +34,17 @@ class ButtonRequestVehicle extends StatelessWidget {
   
 }
 
-class ScheduleMove extends StatelessWidget {
-  const ScheduleMove({
+class ScheduleMoveWidget extends StatelessWidget {
+  const ScheduleMoveWidget({
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: () {},
+      onPressed: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const ScheduleMove()));
+      },
       style: ElevatedButton.styleFrom(
         minimumSize: Size(MediaQuery.of(context).size.width * 0.9, 60),
         backgroundColor: Colors.black,

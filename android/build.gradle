@@ -1,11 +1,47 @@
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://api.mapbox.com/downloads/v2/releases/maven' 
+        authentication {
+        basic(BasicAuthentication)
+      }
+      credentials {
+        username = "mapbox"
+       password = project.properties['MAPBOX_DOWNLOADS_TOKEN'] ?: ""
+
+      }
+    }
+    
+        }
+    
+
+    dependencies {
+        // Añade esta línea
+        classpath 'com.mapbox.gradle.plugins:sdk-registry:0.4.0'
+    }
+}
+
 allprojects {
     repositories {
         google()
         mavenCentral()
+         maven { url 'https://api.mapbox.com/downloads/v2/releases/maven' 
+          authentication {
+        basic(BasicAuthentication)
+      }
+      credentials {
+        username = "mapbox"
+        password = project.properties['MAPBOX_DOWNLOADS_TOKEN'] ?: ""
+      }
+         }
     }
 }
 
 rootProject.buildDir = "../build"
+def mapboxDownloadsToken = project.findProperty("MAPBOX_DOWNLOADS_TOKEN") ?: ""
+println "MAPBOX_DOWNLOADS_TOKEN: ${mapboxDownloadsToken}"
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 }

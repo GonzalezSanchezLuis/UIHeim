@@ -5,7 +5,7 @@ import 'package:holi/src/view/driver/join_driver.dart';
 import 'package:holi/src/widget/card/account_card.dart';
 
 class User extends StatefulWidget {
-  const User({Key? key}) : super(key: key);
+  const User({super.key});
 
   @override
   _UserState createState() => _UserState();

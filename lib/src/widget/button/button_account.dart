@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:holi/src/view/user/home_user.dart';
 
 class ButtonRegister extends StatelessWidget {
   const ButtonRegister({
@@ -35,19 +34,16 @@ class buttonLogin extends StatelessWidget {
   const buttonLogin({
     super.key,
     required GlobalKey<FormState> formKey,
+    required this.onPressed,
   }) : _formKey = formKey;
 
   final GlobalKey<FormState> _formKey;
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: () {
-        if (_formKey.currentState?.validate() ?? false) {
-         Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => const HomeUser()));
-        }
-      },
+      onPressed: onPressed,
       style: ElevatedButton.styleFrom( 
         minimumSize: Size(MediaQuery.of(context).size.width * 0.9, 60),                   
         backgroundColor: Colors.black,

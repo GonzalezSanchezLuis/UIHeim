@@ -1,0 +1,15 @@
+{
+    "configurations": [
+        
+        {
+            "name": "Flutter",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "args": [
+                "--dart-define",
+                "ACCESS_TOKEN=sk.eyJ1IjoibHVpc3J1YmVuIiwiYSI6ImNtNHk4aWJwZTB5OW4yanB0ZXFiaWNzNGwifQ.D8rEJbsRC6WIA2GKjU_p3w"
+            ],
+        }
+    ]
+}

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:holi/src/theme/colors/app_theme.dart';
 
 class ScheduleMove extends StatefulWidget {
-  const ScheduleMove({Key? key}) : super(key: key);
+  const ScheduleMove({super.key});
 
   @override
   _ScheduleMoveState createState() => _ScheduleMoveState();
@@ -29,7 +29,7 @@ class _ScheduleMoveState extends State<ScheduleMove> {
       appBar: AppBar(
         title: const Text("Programar mudanza"),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => {Navigator.pop(context)},
         ),
       ),
@@ -64,9 +64,17 @@ class _ScheduleMoveState extends State<ScheduleMove> {
                       controller: _numberOfRoomsController,
                       keyboardType: TextInputType.emailAddress,
                       decoration: const InputDecoration(
-                        labelText: "Número de de habitaciones",
-                        border: OutlineInputBorder(),
-                      ),
+                          labelText: "Número de de habitaciones",
+                          border: OutlineInputBorder(),
+                          focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: Colors.black87, width: 2.0)),
+                          floatingLabelStyle: TextStyle(
+                            color: Colors
+                                .black, // Cambia este color al que prefieras
+                            fontWeight:
+                                FontWeight.bold, // Opcional, para resaltar
+                          )),
                       // validator: (value) {
                       //   if (value == null || value.isEmpty) {
                       //     return 'Por favor ingresa un email';
@@ -80,9 +88,17 @@ class _ScheduleMoveState extends State<ScheduleMove> {
                       controller: _sourceAddressController,
                       obscureText: true,
                       decoration: const InputDecoration(
-                        labelText: "Dirección de origen",
-                        border: OutlineInputBorder(),
-                      ),
+                          labelText: "Dirección de origen",
+                          border: OutlineInputBorder(),
+                          focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: Colors.black87, width: 2.0)),
+                          floatingLabelStyle: TextStyle(
+                            color: Colors
+                                .black, // Cambia este color al que prefieras
+                            fontWeight:
+                                FontWeight.bold, // Opcional, para resaltar
+                          )),
                       // validator: (value) {
                       //   if (value == null || value.isEmpty) {
                       //     return 'Por favor ingresa una contraseña';
@@ -95,9 +111,17 @@ class _ScheduleMoveState extends State<ScheduleMove> {
                       controller: _originAddressController,
                       obscureText: true,
                       decoration: const InputDecoration(
-                        labelText: "Dirección de destino",
-                        border: OutlineInputBorder(),
-                      ),
+                          labelText: "Dirección de destino",
+                          border: OutlineInputBorder(),
+                          focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: Colors.black87, width: 2.0)),
+                          floatingLabelStyle: TextStyle(
+                            color: Colors
+                                .black, // Cambia este color al que prefieras
+                            fontWeight:
+                                FontWeight.bold, // Opcional, para resaltar
+                          )),
                       // validator: (value) {
                       //   if (value == null || value.isEmpty) {
                       //     return 'Por favor ingresa una contraseña';
@@ -113,6 +137,15 @@ class _ScheduleMoveState extends State<ScheduleMove> {
                       decoration: const InputDecoration(
                         labelText: "Fecha de recogida",
                         border: OutlineInputBorder(),
+                        focusedBorder: const OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Colors.black87, width: 2.0)),
+                        floatingLabelStyle: const TextStyle(
+                          color: Colors
+                              .black, // Cambia este color al que prefieras
+                          fontWeight:
+                              FontWeight.bold, // Opcional, para resaltar
+                        ),
                         suffixIcon: Icon(Icons.calendar_today),
                       ),
                       onTap: () async {

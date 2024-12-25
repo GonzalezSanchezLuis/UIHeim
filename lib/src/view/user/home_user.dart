@@ -1,12 +1,12 @@
-
 import 'package:flutter/material.dart';
-import 'package:holi/src/view/user/history_move.dart';
+import 'package:holi/src/view/move/history_move.dart';
 import 'package:holi/src/view/user/user.dart';
 import 'package:holi/src/widget/button/button_card_home.dart';
-import 'package:holi/src/widget/google_maps_widget.dart';
+import 'package:holi/src/widget/maps/google_maps.dart';
+
 
 class HomeUser extends StatefulWidget {
-  const HomeUser({Key? key}) : super(key: key);
+  const HomeUser({super.key});
 
   @override
   _HomeUserState createState() => _HomeUserState();
@@ -15,8 +15,10 @@ class HomeUser extends StatefulWidget {
 class _HomeUserState extends State<HomeUser> {
   int currentPageIndex = 0;
 
+
   @override
   Widget build(BuildContext context) {
+ 
     final ThemeData theme = Theme.of(context);
 
     return Scaffold(
@@ -39,7 +41,6 @@ class _HomeUserState extends State<HomeUser> {
           NavigationDestination(
             icon: Icon(Icons.history),
             label: 'Historial',
-
           ),
           NavigationDestination(
             icon: Icon(Icons.supervised_user_circle),
@@ -47,13 +48,13 @@ class _HomeUserState extends State<HomeUser> {
           ),
         ],
       ),
-      body: IndexedStack(
+     body: IndexedStack(
         index: currentPageIndex,
         children: [
           // Página inicial con el mapa
           Stack(
             children: [
-              GoogleMapsWidget(), // Mapa en la vista principal
+            const GoogleMapsWidget(),
               Positioned(
                 bottom: 0,
                 left: 0,
@@ -82,7 +83,7 @@ class _HomeUserState extends State<HomeUser> {
                         SizedBox(height: 10),
                         ButtonRequestVehicle(),
                         SizedBox(height: 20),
-                        ScheduleMove(),
+                        ScheduleMoveWidget(),
                       ],
                     ),
                   ),
@@ -101,4 +102,3 @@ class _HomeUserState extends State<HomeUser> {
     );
   }
 }
-

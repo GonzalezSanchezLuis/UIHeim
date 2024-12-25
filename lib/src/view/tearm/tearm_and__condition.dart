@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:holi/src/theme/colors/app_theme.dart';
 
 class TearmAndCondition extends StatelessWidget {
-  const TearmAndCondition({Key? key}) : super(key: key);
+  const TearmAndCondition({super.key});
 
   @override
   Widget build(BuildContext context) {

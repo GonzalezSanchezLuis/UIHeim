@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/theme/colors/app_theme.dart';
-import 'package:holi/src/widget/history_move_list.dart';
+import 'package:holi/src/widget/history_move_list_widget.dart';
 
 class HistoryMove extends StatefulWidget {
-  const HistoryMove({Key? key}) : super(key: key);
+  const HistoryMove({super.key});
 
   @override
   _HistoryMoveState createState() => _HistoryMoveState();
@@ -19,7 +19,6 @@ class _HistoryMoveState extends State<HistoryMove> {
       'origin': 'Cr 13a bis 50b 09',
       'destination': 'Av. Siempre Viva 742',
       'image': 'assets/images/profile.jpg',
-      'header': 'Mudanza Completada',
     },
     {
       'status': 'Servicio Completado',
@@ -28,7 +27,6 @@ class _HistoryMoveState extends State<HistoryMove> {
       'origin': 'Cl 50 No 30A',
       'destination': 'Calle 100 con 15',
       'image': 'assets/images/profile.jpg',
-      'header': 'Mudanza Completada',
     },
     {
       'status': 'Servicio Completado',
@@ -37,19 +35,17 @@ class _HistoryMoveState extends State<HistoryMove> {
       'origin': 'Cra 45 No 22',
       'destination': 'Calle 80 No 10',
       'image': 'assets/images/profile.jpg',
-      'header': 'Mudanza Completada',
     },
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Mudanzas'),
-        backgroundColor: Colors.white,
-      ),
-      backgroundColor: AppTheme.colorbackgroundview,
-      body: HistoryMoveList(moves: moves),
-    );
+  backgroundColor: AppTheme.colorbackgroundview,
+  body: Padding(
+    padding: const EdgeInsets.only(top: 60),
+    child: HistoryMoveList(moves: moves),
+  ),
+);
   }
 }

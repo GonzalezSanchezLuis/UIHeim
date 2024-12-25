@@ -1,15 +1,16 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.example.holi">
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <application
     
         android:label="holi"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
-         <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyAtH8GDcOdYrHd-CYfoJXSW__63VhW6kIo"/>
+        <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyB_a24N9zwcIwly8kCRZriU1Uwe_GxAYOU"/>
+         <!--<meta-data android:name="com.mapbox.token" android:value="sk.eyJ1IjoibHVpc3J1YmVuIiwiYSI6ImNtNHk4aWJwZTB5OW4yanB0ZXFiaWNzNGwifQ.D8rEJbsRC6WIA2GKjU_p3w"/>-->   
         <activity
             android:name=".MainActivity"
             android:exported="true"

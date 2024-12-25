@@ -75,7 +75,7 @@ class _IntroductionViewState extends State<IntroductionView> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Espacio igual entre los botones
               children: [
-                Container(
+                SizedBox(
                   width: 200,
                   height: 50,
                   child:  ElevatedButton(
@@ -98,7 +98,7 @@ class _IntroductionViewState extends State<IntroductionView> {
                     ),
                   ),
                 ),
-                Container(
+                SizedBox(
                   width: 200,
                   height: 50,
                   child: ElevatedButton(

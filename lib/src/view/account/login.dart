@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/theme/colors/app_theme.dart';
+import 'package:holi/src/utils/controllers/auth_controller.dart';
+import 'package:holi/src/view/user/home_user.dart';
 import 'package:holi/src/widget/button/button_account.dart';
 import 'package:holi/src/theme/fonts/style_fonts_account.dart';
 
 class Login extends StatefulWidget {
-  const Login({Key? key}) : super(key: key);
+  const Login({super.key});
 
   @override
   _LoginState createState() => _LoginState();
@@ -17,10 +19,11 @@ class _LoginState extends State<Login> {
 
   // Clave para el formulario
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final AuthController _authController = AuthController();
 
   // Variables de desplazamiento
-  double _emailYOffset = 100;
-  double _passwordYOffset = 180;
+  final double _emailYOffset = 100;
+  final double _passwordYOffset = 180;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +36,7 @@ class _LoginState extends State<Login> {
             const Positioned(
               top: 35,
               left: 15,
-              child: const Text(
+              child: Text(
                 "Ingresar a mi cuenta de Holi",
                 style: StyleFontsAccount.titleStyle,
               ),
@@ -67,12 +70,6 @@ class _LoginState extends State<Login> {
 
 
                       ),
-                      // validator: (value) {
-                      //   if (value == null || value.isEmpty) {
-                      //     return 'Por favor ingresa un email';
-                      //   }
-                      //   return null;
-                      // },
                     ),
                     const SizedBox(height: 20),
                     // Campo de contraseña
@@ -91,16 +88,10 @@ class _LoginState extends State<Login> {
                         ),
 
                       ),
-                      // validator: (value) {
-                      //   if (value == null || value.isEmpty) {
-                      //     return 'Por favor ingresa una contraseña';
-                      //   }
-                      //   return null;
-                      // },
                     ),
                     const SizedBox(height: 20),
                     // Botón de login
-                    buttonLogin(formKey: _formKey),
+                    buttonLogin(formKey: _formKey, onPressed: _handleLogin),
                   ],
                 ),
               ),
@@ -109,6 +100,18 @@ class _LoginState extends State<Login> {
         ),
       ),
     );
+  }
+
+  void _handleLogin(){
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if(_formKey.currentState!.validate()){
+      Navigator.push(context, MaterialPageRoute(builder: (context) => const HomeUser()));
+      _authController.login(email: email, password: password);
+    }else{
+      print("Error");
+    }
   }
 
   @override

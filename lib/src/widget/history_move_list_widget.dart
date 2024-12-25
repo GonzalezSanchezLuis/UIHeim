@@ -26,7 +26,7 @@ class HistoryMoveList extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(move['header'] ?? 'Sin Información',style: const TextStyle(color: Colors.grey)),
+                Text(move['header']?? 'Sin Información',style: TextStyle(color: Colors.grey[700],fontWeight: FontWeight.w700)),
                 const SizedBox(height: 10,),
                 // Encabezado
                 Row(
@@ -49,7 +49,7 @@ class HistoryMoveList extends StatelessWidget {
                         Text(
                           move['plate'],
                           style: TextStyle(
-                            color: Colors.grey[600],
+                            color: Colors.grey[800],
                           ),
                         ),
                       ],
@@ -60,7 +60,7 @@ class HistoryMoveList extends StatelessWidget {
                 // Información de origen y destino
                 Container(  
                   decoration: BoxDecoration(
-                  color: const Color(0xFFD9D9D9),
+                  color: const Color.fromARGB(255, 185, 181, 181),
                   borderRadius: BorderRadius.circular(10),
                     
                   ),                 

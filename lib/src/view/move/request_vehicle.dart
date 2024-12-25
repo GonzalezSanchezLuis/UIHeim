@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/theme/colors/app_theme.dart';
-import 'package:holi/src/widget/button/button_account.dart';
 
 class RequestVehicle extends StatefulWidget {
-  const RequestVehicle({Key? key}) : super(key: key);
+  const RequestVehicle({super.key});
 
   @override
   _RequestVehicleState createState() => _RequestVehicleState();
@@ -67,6 +66,13 @@ class _RequestVehicleState extends State<RequestVehicle> {
                       decoration: const InputDecoration(
                         labelText: "Número de de habitaciones",
                         border: OutlineInputBorder(),
+                        focusedBorder:  OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.black87,width: 2.0)
+                          ),
+                          floatingLabelStyle: const TextStyle(
+                            color: Colors.black, // Cambia este color al que prefieras
+                            fontWeight: FontWeight.bold, // Opcional, para resaltar
+                          )
                       ),
                       // validator: (value) {
                       //   if (value == null || value.isEmpty) {
@@ -75,6 +81,7 @@ class _RequestVehicleState extends State<RequestVehicle> {
                       //   return null;
                       // },
                     ),
+                    
                     const SizedBox(height: 20),
                     // Campo de contraseña
                     TextFormField(

@@ -5,10 +5,10 @@ class SettingOption extends StatelessWidget {
   final VoidCallback onTap;
 
   const SettingOption({
-    Key? key,
+    super.key,
     required this.title,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

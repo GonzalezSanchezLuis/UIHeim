@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:holi/src/theme/colors/app_theme.dart';
 import 'package:holi/src/view/driver/home_driver.dart';
 class RegisterDriver extends StatefulWidget {
-  const RegisterDriver({ Key? key }) : super(key: key);
+  const RegisterDriver({ super.key });
 
   @override
   _RegisterDriverState createState() => _RegisterDriverState();

@@ -5,7 +5,7 @@ import 'package:holi/src/view/welcome/introducction_view.dart';
 import 'package:holi/src/widget/logo/logo_widget.dart';
 
 class WelcomeView extends StatefulWidget {
-  const WelcomeView({Key? key}) : super(key: key);
+  const WelcomeView({super.key});
 
   @override
   _WelcomeViewState createState() => _WelcomeViewState();
