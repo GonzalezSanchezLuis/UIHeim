@@ -91,7 +91,7 @@ class _LoginState extends State<Login> {
                     ),
                     const SizedBox(height: 20),
                     // Botón de login
-                    buttonLogin(formKey: _formKey, onPressed: _handleLogin),
+                    ButtonAuth(formKey: _formKey, onPressed: _handleLogin),
                   ],
                 ),
               ),
@@ -109,6 +109,10 @@ class _LoginState extends State<Login> {
     if(_formKey.currentState!.validate()){
       Navigator.push(context, MaterialPageRoute(builder: (context) => const HomeUser()));
       _authController.login(email: email, password: password);
+
+       Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeUser()));
     }else{
       print("Error");
     }

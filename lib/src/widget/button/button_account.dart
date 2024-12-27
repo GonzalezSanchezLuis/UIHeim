@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class ButtonRegister extends StatelessWidget {
+/*class ButtonRegister extends StatelessWidget {
   const ButtonRegister({
     super.key,
     required GlobalKey<FormState> formKey,
@@ -28,10 +28,10 @@ class ButtonRegister extends StatelessWidget {
       ),
     );
   }
-}
+} */
 
-class buttonLogin extends StatelessWidget {
-  const buttonLogin({
+class ButtonAuth extends StatelessWidget {
+  const ButtonAuth({
     super.key,
     required GlobalKey<FormState> formKey,
     required this.onPressed,
