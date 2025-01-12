@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:holi/src/theme/colors/app_theme.dart';
 import 'package:holi/src/view/user/home_user.dart';
@@ -27,9 +29,19 @@ class _CreateAccountState extends State<CreateAccount> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          "Atras",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => {Navigator.pop(context)},
+        ),
+      ),
       backgroundColor: AppTheme.colorbackgroundview,
       body: Padding(
-        padding: const EdgeInsets.only(top: 250.0, left: 15.0, right: 15.0),
+        padding: const EdgeInsets.only(top: 180.0, left: 15.0, right: 15.0),
         child: Stack(
           // Usamos Stack para manejar la posición absoluta
           children: [
@@ -67,12 +79,6 @@ class _CreateAccountState extends State<CreateAccount> {
                             color: Colors.black,
                             fontWeight: FontWeight.bold,
                           )),
-                      // validator: (value) {
-                      //   if (value == null || value.isEmpty) {
-                      //     return 'Por favor ingresa un email';
-                      //   }
-                      //   return null;
-                      // },
                     ),
                     const SizedBox(height: 20),
 
@@ -90,12 +96,7 @@ class _CreateAccountState extends State<CreateAccount> {
                             color: Colors.black,
                             fontWeight: FontWeight.bold,
                           )),
-                      // validator: (value) {
-                      //   if (value == null || value.isEmpty) {
-                      //     return 'Por favor ingresa un email';
-                      //   }
-                      //   return null;
-                      // },
+
                     ),
                     const SizedBox(height: 20),
                     // Campo de contraseña
@@ -112,16 +113,11 @@ class _CreateAccountState extends State<CreateAccount> {
                             color: Colors.black,
                             fontWeight: FontWeight.bold,
                           )),
-                      // validator: (value) {
-                      //   if (value == null || value.isEmpty) {
-                      //     return 'Por favor ingresa una contraseña';
-                      //   }
-                      //   return null;
-                      // },
+                          
                     ),
                     const SizedBox(height: 20),
                     // Botón de login
-                   ButtonAuth(formKey: _formKey, onPressed: _handleLogin),
+                   ButtonAuth(formKey: _formKey, onPressed: _handleCreateAccount),
                   ],
                 ),
               ),
@@ -132,20 +128,43 @@ class _CreateAccountState extends State<CreateAccount> {
     );
   }
 
-  void _handleLogin() {
-    final name = _nameController.text.trim();
+  void _handleCreateAccount() async {
+final name = _nameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
     if (_formKey.currentState!.validate()) {
-      _registerController.register(name:name, email: email, password: password);
-      Navigator.push(
-          context, MaterialPageRoute(builder: (context) => const HomeUser()));
+      final messageError = await _registerController.registerUser(
+        name: name,
+        email: email,
+        password: password,
+      );
 
+      if (messageError == null) {
+        print("Registro exitoso, redirigiendo...");
+        // Si no hay error, redirige al HomeUser
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeUser()),
+        );
+      } else {
+        // Si hay un error, muestra un mensaje
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+            messageError ?? "Algo salió mal",
+          ),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.red,
+        ));
+      }
     } else {
-      print("Error");
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text("Por favor, completa todos los campos correctamente."),
+      ));
     }
-  }
+  } 
+
+ 
 
   @override
   void dispose() {

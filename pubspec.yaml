@@ -41,6 +41,8 @@ dependencies:
   location: ^7.0.1
   mapbox_maps_flutter: ^2.5.0
   flutter_polyline_points: ^2.1.0
+  shared_preferences: ^2.3.4
+  jwt_decoder: ^2.0.1
   
 
 

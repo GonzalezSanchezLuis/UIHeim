@@ -3,6 +3,7 @@ import 'package:holi/src/view/welcome/logo.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 void main(){
+  debugPrint = (String? message, {int? wrapWidth}) {};
   runApp(const App());
   
 }

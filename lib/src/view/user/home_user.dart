@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:holi/src/view/account/login.dart';
 import 'package:holi/src/view/move/history_move.dart';
 import 'package:holi/src/view/user/user.dart';
 import 'package:holi/src/widget/button/button_card_home.dart';
 import 'package:holi/src/widget/maps/google_maps.dart';
-
+import 'package:holi/src/utils/controllers/auth_controller.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeUser extends StatefulWidget {
   const HomeUser({super.key});
@@ -15,10 +17,41 @@ class HomeUser extends StatefulWidget {
 class _HomeUserState extends State<HomeUser> {
   int currentPageIndex = 0;
 
+  @override
+  void initState() {
+    super.initState();
+    _checkSSession();
+    // _checkTokenValidity();
+  }
+/*
+  Future<void> _checkTokenValidity() async {
+    final authController = AuthController();
+    bool isValidToken = await authController.isTokenValid();
+
+    if(!isValidToken){
+         Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => const Login()));
+    }
+  } */
+
+  Future<void> _checkSSession() async {
+    bool isLoggedIn = await _isLoggedIn();
+    if (!isLoggedIn) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const Login()),
+      );
+    }
+  }
+
+  Future<bool> _isLoggedIn() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt('userId');
+    return userId != null;
+  }
 
   @override
   Widget build(BuildContext context) {
- 
     final ThemeData theme = Theme.of(context);
 
     return Scaffold(
@@ -48,13 +81,13 @@ class _HomeUserState extends State<HomeUser> {
           ),
         ],
       ),
-     body: IndexedStack(
+      body: IndexedStack(
         index: currentPageIndex,
         children: [
           // Página inicial con el mapa
           Stack(
             children: [
-            const GoogleMapsWidget(),
+              const GoogleMapsWidget(),
               Positioned(
                 bottom: 0,
                 left: 0,

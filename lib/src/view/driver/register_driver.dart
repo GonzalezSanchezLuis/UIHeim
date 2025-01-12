@@ -1,25 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/theme/colors/app_theme.dart';
 import 'package:holi/src/view/driver/home_driver.dart';
+import 'package:holi/src/utils/controllers/register_controller.dart';
+
 class RegisterDriver extends StatefulWidget {
-  const RegisterDriver({ super.key });
+  const RegisterDriver({super.key});
 
   @override
   _RegisterDriverState createState() => _RegisterDriverState();
 }
 
 class _RegisterDriverState extends State<RegisterDriver> {
-
-   final TextEditingController _numberOfRoomsController =
+  final TextEditingController _fullNameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _documentController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _licenseController = TextEditingController();
+  final TextEditingController _typeVehicleController = TextEditingController();
+  final TextEditingController _enrollVehicleController =
       TextEditingController();
-  final TextEditingController _sourceAddressController =
-      TextEditingController();
-  final TextEditingController _originAddressController =
-      TextEditingController();
-  final TextEditingController _dateController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   // Clave para el formulario
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final RegisterController _registerDriver = RegisterController();
   final double _numberOfRoomsYOffset = 100;
   @override
   Widget build(BuildContext context) {
@@ -35,7 +39,6 @@ class _RegisterDriverState extends State<RegisterDriver> {
       body: Padding(
         padding: const EdgeInsets.only(top: 10.0, left: 15.0, right: 15.0),
         child: Stack(
-          // Usamos Stack para manejar la posición absoluta
           children: [
             // Formulario para gestionar los inputs de manera optimizada
             Positioned(
@@ -47,70 +50,89 @@ class _RegisterDriverState extends State<RegisterDriver> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    TextFormField(
+                      controller: _fullNameController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: const InputDecoration(
+                        labelText: "Nombre Completo",
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
                     // Campo de correo
                     TextFormField(
-                      controller: _numberOfRoomsController,
+                      controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       decoration: const InputDecoration(
                         labelText: "Email",
                         border: OutlineInputBorder(),
                       ),
-                      // validator: (value) {
-                      //   if (value == null || value.isEmpty) {
-                      //     return 'Por favor ingresa un email';
-                      //   }
-                      //   return null;
-                      // },
                     ),
                     const SizedBox(height: 20),
                     // Campo de contraseña
                     TextFormField(
-                      controller: _sourceAddressController,
+                      controller: _documentController,
                       obscureText: true,
                       decoration: const InputDecoration(
                         labelText: "Documento",
                         border: OutlineInputBorder(),
                       ),
-                      // validator: (value) {
-                      //   if (value == null || value.isEmpty) {
-                      //     return 'Por favor ingresa una contraseña';
-                      //   }
-                      //   return null;
-                      // },
                     ),
                     const SizedBox(height: 20),
                     TextFormField(
-                      controller: _originAddressController,
+                      controller: _phoneController,
                       obscureText: true,
                       decoration: const InputDecoration(
                         labelText: "Telefono",
                         border: OutlineInputBorder(),
                       ),
-                      // validator: (value) {
-                      //   if (value == null || value.isEmpty) {
-                      //     return 'Por favor ingresa una contraseña';
-                      //   }
-                      //   return null;
-                      // },
                     ),
                     const SizedBox(height: 20),
                     TextFormField(
-                      controller: _dateController,
-                      readOnly:
-                          true, // Evita que el usuario escriba directamente
+                      controller: _licenseController,
                       decoration: const InputDecoration(
                         labelText: "Licencia ",
                         border: OutlineInputBorder(),
                       ),
                     ),
+
                     const SizedBox(height: 20),
+
+                    TextFormField(
+                      controller: _typeVehicleController,
+                      decoration: const InputDecoration(
+                        labelText: "Tipo de vehículo",
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    TextFormField(
+                      controller: _enrollVehicleController,
+                      decoration: const InputDecoration(
+                        labelText: "Placas del vehículo",
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    TextFormField(
+                      controller: _passwordController,
+                      decoration: const InputDecoration(
+                        labelText: "Contraseña",
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
                     // Botón de login
+                     const SizedBox(height: 20),
+                     
                     ElevatedButton(
                       onPressed: () => {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const HomeDriver()))
+                        _handleRegisterDriver()
                       },
                       style: ElevatedButton.styleFrom(
                         minimumSize:
@@ -134,12 +156,53 @@ class _RegisterDriverState extends State<RegisterDriver> {
       ),
     );
   }
-   @override
+
+  void _handleRegisterDriver() async {
+    final fullName = _fullNameController.text.trim();
+    final email = _emailController.text.trim();
+    final document = _documentController.text.trim();
+    final phone = _phoneController.text.trim();
+    final licenseNumber = _licenseController.text.trim();
+    final vehicleType = _typeVehicleController.text.trim();
+    final enrollVehicle = _enrollVehicleController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (_formKey.currentState!.validate()) {
+      final messageError = await _registerDriver.registerDriver(
+          name: fullName,
+          email: email,
+          document: document,
+          phone: phone,
+          licenseNumber: licenseNumber,
+          vehicleType: vehicleType,
+          enrollVehicle: enrollVehicle,
+          password: password);
+
+      if (messageError == null) {
+        print("Redirigiendo");
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => const HomeDriver()));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(
+              messageError ?? "Algo salio mal",
+            ),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.red));
+      }
+    }
+  }
+
+  @override
   void dispose() {
-    _numberOfRoomsController.dispose();
-    _sourceAddressController.dispose();
-    _originAddressController.dispose();
-    _dateController.dispose();
+    _fullNameController.dispose();
+    _emailController.dispose();
+    _documentController.dispose();
+    _phoneController.dispose();
+    _licenseController.dispose();
+    _typeVehicleController.dispose();
+    _enrollVehicleController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 }

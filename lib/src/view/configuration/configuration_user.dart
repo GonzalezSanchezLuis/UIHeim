@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/theme/colors/app_theme.dart';
 import 'package:holi/src/view/about/about.dart';
+import 'package:holi/src/view/account/login.dart';
 import 'package:holi/src/view/configuration/legal.dart';
 import 'package:holi/src/view/user/profile.dart';
+import 'package:holi/src/utils/controllers/auth_controller.dart';
 
 class ConfigurationUser extends StatefulWidget {
   const ConfigurationUser({super.key});
@@ -12,6 +14,8 @@ class ConfigurationUser extends StatefulWidget {
 }
 
 class _ConfigurationUserState extends State<ConfigurationUser> {
+  final AuthController _authController = AuthController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,16 +36,16 @@ class _ConfigurationUserState extends State<ConfigurationUser> {
             title: "Mi perfil",
             onTap: () {
               // Acción al presionar esta opción
-              Navigator.push(
-                  context, MaterialPageRoute(builder: (context) => const Profile()));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const Profile()));
             },
           ),
           _buildSettingOption(
             title: "Legal",
             onTap: () {
               // Acción al presionar esta opción
-              Navigator.push(
-                  context, MaterialPageRoute(builder: (context) => const Legal()));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const Legal()));
             },
           ),
           _buildSettingOption(
@@ -54,16 +58,28 @@ class _ConfigurationUserState extends State<ConfigurationUser> {
             title: "Acerca de",
             onTap: () {
               // Acción al presionar esta opción
-              Navigator.push(
-                  context, MaterialPageRoute(builder: (context) => const About()));
-
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const About()));
             },
           ),
           _buildSettingOption(
             title: "Cerrar sesión",
-            onTap: () {
-              // Acción al presionar esta opción
-            },
+            onTap: () async {
+            
+                final isLoggedOut = await _authController.logout();
+                if (isLoggedOut) {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const Login()),
+                    (route) => false,
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Error al cerrar sesión")),
+                  );
+                }
+              },
+              
           ),
         ],
       ),

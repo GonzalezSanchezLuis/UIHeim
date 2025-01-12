@@ -24,14 +24,26 @@ class _LoginState extends State<Login> {
   // Variables de desplazamiento
   final double _emailYOffset = 100;
   final double _passwordYOffset = 180;
+  bool _isPasswordVisible = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          "Atras",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => {Navigator.pop(context)},
+        ),
+      ),
       backgroundColor: AppTheme.colorbackgroundview,
       body: Padding(
         padding: const EdgeInsets.only(top: 250.0, left: 15.0, right: 15.0),
-        child: Stack( // Usamos Stack para manejar la posición absoluta
+        child: Stack(
+          // Usamos Stack para manejar la posición absoluta
           children: [
             const Positioned(
               top: 35,
@@ -56,38 +68,46 @@ class _LoginState extends State<Login> {
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
-                        labelText: "Ingresa tu correo electrónico",
-                        labelStyle: TextStyle(fontWeight: FontWeight.w500,color: Colors.grey[600]),
-
-                        border: const OutlineInputBorder(),
-                          focusedBorder:  const OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.black87,width: 2.0)
-                          ),
+                          labelText: "Ingresa tu correo electrónico",
+                          labelStyle: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey[600]),
+                          border: const OutlineInputBorder(),
+                          focusedBorder: const OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: Colors.black87, width: 2.0)),
                           floatingLabelStyle: const TextStyle(
-                            color: Colors.black, // Cambia este color al que prefieras
-                            fontWeight: FontWeight.bold, // Opcional, para resaltar
-                          )
-
-
-                      ),
+                            color: Colors
+                                .black, // Cambia este color al que prefieras
+                            fontWeight:
+                                FontWeight.bold, // Opcional, para resaltar
+                          )),
                     ),
                     const SizedBox(height: 20),
                     // Campo de contraseña
                     TextFormField(
                       controller: _passwordController,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        labelText: "Ingresa tu contraseña",
-                        border: OutlineInputBorder(),
-                        focusedBorder:  OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.black87,width: 2.0)
-                        ),
-                        floatingLabelStyle: TextStyle(
-                          color: Colors.black, // Cambia este color al que prefieras
-                          fontWeight: FontWeight.bold, // Opcional, para resaltar
-                        ),
-
-                      ),
+                      obscureText: !_isPasswordVisible,
+                      decoration: InputDecoration(
+                          labelText: "Ingresa tu contraseña",
+                          border: const OutlineInputBorder(),
+                          focusedBorder: const OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: Colors.black87, width: 2.0)),
+                          floatingLabelStyle: const TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          suffixIcon: IconButton(
+                            icon: Icon(_isPasswordVisible
+                                ? Icons.visibility
+                                : Icons.visibility_off),
+                            onPressed: () {
+                              setState(() {
+                                _isPasswordVisible = !_isPasswordVisible;
+                              });
+                            },
+                          )),
                     ),
                     const SizedBox(height: 20),
                     // Botón de login
@@ -102,19 +122,26 @@ class _LoginState extends State<Login> {
     );
   }
 
-  void _handleLogin(){
+  void _handleLogin() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
-    if(_formKey.currentState!.validate()){
-      Navigator.push(context, MaterialPageRoute(builder: (context) => const HomeUser()));
-      _authController.login(email: email, password: password);
+    if (_formKey.currentState!.validate()) {
+      final messageError = await _authController.login(email: email, password: password);
 
-       Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeUser()));
-    }else{
-      print("Error");
+      if (messageError == null) {
+        print("Redirigiendo");
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => const HomeUser()));
+      }else{
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(
+              messageError ?? "Algo salio mal",
+            ),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.red));
+      }
+     
     }
   }
 
@@ -125,5 +152,3 @@ class _LoginState extends State<Login> {
     super.dispose();
   }
 }
-
-

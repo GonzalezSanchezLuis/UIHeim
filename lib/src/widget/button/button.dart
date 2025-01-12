@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/view/driver/register_driver.dart';
-class Button extends StatelessWidget {
-  const Button({
-    super.key,
-  });
+
+class ButtonUpdateData extends StatelessWidget {
+  final Function()? onPressed;
+  const ButtonUpdateData({
+  Key? key,
+  this.onPressed
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: () {},
+      onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        minimumSize:
-            Size(MediaQuery.of(context).size.width * 0.9, 60),
+        minimumSize: Size(MediaQuery.of(context).size.width * 0.9, 60),
         backgroundColor: Colors.black,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(30),
@@ -34,11 +36,11 @@ class ButtonRegisterDriver extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton(
       onPressed: () {
-        Navigator.push((context), MaterialPageRoute(builder: (context)=> const RegisterDriver()));
+        Navigator.push((context),
+            MaterialPageRoute(builder: (context) => const RegisterDriver()));
       },
       style: ElevatedButton.styleFrom(
-        minimumSize:
-            Size(MediaQuery.of(context).size.width * 0.9, 60),
+        minimumSize: Size(MediaQuery.of(context).size.width * 0.9, 60),
         backgroundColor: Colors.black,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(30),
