@@ -22,60 +22,60 @@ class PrivacyPolicy extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               "Política de Privacidad",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 16),
-            const Text(
+            SizedBox(height: 16),
+            Text(
               "1. Información que Recopilamos",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const Text(
+            Text(
               "- Información personal: nombre, correo, teléfono y dirección.\n"
               "- Datos de uso: cómo interactúas con la aplicación.",
             ),
-            const SizedBox(height: 16),
-            const Text(
+            SizedBox(height: 16),
+            Text(
               "2. Uso de la Información",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const Text(
+            Text(
               "Usamos tu información para brindar nuestros servicios, comunicarnos contigo y mejorar la experiencia del usuario.",
             ),
-            const SizedBox(height: 16),
-            const Text(
+            SizedBox(height: 16),
+            Text(
               "3. Compartir Información",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const Text(
+            Text(
               "Podemos compartir tus datos con:\n"
               "- Proveedores de servicios de mudanza.\n"
               "- Autoridades legales cuando sea requerido.\n"
               "- Plataformas de pago para procesar transacciones.",
             ),
-            const SizedBox(height: 16),
-            const Text(
+            SizedBox(height: 16),
+            Text(
               "4. Seguridad",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const Text(
+            Text(
               "Implementamos medidas de seguridad para proteger tus datos, aunque no podemos garantizar seguridad absoluta.",
             ),
-            const SizedBox(height: 16),
-            const Text(
+            SizedBox(height: 16),
+            Text(
               "5. Tus Derechos",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const Text(
+            Text(
               "Puedes solicitar el acceso, corrección o eliminación de tus datos personales en cualquier momento.",
             ),
-            const SizedBox(height: 16),
-            const Text(
+            SizedBox(height: 16),
+            Text(
               "6. Cambios a esta Política",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const Text(
+            Text(
               "Nos reservamos el derecho de actualizar esta política. Te notificaremos sobre cambios importantes.",
             ),
           ],

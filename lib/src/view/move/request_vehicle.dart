@@ -69,7 +69,7 @@ class _RequestVehicleState extends State<RequestVehicle> {
                         focusedBorder:  OutlineInputBorder(
                               borderSide: BorderSide(color: Colors.black87,width: 2.0)
                           ),
-                          floatingLabelStyle: const TextStyle(
+                          floatingLabelStyle: TextStyle(
                             color: Colors.black, // Cambia este color al que prefieras
                             fontWeight: FontWeight.bold, // Opcional, para resaltar
                           )

@@ -4,9 +4,9 @@ import 'package:holi/src/view/driver/register_driver.dart';
 class ButtonUpdateData extends StatelessWidget {
   final Function()? onPressed;
   const ButtonUpdateData({
-  Key? key,
+  super.key,
   this.onPressed
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +21,7 @@ class ButtonUpdateData extends StatelessWidget {
       ),
       child: const Text(
         "Actualizar cuenta",
-        style: TextStyle(color: Colors.white, fontSize: 20),
+        style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
       ),
     );
   }

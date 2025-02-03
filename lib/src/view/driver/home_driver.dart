@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/theme/colors/app_theme.dart';
+import 'package:holi/src/view/driver/driver.dart';
+import 'package:holi/src/view/move/history_move.dart';
 import 'package:holi/src/widget/button/button_card_home.dart';
-import 'package:holi/src/widget/maps/mapbox.dart';
+import 'package:holi/src/widget/maps/google_maps.dart';
 
 class HomeDriver extends StatefulWidget {
   const HomeDriver({super.key});
@@ -11,65 +13,82 @@ class HomeDriver extends StatefulWidget {
 }
 
 class _HomeDriverState extends State<HomeDriver> {
-  bool _showConnectCard = true; // Controla qué tarjeta se muestra
+  bool _showConnectCard = true;
+  int currentPageIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
 
     return Scaffold(
-      body: Stack(
+     
+      body: IndexedStack(
+        index: currentPageIndex,
         children: [
-          
-          Positioned(
-            top: 50,
-            left: 20,
-            child: GestureDetector(
-            onTap: (){
-
-            },
-            child: const CircleAvatar(
-              radius: 35,
-              backgroundImage: AssetImage("assets/images/profile.jpg"),
-
-            ),
-          ),
-          ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: _showConnectCard
-                  ? MediaQuery.of(context).size.height * 0.12
-                  : MediaQuery.of(context).size.height * 0.20, // Altura ajustada
-              decoration: BoxDecoration(
-                color: AppTheme.colorbackgroundview,
-                borderRadius: const BorderRadius.only(
-                  topRight: Radius.circular(20),
-                  topLeft: Radius.circular(20),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 8,
-                  ),
-                ],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: _showConnectCard
-                    ? _buildConnectCard()
-                    : _buildExpandedCard(),
-              ),
-            ),
-          ),
+          _buildHomeScreen(),
+          /*const HistoryMove(),
+          const Driver(), */
         ],
       ),
     );
   }
 
-  // Construir la tarjeta con el botón "Conectarme"
+  Widget _buildHomeScreen() {
+    return Stack(
+      children: [
+        const GoogleMapsWidget(),
+
+        // Botón de perfil en la esquina superior izquierda
+        Positioned(
+          top: 50,
+          left: 20,
+          child: GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const Driver()),
+              );
+            },
+            child: const CircleAvatar(
+              radius: 35,
+              backgroundImage: AssetImage("assets/images/profile.jpg"),
+            ),
+          ),
+        ),
+
+        // Tarjeta inferior con botones
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+            height: _showConnectCard
+                ? MediaQuery.of(context).size.height * 0.12
+                : MediaQuery.of(context).size.height * 0.20,
+            decoration: BoxDecoration(
+              color: AppTheme.colorbackgroundview,
+              borderRadius: const BorderRadius.only(
+                topRight: Radius.circular(20),
+                topLeft: Radius.circular(20),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child:
+                  _showConnectCard ? _buildConnectCard() : _buildExpandedCard(),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildConnectCard() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -90,25 +109,21 @@ class _HomeDriverState extends State<HomeDriver> {
         Container(
           decoration: BoxDecoration(
             color: Colors.grey.shade300,
-            shape:  BoxShape.circle
+            shape: BoxShape.circle,
           ),
           child: IconButton(
             onPressed: () {
-              // Cambia a la tarjeta expandida
               setState(() {
                 _showConnectCard = false;
               });
             },
-            icon: const Icon(Icons.add, size: 30,color: Colors.black,),
-
+            icon: const Icon(Icons.add, size: 30, color: Colors.black),
           ),
-        )
-        ,
+        ),
       ],
     );
   }
 
-  // Construir la tarjeta expandida
   Widget _buildExpandedCard() {
     return Stack(
       children: [
@@ -119,30 +134,26 @@ class _HomeDriverState extends State<HomeDriver> {
             SizedBox(height: 10),
             DisconnectButton(),
             SizedBox(height: 10),
-              ButtonLogOut(),
+            ButtonLogOut(),
           ],
         ),
-        // Botón cerrar en la esquina inferior derecha
         Positioned(
           bottom: 0,
           right: 0,
           child: Container(
             decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                shape:  BoxShape.circle
+              color: Colors.grey.shade300,
+              shape: BoxShape.circle,
             ),
-          child: IconButton(
-            onPressed: () {
-              // Regresa a la tarjeta original
-              setState(() {
-                _showConnectCard = true;
-              });
-            },
-            icon: const Icon(Icons.close, size: 30, color: Colors.black87),
+            child: IconButton(
+              onPressed: () {
+                setState(() {
+                  _showConnectCard = true;
+                });
+              },
+              icon: const Icon(Icons.close, size: 30, color: Colors.black87),
+            ),
           ),
-          )
-
-
         ),
       ],
     );

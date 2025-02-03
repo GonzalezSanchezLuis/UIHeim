@@ -40,8 +40,6 @@ allprojects {
 }
 
 rootProject.buildDir = "../build"
-def mapboxDownloadsToken = project.findProperty("MAPBOX_DOWNLOADS_TOKEN") ?: ""
-println "MAPBOX_DOWNLOADS_TOKEN: ${mapboxDownloadsToken}"
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 }

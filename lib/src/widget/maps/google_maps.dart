@@ -128,38 +128,9 @@ class _GoogleMapsWidgetState extends State<GoogleMapsWidget> {
                   }
                 },
               ),
+
               const SizedBox(height: 10),
-              // Botón de Zoom In
-              FloatingActionButton(
-                heroTag: 'zoomIn',
-                backgroundColor: Colors.white,
-                child: const Icon(
-                  Icons.zoom_in,
-                  size: 30,
-                  color: Colors.black,
-                ),
-                onPressed: () {
-                  googleMapController.animateCamera(
-                    CameraUpdate.zoomIn(),
-                  );
-                },
-              ),
-              const SizedBox(height: 10),
-              // Botón de Zoom Out
-              FloatingActionButton(
-                heroTag: 'zoomOut',
-                backgroundColor: Colors.white,
-                child: const Icon(
-                  Icons.zoom_out,
-                  size: 30,
-                  color: Colors.black,
-                ),
-                onPressed: () {
-                  googleMapController.animateCamera(
-                    CameraUpdate.zoomOut(),
-                  );
-                },
-              ),
+
             ],
           ),
         ),

@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:jwt_decoder/jwt_decoder.dart';
 
 class AuthController {
  /* Future<String?> login(
@@ -112,6 +111,7 @@ Future<String?> login(
       log("Error durante el inicio de sesion: $e");
       return "Error durante el inicio de sesión: $e";
     }
+    return null;
   }
 
 

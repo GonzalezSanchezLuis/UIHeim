@@ -30,7 +30,7 @@ class _RegisterDriverState extends State<RegisterDriver> {
     return Scaffold(
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
-        title: const Text("Registrarme como conductor"),
+        title: const Text("Registrarme como conductor", style: TextStyle(fontWeight: FontWeight.bold),),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => {Navigator.pop(context)},
@@ -56,6 +56,15 @@ class _RegisterDriverState extends State<RegisterDriver> {
                       decoration: const InputDecoration(
                         labelText: "Nombre Completo",
                         border: OutlineInputBorder(),
+                        focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: Colors.black87, width: 2.0)),
+                          floatingLabelStyle:  TextStyle(
+                            color: Colors
+                                .black, // Cambia este color al que prefieras
+                            fontWeight:
+                                FontWeight.bold, // Opcional, para resaltar
+                          )
                       ),
                     ),
 
@@ -68,6 +77,15 @@ class _RegisterDriverState extends State<RegisterDriver> {
                       decoration: const InputDecoration(
                         labelText: "Email",
                         border: OutlineInputBorder(),
+                        focusedBorder:  OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: Colors.black87, width: 2.0)),
+                          floatingLabelStyle: TextStyle(
+                            color: Colors
+                                .black, // Cambia este color al que prefieras
+                            fontWeight:
+                                FontWeight.bold, // Opcional, para resaltar
+                          )
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -78,6 +96,15 @@ class _RegisterDriverState extends State<RegisterDriver> {
                       decoration: const InputDecoration(
                         labelText: "Documento",
                         border: OutlineInputBorder(),
+                        focusedBorder:  OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: Colors.black87, width: 2.0)),
+                          floatingLabelStyle:  TextStyle(
+                            color: Colors
+                                .black, // Cambia este color al que prefieras
+                            fontWeight:
+                                FontWeight.bold, // Opcional, para resaltar
+                          )
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -87,6 +114,15 @@ class _RegisterDriverState extends State<RegisterDriver> {
                       decoration: const InputDecoration(
                         labelText: "Telefono",
                         border: OutlineInputBorder(),
+                        focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: Colors.black87, width: 2.0)),
+                          floatingLabelStyle:  TextStyle(
+                            color: Colors
+                                .black, // Cambia este color al que prefieras
+                            fontWeight:
+                                FontWeight.bold, // Opcional, para resaltar
+                          )
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -95,6 +131,15 @@ class _RegisterDriverState extends State<RegisterDriver> {
                       decoration: const InputDecoration(
                         labelText: "Licencia ",
                         border: OutlineInputBorder(),
+                        focusedBorder:  OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: Colors.black87, width: 2.0)),
+                          floatingLabelStyle:  TextStyle(
+                            color: Colors
+                                .black, // Cambia este color al que prefieras
+                            fontWeight:
+                                FontWeight.bold, // Opcional, para resaltar
+                          )
                       ),
                     ),
 
@@ -105,6 +150,15 @@ class _RegisterDriverState extends State<RegisterDriver> {
                       decoration: const InputDecoration(
                         labelText: "Tipo de vehículo",
                         border: OutlineInputBorder(),
+                        focusedBorder:  OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: Colors.black87, width: 2.0)),
+                          floatingLabelStyle: TextStyle(
+                            color: Colors
+                                .black, // Cambia este color al que prefieras
+                            fontWeight:
+                                FontWeight.bold, // Opcional, para resaltar
+                          )
                       ),
                     ),
 
@@ -115,6 +169,15 @@ class _RegisterDriverState extends State<RegisterDriver> {
                       decoration: const InputDecoration(
                         labelText: "Placas del vehículo",
                         border: OutlineInputBorder(),
+                        focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: Colors.black87, width: 2.0)),
+                          floatingLabelStyle: TextStyle(
+                            color: Colors
+                                .black, // Cambia este color al que prefieras
+                            fontWeight:
+                                FontWeight.bold, // Opcional, para resaltar
+                          )
                       ),
                     ),
 
@@ -125,6 +188,15 @@ class _RegisterDriverState extends State<RegisterDriver> {
                       decoration: const InputDecoration(
                         labelText: "Contraseña",
                         border: OutlineInputBorder(),
+                        focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: Colors.black87, width: 2.0)),
+                          floatingLabelStyle:  TextStyle(
+                            color: Colors
+                                .black, // Cambia este color al que prefieras
+                            fontWeight:
+                                FontWeight.bold, // Opcional, para resaltar
+                          )
                       ),
                     ),
                     // Botón de login
@@ -132,7 +204,9 @@ class _RegisterDriverState extends State<RegisterDriver> {
                      
                     ElevatedButton(
                       onPressed: () => {
-                        _handleRegisterDriver()
+                       // _handleRegisterDriver()
+                       Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => const HomeDriver()))
                       },
                       style: ElevatedButton.styleFrom(
                         minimumSize:
@@ -144,7 +218,7 @@ class _RegisterDriverState extends State<RegisterDriver> {
                       ),
                       child: const Text(
                         "Enviar mis datos",
-                        style: TextStyle(color: Colors.white, fontSize: 20),
+                        style: TextStyle(color: Colors.white, fontSize: 20,fontWeight: FontWeight.bold),
                       ),
                     )
                   ],

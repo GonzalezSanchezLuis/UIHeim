@@ -4,7 +4,6 @@ import 'package:holi/src/view/move/history_move.dart';
 import 'package:holi/src/view/user/user.dart';
 import 'package:holi/src/widget/button/button_card_home.dart';
 import 'package:holi/src/widget/maps/google_maps.dart';
-import 'package:holi/src/utils/controllers/auth_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeUser extends StatefulWidget {

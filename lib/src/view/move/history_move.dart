@@ -44,7 +44,7 @@ class _HistoryMoveState extends State<HistoryMove> {
   backgroundColor: AppTheme.colorbackgroundview,
   body: Padding(
     padding: const EdgeInsets.only(top: 60),
-    child: HistoryMoveList(moves: moves),
+    child:  HistoryMoveList(moves: moves),
   ),
 );
   }

@@ -112,7 +112,7 @@ class _ProfileState extends State<Profile> {
     return Scaffold(
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
-        title: const Text("Mi perfil"),
+        title: const Text("Mi cuenta",style: TextStyle(fontWeight: FontWeight.bold),),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -175,7 +175,7 @@ class _ProfileState extends State<Profile> {
                             TextField(
                               controller: nameController,
                               decoration: const InputDecoration(
-                                labelText: "Nombre(s)",
+                                labelText: "Nombre(s)",labelStyle: TextStyle(fontWeight: FontWeight.w600),
                                 border: UnderlineInputBorder(),
                               ),
                             ),
@@ -193,10 +193,20 @@ class _ProfileState extends State<Profile> {
                     _buildFieldCard("Contraseña", "Ingresa tu contraseña",
                         passwordController),
                     Container(
-                      color: Colors.red[600],
-                      child: SettingOption(
-                        title: "Eliminar cuenta",
-                        onTap: () async {
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 12),   
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                           backgroundColor:
+                                Colors.red[600], // Color rojo para el botón
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                  10), // Bordes redondeados
+                            ),
+                            
+                        ),
+                        onPressed: () async {
                           await profileController
                               .deleteAccount(context)
                               .then((_) {
@@ -206,6 +216,14 @@ class _ProfileState extends State<Profile> {
                                     builder: (context) => const WelcomeView()));
                           });
                         },
+                        child: const Text("Eliminar cuenta",
+                        style: TextStyle(
+                            color:
+                                Colors.white, // Texto en blanco para contraste
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -234,7 +252,7 @@ class _ProfileState extends State<Profile> {
               flex: 2,
               child: Text(
                 label,
-                style: const TextStyle(fontSize: 13),
+                style: const TextStyle(fontSize: 13,fontWeight: FontWeight.w600),
               ),
             ),
             Expanded(
