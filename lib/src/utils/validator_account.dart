@@ -12,15 +12,14 @@ class Validators {
       return 'Este campo no puede estar vacio';
     }
 
-    final emailRegex =
-        RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\$');
+    final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\$');
     if (!emailRegex.hasMatch(value)) {
       return 'Por favor ingresa un email valido';
     }
     return null;
   }
 
-    /// Valida que la contraseña cumpla con ciertos requisitos.
+  /// Valida que la contraseña cumpla con ciertos requisitos.
   static String? validatePassword(String? value) {
     if (value == null || value.isEmpty) {
       return 'Por favor, ingresa una contraseña';
