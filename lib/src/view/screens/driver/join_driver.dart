@@ -11,6 +11,7 @@ class JoinDriver extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
+           backgroundColor: AppTheme.colorbackgroundview,
         title: const Text("Únete al equipo de conductores de Holi"),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -28,8 +29,8 @@ class JoinDriver extends StatelessWidget {
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      Color(0xFFff3d00), // Color principal
-                      Color(0xFFd32f2f), // Un tono más oscuro
+                      Color(0xFFFF1E1E), // Color principal
+                      Color(0xFF101010), // Un tono más oscuro
                     ],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,

@@ -9,6 +9,7 @@ class TearmAndCondition extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
+        backgroundColor: AppTheme.colorbackgroundview,
         title: const Text("Terminos y condiciones"),
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => {Navigator.pop(context)}),
       ),

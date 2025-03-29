@@ -45,7 +45,7 @@ class _IntroductionViewState extends State<IntroductionView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.colorbackgroundwelcome,
+      backgroundColor: AppTheme.primarycolor,
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -83,7 +83,7 @@ class _IntroductionViewState extends State<IntroductionView> {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
+                      backgroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
@@ -106,7 +106,7 @@ class _IntroductionViewState extends State<IntroductionView> {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
+                      backgroundColor: const Color(0xFFFFBC11),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),

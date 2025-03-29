@@ -17,6 +17,7 @@ class ProfileView extends StatelessWidget {
       child: Scaffold(
         backgroundColor: AppTheme.colorbackgroundview,
         appBar: AppBar(
+          backgroundColor: AppTheme.colorbackgroundview,
           title: const Text(
             "Mi cuenta",
             style: TextStyle(fontWeight: FontWeight.bold),
@@ -53,7 +54,7 @@ class ProfileView extends StatelessWidget {
                     }),
                     const SizedBox(height: 24),
                     Card(
-                      color: Colors.white,
+                      color: AppTheme.colorcards,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10.0),
                       ),
@@ -75,10 +76,12 @@ class ProfileView extends StatelessWidget {
                         ),
                       ),
                     ),
+
                     _buildFieldCard("Número de documento", "Ingresa tu número", documentController, readOnlyCondition: true),
                     _buildFieldCard("Teléfono", "Ingresa tu teléfono", phoneController),
                     _buildFieldCard("Correo electrónico", "Ingresa tu correo", emailController),
                     _buildPasswordField("Actualizar contraseña", "Ingresa tu contraseña", passwordController),
+                    
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -108,7 +111,9 @@ class ProfileView extends StatelessWidget {
                         ),
                       ),
                     ),
+
                     const SizedBox(height: 20),
+                    
                     ButtonUpdateData(
                       onPressed: () async {
                         await Provider.of<ProfileViewModel>(context, listen: false).updateProfile(
@@ -131,6 +136,7 @@ class ProfileView extends StatelessWidget {
 
   Widget _buildFieldCard(String label, String hintText, TextEditingController controller, {bool readOnlyCondition = false}) {
     return Card(
+      color: AppTheme.colorcards,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10.0),
       ),
@@ -172,6 +178,7 @@ class ProfileView extends StatelessWidget {
 
   Widget _buildPasswordField(String label, String hintText, TextEditingController controller) {
     return Card(
+      color: AppTheme.colorcards,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10.0),
       ),

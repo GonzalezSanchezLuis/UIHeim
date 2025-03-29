@@ -48,7 +48,7 @@ class ButtonAuth extends StatelessWidget {
         minimumSize: Size(MediaQuery.of(context).size.width * 0.9, 60),
         backgroundColor: Colors.black,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(15),
         ),
       ),
       child: const Text(

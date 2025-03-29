@@ -21,100 +21,105 @@ class _LoginState extends State<Login> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final AuthService _authService = AuthService();
 
-  final double _emailYOffset = 100;
-  final double _passwordYOffset = 180;
   bool _isPasswordVisible = false;
+  bool _isLoading = false; // Estado de carga
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.colorbackgroundview,
+      backgroundColor: _isLoading ? Colors.black : AppTheme.colorbackgroundview,
       body: Stack(
         children: [
-          Positioned(
-            top: 60,
-            left: 15,
-            child: GestureDetector(
-              onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const Support()));
-              },
-              child: Image.asset(
-                'assets/images/support.png',
-                width: 30,
-                height: 30,
+          if (!_isLoading) ...[
+            Positioned(
+              top: 60,
+              left: 15,
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const Support()));
+                },
+                child: Image.asset(
+                  'assets/images/support.png',
+                  width: 30,
+                  height: 30,
+                ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 450.0, left: 15.0, right: 15.0),
-            child: Stack(
-              children: [
-                const Positioned(
-                  top: 35,
-                  left: 15,
-                  child: Text(
-                    "Ingresar a mi cuenta de Holi",
-                    style: StyleFontsAccount.titleStyle,
-                  ),
-                ),
-                Positioned(
-                  top: _emailYOffset,
-                  left: 10,
-                  right: 10,
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        TextFormField(
-                          controller: _emailController,
-                          keyboardType: TextInputType.emailAddress,
-                          decoration: InputDecoration(
-                            labelText: "Ingresa tu correo electrónico",
-                            labelStyle: TextStyle(fontWeight: FontWeight.w500, color: Colors.grey[600]),
-                            border: const OutlineInputBorder(),
-                            focusedBorder: const OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.black87, width: 2.0),
-                            ),
-                            floatingLabelStyle: const TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        TextFormField(
-                          controller: _passwordController,
-                          obscureText: !_isPasswordVisible,
-                          decoration: InputDecoration(
-                            labelText: "Ingresa tu contraseña",
-                            border: const OutlineInputBorder(),
-                            focusedBorder: const OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.black87, width: 2.0),
-                            ),
-                            floatingLabelStyle: const TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            suffixIcon: IconButton(
-                              icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off),
-                              onPressed: () {
-                                setState(() {
-                                  _isPasswordVisible = !_isPasswordVisible;
-                                });
-                              },
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        ButtonAuth(formKey: _formKey, onPressed: _handleLogin),
-                      ],
+            Padding(
+              padding: const EdgeInsets.only(top: 450.0, left: 15.0, right: 15.0),
+              child: Stack(
+                children: [
+                  const Positioned(
+                    top: 35,
+                    left: 15,
+                    child: Text(
+                      "Ingresar a mi cuenta de Holi",
+                      style: StyleFontsAccount.titleStyle,
                     ),
                   ),
-                ),
-              ],
+                  Positioned(
+                    top: 100,
+                    left: 10,
+                    right: 10,
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          TextFormField(
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            decoration: InputDecoration(
+                              labelText: "Ingresa tu correo electrónico",
+                              labelStyle: TextStyle(fontWeight: FontWeight.w500, color: Colors.grey[600]),
+                              border: const OutlineInputBorder(),
+                              focusedBorder: const OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.black87, width: 2.0),
+                              ),
+                              floatingLabelStyle: const TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          TextFormField(
+                            controller: _passwordController,
+                            obscureText: !_isPasswordVisible,
+                            decoration: InputDecoration(
+                              labelText: "Ingresa tu contraseña",
+                              border: const OutlineInputBorder(),
+                              focusedBorder: const OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.black87, width: 2.0),
+                              ),
+                              floatingLabelStyle: const TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              suffixIcon: IconButton(
+                                icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off),
+                                onPressed: () {
+                                  setState(() {
+                                    _isPasswordVisible = !_isPasswordVisible;
+                                  });
+                                },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          ButtonAuth(formKey: _formKey, onPressed: _handleLogin),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
+          if (_isLoading)
+            const Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            ),
         ],
       ),
     );
@@ -125,6 +130,24 @@ class _LoginState extends State<Login> {
     final password = _passwordController.text.trim();
 
     if (_formKey.currentState!.validate()) {
+      if (email.isEmpty || password.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              "Por favor, ingresa tu correo y contraseña",
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.red,
+          ),
+        );
+        return; 
+        
+      }
+      setState(() {
+        _isLoading = true; // Activar loader
+      });
+
       final messageError = await _authService.login(email: email, password: password);
 
       if (messageError == null) {
@@ -132,17 +155,15 @@ class _LoginState extends State<Login> {
         final role = prefs.getString('role');
 
         if (role == "USER") {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const HomeUser()),
-          );
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeUser()));
         } else if (role == "DRIVER") {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const HomeDriver()), // Asegúrate de tener esta pantalla
-          );
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeDriver()));
         }
       } else {
+        setState(() {
+          _isLoading = false; // Desactivar loader si hay error
+        });
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(

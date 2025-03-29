@@ -133,9 +133,7 @@ class _CreateAccountState extends State<CreateAccount> {
       if (messageError == null) {
         print("Registro exitoso, redirigiendo...");
         // Si no hay error, redirige al HomeUser
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomeUser()),
+        Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => const HomeUser()),
         );
       } else {
         // Si hay un error, muestra un mensaje

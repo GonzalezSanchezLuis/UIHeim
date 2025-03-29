@@ -122,8 +122,8 @@ class _ScheduleMoveState extends State<ScheduleMove> {
                           border: const OutlineInputBorder(),
                           focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 2.0)),
                           floatingLabelStyle: const TextStyle(
-                            color: Colors.black, // Cambia este color al que prefieras
-                            fontWeight: FontWeight.bold, // Opcional, para resaltar
+                            color: Colors.black, 
+                            fontWeight: FontWeight.bold, 
                           ),
                           suffixIcon: IconButton(
                             icon: const Icon(Icons.location_searching_rounded),
@@ -164,8 +164,8 @@ class _ScheduleMoveState extends State<ScheduleMove> {
                         border: OutlineInputBorder(),
                         focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 2.0)),
                         floatingLabelStyle: TextStyle(
-                          color: Colors.black, // Cambia este color al que prefieras
-                          fontWeight: FontWeight.bold, // Opcional, para resaltar
+                          color: Colors.black, 
+                          fontWeight: FontWeight.bold, 
                         ),
                         suffixIcon: Icon(Icons.calendar_today),
                       ),

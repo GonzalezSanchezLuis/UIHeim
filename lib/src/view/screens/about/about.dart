@@ -7,11 +7,12 @@ class About extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.colorbackgroundview,
+      backgroundColor: AppTheme.primarycolor,
       appBar: AppBar(
-        title: const Text('Acerca de Holi'),
+         backgroundColor: AppTheme.primarycolor,
+        title: const Text('Acerca de Holi', style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white)),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back,color: Colors.white,),
           onPressed: () => Navigator.pop(context),
         ),
       ),

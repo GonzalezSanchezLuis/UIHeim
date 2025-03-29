@@ -55,6 +55,7 @@ class _UserState extends State<User> {
               ),
               const SizedBox(width: 10.0),
               Column(
+                
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
@@ -65,9 +66,11 @@ class _UserState extends State<User> {
                       color: Colors.black,
                     ),
                   ),
+
                   const SizedBox(height: 2.0),
+
                   const Text(
-                    "¡Hola!", // Reemplaza con el texto deseado
+                    "¡Hola!", 
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey,
@@ -76,8 +79,11 @@ class _UserState extends State<User> {
                 ],
               )
             ]),
+
             const SizedBox(height: 20),
+
             AccountCard(
+              
               title: "Mi cuenta",
               subtitle: "Configuracion",
               width: 450,
@@ -85,6 +91,7 @@ class _UserState extends State<User> {
               icon: const Icon(Icons.settings),
               onTap: () => {Navigator.push(context, MaterialPageRoute(builder: (context) => const ConfigurationUser()))},
             ),
+
             AccountCard(
               title: "Otros",
               subtitle: "Realiza mudanzas con Holi",

@@ -3,20 +3,20 @@ import 'package:flutter/material.dart';
 class StyleFonts {
   static const TextStyle title = TextStyle(
     fontSize: 22,
-    color: Colors.black,
+    color: Colors.white,
     fontWeight: FontWeight.w900,
   );
 
   static const TextStyle descriptions = TextStyle(
     fontSize: 16,
-    color: Colors.black,
+    color: Colors.white,
     fontWeight: FontWeight.w600,
   );
 
   static const TextStyle textColorButton = TextStyle(
     fontSize: 18,
     fontWeight: FontWeight.bold,
-    color: Colors.white,
+    color: Colors.black,
   );
 
   static const TextStyle selectedLabelStyle = TextStyle(

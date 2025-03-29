@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/view/screens/about/about.dart';
 import 'package:holi/src/service/auth/login._service.dart';
-import 'package:holi/src/view/screens/configuration/legal.dart';
+import 'package:holi/src/view/screens/tearm/legal.dart';
 import 'package:holi/src/view/screens/user/profile.dart';
 import 'package:holi/src/service/auth/auth_service.dart';
 
@@ -21,6 +21,7 @@ class _ConfigurationUserState extends State<ConfigurationUser> {
     return Scaffold(
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
+        backgroundColor: AppTheme.colorbackgroundview,
         title: const Text(
           "Configuración",
           style: TextStyle(fontWeight: FontWeight.bold),
@@ -52,7 +53,7 @@ class _ConfigurationUserState extends State<ConfigurationUser> {
           _buildSettingOption(
             title: "Privacidad",
             onTap: () {
-              // Acción al presionar esta opción
+               Navigator.push(context, MaterialPageRoute(builder: (context) => const Legal()));
             },
           ),
           _buildSettingOption(
@@ -89,6 +90,7 @@ class _ConfigurationUserState extends State<ConfigurationUser> {
     return GestureDetector(
       onTap: onTap,
       child: Card(
+        color: AppTheme.colorcards,
         elevation: 2,
         margin: const EdgeInsets.symmetric(vertical: 8),
         child: Padding(

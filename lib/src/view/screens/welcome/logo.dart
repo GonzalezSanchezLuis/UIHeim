@@ -24,7 +24,7 @@ class _WelcomeViewState extends State<WelcomeView> {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      backgroundColor: AppTheme.colorbackgroundwelcome,
+      backgroundColor: AppTheme.primarycolor,
       body: Center(
           child: Column(
         mainAxisSize: MainAxisSize.min,

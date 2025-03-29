@@ -4,8 +4,8 @@ import 'dart:convert';
 import 'dart:io';
 
 class ScheduleMoveController {
-  Future<String?> registerScheduleMove(
-      {required String moveType,
+  Future<String?> registerScheduleMove({
+      required String moveType,
       required String originAddress,
       required String destinationAddress,
       required String originLat,

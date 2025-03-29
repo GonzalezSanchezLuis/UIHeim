@@ -1,60 +1,67 @@
-import 'dart:convert';
-import 'dart:async';
-import 'package:holi/src/model/driver/status_model.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:holi/src/service/data/repository/driver/driver_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class StatusController {
-  final StreamController<Map<String, String>> _driverDataController = StreamController();
-  Stream<Map<String, String>> get driverDataStream => _driverDataController.stream;
+class StatusController extends ChangeNotifier {
+  final DriverRepository _driverRepository = DriverRepository();
 
-  static const String _apiUrl ='http://192.168.20.49:8080/api/v1/drivers/status/';
-  static const String status = "Conectado";
-
-  // Método para actualizar el estado del conductor
-  Future<Map<String, dynamic>> updateStatus(String status) async {
+ Future<void> connectDriver(int driverId, LatLng position) async {
     try {
-      // Obtener el ID del conductor desde SharedPreferences
+      print("📡 Enviando ubicación: DriverID: $driverId, Lat: ${position.latitude}, Lng: ${position.longitude}");
+
+      await _driverRepository.setStatus(driverId, position);
+    } catch (e) {
+      print("❌ Error al enviar la ubicación: $e");
+    }
+  }
+
+
+
+
+  Future<void> disconnectDriver(int driverId) async {
+    try {
+      print("🔌 Desconectando conductor: DriverID: $driverId");
+
+      await _driverRepository.disconnectedDriver(driverId);
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('status', "Disconnected");
+
+      print("✅ Conductor desconectado exitosamente.");
+      notifyListeners(); // Asegurar que la UI se actualiza
+    } catch (e) {
+      print("⚠️ Error al desconectar al conductor: $e");
+    }
+  }
+
+
+
+  
+
+  Future<void> checkDriverStatus() async {
+    final DriverRepository _driverRepository = DriverRepository();
+    try {
       final prefs = await SharedPreferences.getInstance();
       final driverId = prefs.getInt('userId');
 
       if (driverId == null) {
-        return _createErrorResponse('User ID no encontrado');
+        print("❌ User ID no encontrado en SharedPreferences.");
+        return;
       }
 
-      
+      // ✅ Llamar al repositorio para obtener el estado del conductor
+      bool isConnected = await _driverRepository.getDriverStatus(driverId);
 
-      final Map<String, dynamic> data = {
-        'status': status, 
-        'driverId':driverId
-      };
+      // ✅ Guardar el estado en SharedPreferences
+      await prefs.setString('status', isConnected ? "Connected" : "Disconnected");
 
-      final response = await http.put(
-        Uri.parse('$_apiUrl$driverId$status'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(data),
-      );
-
-      if (response.statusCode == 200) {
-        final updatedStatus = jsonDecode(response.body);
-        await prefs.setString('status', updatedStatus['status']);
-        return _createSuccessResponse(updatedStatus);
-      } else {
-        return _createErrorResponse('Error al actualizar el estado');
-      }
+      print("🔍 Estado del conductor actualizado: ${isConnected ? "Connected" : "Disconnected"}");
     } catch (e) {
-      return _createErrorResponse('Error inesperado: $e');
+      print("⚠️ Error al obtener estado del conductor: $e");
     }
   }
-  Map<String, dynamic> _createErrorResponse(String message) {
-    return {'status': 'error', 'message': message};
-  }
 
-  // Crear una respuesta de éxito estandarizada
-  Map<String, dynamic> _createSuccessResponse(Map<String, dynamic> data) {
-    return {'status': 'success', 'data': data};
-  }
-  void dispose() {
-    _driverDataController.close();
-  }
+
+
 }

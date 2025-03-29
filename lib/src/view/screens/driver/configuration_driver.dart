@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/view/screens/about/about.dart';
-import 'package:holi/src/view/screens/configuration/legal.dart';
+import 'package:holi/src/view/screens/tearm/legal.dart';
 import 'package:holi/src/view/screens/driver/profile.dart';
 
 
