@@ -1,5 +1,8 @@
 plugins {
     id "com.android.application"
+    // START: FlutterFire Configuration
+    id 'com.google.gms.google-services'
+    // END: FlutterFire Configuration
     id "kotlin-android"
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id "dev.flutter.flutter-gradle-plugin"
@@ -8,9 +11,11 @@ plugins {
 
 
 android {
+    compileSdkVersion 35 
+    ndkVersion "25.2.9519653" 
     namespace = "com.example.holi"
-    compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    //compileSdk = flutter.compileSdkVersion
+    //ndkVersion = flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -26,21 +31,44 @@ android {
         applicationId = "com.example.holi"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = 21
-        targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
+        //targetSdk = flutter.targetSdkVersion
+       //versionCode = flutter.versionCode
+       //versionName = flutter.versionName
+        minSdkVersion 21
+        targetSdkVersion 35
+        versionCode 1              // ← Número entero (incrementa con cada release)
+        versionName "1.0.0"        // ← String semántico (MAJOR.MINOR.PATCH)
+        multiDexEnabled true
+        ndk {
+            abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+    }
+
     }
 
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
+            minifyEnabled false
+            shrinkResources false
+            crunchPngs false
             signingConfig = signingConfigs.debug
         }
     }
 }
 
+dependencies {
+    implementation 'androidx.lifecycle:lifecycle-process:2.6.2'
+    implementation 'androidx.lifecycle:lifecycle-common-java8:2.6.2'
+}
+
 flutter {
     source = "../.."
+}
+
+configurations.all {
+    resolutionStrategy {
+        force 'com.baseflow.geolocator:geolocator_android:4.5.0'
+        force 'androidx.lifecycle:lifecycle-common:2.6.2'
+    }
 }

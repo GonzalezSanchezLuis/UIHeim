@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "7135146275",
+    "project_id": "holi-10c28",
+    "storage_bucket": "holi-10c28.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:7135146275:android:2df16f505a39cb328adc96",
+        "android_client_info": {
+          "package_name": "com.example.holi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCXjI9UD3kDNc0mWdZDsASXCaZIQ4isLqQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
