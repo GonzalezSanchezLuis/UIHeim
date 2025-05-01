@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/model/driver/profile_driver_model.dart';
-import 'package:holi/src/service/controllers/drivers/profile_controller.dart';
-import 'package:holi/src/service/uploads/cloudinary_service.dart';
+import 'package:holi/src/service/controllers/drivers/driver_profile_controller.dart';
+import 'package:holi/src/service/cloudinary/cloudinary_service.dart';
 import 'dart:io';
 
 class ProfileViewModel with ChangeNotifier {
-  final ProfileController _profileController = ProfileController();
+  final DriverProfileController _profileController = DriverProfileController();
   ProfileModel _profile = ProfileModel();
   bool _isLoading = false;
   File? _selectedImage;

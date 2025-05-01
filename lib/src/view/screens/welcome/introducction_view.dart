@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/core/theme/fonts/style_fonts_welcome.dart';
-import 'package:holi/src/view/screens/account/create_account.dart';
+import 'package:holi/src/view/screens/auth/create_account_view.dart';
 import 'dart:async';
-import 'package:holi/src/service/auth/login._service.dart';
+
+import 'package:holi/src/view/screens/auth/login_view.dart';
+
 
 class IntroductionView extends StatefulWidget {
   const IntroductionView({super.key});
@@ -55,13 +57,13 @@ class _IntroductionViewState extends State<IntroductionView> {
               children: [
                 _buildPageContent(
                   image: 'assets/images/intro1.svg',
-                  title: "Tu tiempo, nuestra prioridad",
+                  title: "Pierdes tiempo buscando transporte",
                   description: "Empieza a disfrutar de una mudanza rápida y sin complicaciones.",
                 ),
                 _buildPageContent(
                   image: 'assets/images/intro2.svg',
-                  title: "Fácil y rápido",
-                  description: "Crea tu cuenta y accede a nuestros servicios personalizados.",
+                  title: "No quieres salir de casa para",
+                  description: "Pide tu vehículo 100% online sin salir de casa.",
                 ),
               ],
             ),
@@ -79,7 +81,7 @@ class _IntroductionViewState extends State<IntroductionView> {
                       // Acción para el botón de Iniciar sesión
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const Login()),
+                        MaterialPageRoute(builder: (context) => const LoginView()),
                       );
                     },
                     style: ElevatedButton.styleFrom(

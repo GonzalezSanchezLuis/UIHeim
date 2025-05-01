@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:holi/src/model/user/profile_user_model.dart';
 import 'package:holi/src/service/controllers/user/profile_controller.dart';
-import 'package:holi/src/service/uploads/cloudinary_service.dart';
+import 'package:holi/src/service/cloudinary/cloudinary_service.dart';
 
 class ProfileViewModel with ChangeNotifier {
   final ProfileController _profileController = ProfileController();

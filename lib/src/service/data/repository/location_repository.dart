@@ -2,7 +2,9 @@ import 'package:holi/src/service/location/location_service.dart';
 import 'package:geolocator/geolocator.dart';
 
 class LocationRepository {
-  final LocationService _locationService = LocationService();
+  final LocationService _locationService = LocationService(
+    googleApiKey: "AIzaSyACSE_ZDRzWaajv35TLstALgz-NBJJnxoc",
+  );
 
   Future<Position?> fetchCurrentLocation() async {
     return await _locationService.getCurrentPosition();

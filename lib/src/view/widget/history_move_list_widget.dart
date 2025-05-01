@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
-import 'package:holi/src/view/screens/move/move_detail.dart';
+import 'package:holi/src/view/screens/move/move_detail_view.dart';
 
 class HistoryMoveList extends StatelessWidget {
   const HistoryMoveList({

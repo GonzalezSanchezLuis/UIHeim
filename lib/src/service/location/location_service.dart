@@ -1,16 +1,15 @@
-// location_service.dart
 import 'dart:convert';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
-//String googleApiKey = "AIzaSyCox00NukoO4C-N-V-0ChQBjwl3y34faw0";
+
 
 class LocationService {
-  final String? googleApiKey;
+   final String googleApiKey;
+  LocationService({required this.googleApiKey});
 
-  LocationService({this.googleApiKey});
 
-  /// Verifica y solicita permisos de ubicación
+  // Verifica y solicita permisos de ubicación
   Future<bool> requestLocationPermission() async {
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -72,9 +71,9 @@ class LocationService {
     }
   }
 
-  /// Obtiene sugerencias de direcciones (requiere API key de Google)
+  // Obtiene sugerencias de direcciones (requiere API key de Google)
   Future<List<String>> getAddressSuggestions(String query) async {
-    if (googleApiKey == null || googleApiKey!.isEmpty) {
+   if (googleApiKey.isEmpty) {
       throw Exception("Google API key is required for address suggestions");
     }
 

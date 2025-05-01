@@ -10,17 +10,21 @@ class ConfirmMoveController with ChangeNotifier{
     required String typeOfMove,
     required String estimatedTime,
     required List<Map<String, double>> route,
+    required double  userLat,
+    required double userLng
   }) async {
     try {
-      final url = Uri.parse("http://192.168.20.49:8080/api/v1/redis/save");
+      final url = Uri.parse("http://192.168.20.49:8080/api/v1/users/drivers/nearby");
 
       final Map<String, dynamic> requestBody = {
-         "precio": calculatedPrice,
-        "distancia": distanceKm,
-        "duracion": duration,
-        "tipoMudanza": typeOfMove,
-        "tiempoEstimado": estimatedTime,
-        "ruta": route,
+        "calculatedPrice": calculatedPrice,
+        "distanceKm": distanceKm,
+        "duration": duration,
+        "typeOfMove": typeOfMove,
+        "estimatedTime": estimatedTime,
+        "route": route,
+        "userLat": userLat,
+        "userLng": userLng
       };
 
       print("🚀 Enviando datos al servidor:");
@@ -43,6 +47,7 @@ class ConfirmMoveController with ChangeNotifier{
     } catch (e) {
       print("Error en la solicitud: $e");
     }
+    return null;
       
   }
   
