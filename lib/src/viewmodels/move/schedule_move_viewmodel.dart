@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:holi/src/service/controllers/moves/schedule_move_controller.dart';
+import 'package:holi/src/service/moves/schedule_move_controller.dart';
 
 class ScheduleMoveViewModel with ChangeNotifier {
   final ScheduleMoveController _controller = ScheduleMoveController();

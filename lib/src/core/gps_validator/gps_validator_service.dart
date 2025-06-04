@@ -3,30 +3,60 @@ import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 
 class GpsValidatorService {
-  static Future<bool> isGpsActuallyEnabled() async {
-    try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+ static Future<bool> ensureLocationServiceAndPermission(BuildContext context) async {
+    // 1. Verificar permisos
+    LocationPermission permission = await Geolocator.checkPermission();
 
-      if (!serviceEnabled) return false;
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
 
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
+    // 2. Detectar si están denegados permanentemente
+    if (permission == LocationPermission.deniedForever) {
+      final openSettings = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Permiso requerido'),
+          content: const Text('Los permisos de ubicación han sido denegados permanentemente. Por favor, actívalos desde la configuración.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Abrir configuración'),
+            ),
+          ],
+        ),
+      );
+
+      if (openSettings == true) {
+        await Geolocator.openAppSettings();
       }
 
-      if (permission == LocationPermission.deniedForever || permission == LocationPermission.denied) {
-        return false;
-      }
-
-      // No pedir ubicación aquí, solo confirmamos permiso y servicio activo.
-      return true;
-    } catch (e) {
-      debugPrint("Error en GPS Validator: $e");
       return false;
     }
+
+    if (permission == LocationPermission.denied) {
+      // Aún negado después del request
+      return false;
+    }
+
+    // 3. Verificar si el GPS está activo
+    bool gpsEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!gpsEnabled) {
+      await _showGpsDialog(context);
+      gpsEnabled = await Geolocator.isLocationServiceEnabled();
+    }
+
+    return gpsEnabled;
   }
 
-  static Future<void> showGpsDialog(BuildContext context) async {
+   
+
+
+  static Future<void> _showGpsDialog(BuildContext context) async {
     if (!context.mounted) return;
 
     await showDialog(
@@ -60,5 +90,6 @@ class GpsValidatorService {
         ],
       ),
     );
+
   }
 }

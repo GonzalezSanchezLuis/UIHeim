@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:holi/src/service/controllers/moves/schedule_move_controller.dart';
+import 'package:holi/src/service/moves/schedule_move_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';

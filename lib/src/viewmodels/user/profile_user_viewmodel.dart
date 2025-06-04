@@ -1,11 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:holi/src/model/user/profile_user_model.dart';
-import 'package:holi/src/service/controllers/user/profile_controller.dart';
+import 'package:holi/src/service/user/profile_service.dart';
 import 'package:holi/src/service/cloudinary/cloudinary_service.dart';
 
 class ProfileViewModel with ChangeNotifier {
-  final ProfileController _profileController = ProfileController();
+  final ProfileService _profileService = ProfileService();
   ProfileModel _profile = ProfileModel();
   bool _isLoading = false;
   File? _selectedImage;
@@ -18,7 +18,7 @@ class ProfileViewModel with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    final data = await _profileController.fetchUserData();
+    final data = await _profileService.fetchUserData();
     if (data != null) {
       _profile = ProfileModel.fromMap(data);
     }
@@ -56,7 +56,7 @@ class ProfileViewModel with ChangeNotifier {
     }
 
     // Actualiza el perfil con la nueva URL de la imagen
-    final response = await _profileController.updateDataUser(
+    final response = await _profileService.updateDataUser(
       imageUrl ?? _profile.urlAvatarProfile ?? '',
       fullName,
       document,
@@ -80,6 +80,6 @@ class ProfileViewModel with ChangeNotifier {
   }
 
   Future<void> deleteAccount(BuildContext context) async {
-    await _profileController.deleteAccount(context);
+    await _profileService.deleteAccount(context);
   }
 }

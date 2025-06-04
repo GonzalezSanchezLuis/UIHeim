@@ -6,14 +6,14 @@ import 'package:holi/src/model/driver/driver_status_response_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-class DriverStatusController {
+class DriverStatusSerive {
   ConnectionStatus _currentStatus = ConnectionStatus.DISCONNECTED;
 
-  //const baseUrl = "https://b0a3-2800-484-3981-2300-5ac8-ef62-321d-596f.ngrok-free.app/api/v1/drivers/status";
+ // final baseUrl = "http://192.168.20.49:8080/api/v1/drivers/status";
 
   Future<void> connectDriver(int driverId, LatLng position) async {
-    const String baseUrl = 'http://192.168.20.49:8080/api/v1/drivers/connect';
-    final url = Uri.parse('$baseUrl/$driverId');
+    const String baseUrl = 'https://8bef-2800-484-3981-2300-cf48-598e-83d6-f1c7.ngrok-free.app/api/v1';
+    final url = Uri.parse('$baseUrl/drivers/connect/$driverId');
 
     try {
       print("📡 Enviando ubicación: DriverID: $driverId, Lat: ${position.latitude}, Lng: ${position.longitude}");
@@ -33,7 +33,7 @@ class DriverStatusController {
 
       _currentStatus = ConnectionStatus.CONNECTED;
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('status', _currentStatus.value);
+      await prefs.setString('driverStatus', _currentStatus.value);
 
       print("✅ Conductor conectado como: ${_currentStatus}");
     } catch (e) {
@@ -43,7 +43,7 @@ class DriverStatusController {
   }
 
   Future<void> disconnectDriver(int driverId) async {
-    const String baseUrl = 'http://192.168.20.49:8080/api/v1/drivers';
+    const String baseUrl = 'https://8bef-2800-484-3981-2300-cf48-598e-83d6-f1c7.ngrok-free.app/api/v1/drivers';
     final url = Uri.parse('$baseUrl/disconnected/$driverId');
 
     try {
@@ -72,9 +72,9 @@ class DriverStatusController {
   }
 
   Future<DriverStatusResponse?> loadDriverStatus(int driverId) async {
-    const String baseUrl = 'http://192.168.20.49:8080/api/v1/drivers/get';
+  const String baseUrl = 'https://8bef-2800-484-3981-2300-cf48-598e-83d6-f1c7.ngrok-free.app/api/v1/drivers/get/status/';
     try {
-      final url = Uri.parse('$baseUrl/status/$driverId');
+      final url = Uri.parse('$baseUrl$driverId');
       final response = await http.get(url, headers: {"Content-Type": "application/json"});
 
       log("STATUS CODE: ${response.statusCode}");
@@ -96,22 +96,15 @@ class DriverStatusController {
     return null;
   }
 
-  /*Future<void> loadPersistedStatus() async {
-    final prefs = await SharedPreferences.getInstance();
-    final statusValue = prefs.getString('status');
-
-    _currentStatus = statusValue != null ? ConnectionStatus.fromString(statusValue) : ConnectionStatus.DISCONNECTED;
-    log("♻️ Estado cargado: ${_currentStatus}");
-  } */
-
+ 
   void _logRequest(Uri url, Map<String, dynamic> payload, String action) {
     log('🌐 [$action] Enviando solicitud a: $url');
     log('📦 Payload: ${jsonEncode(payload)}');
   }
 
   void _handleResponse(http.Response response, ConnectionStatus expectedStatus) {
-    print('🔄 Código de respuesta: ${response.statusCode}');
-    print('📨 Respuesta del servidor: ${response.body}');
+    log('🔄 Código de respuesta: ${response.statusCode}');
+    log('📨 Respuesta del servidor: ${response.body}');
 
     if (response.statusCode == 200) {
       print('✅ ${expectedStatus} exitoso');

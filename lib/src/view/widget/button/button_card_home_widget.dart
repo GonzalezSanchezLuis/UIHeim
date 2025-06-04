@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:holi/src/core/enums/connection_status.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
-import 'package:holi/src/service/controllers/moves/confirm_move_controller.dart';
 import 'package:holi/src/view/screens/move/calculate_price_view.dart';
 import 'package:holi/src/view/screens/move/schedule_move_view.dart';
 import 'package:holi/src/service/auth/auth_service.dart';
 import 'package:holi/src/view/screens/auth/login_view.dart';
 import 'package:holi/src/viewmodels/driver/driver_status_viewmodel.dart';
+import 'package:holi/src/viewmodels/location/location_viewmodel.dart';
+import 'package:holi/src/viewmodels/move/confirm_move_viewmodel.dart';
 import 'package:provider/provider.dart';
 
 class ButtonCalculatePrice extends StatelessWidget {
@@ -100,37 +102,46 @@ class ButtonLogOut extends StatelessWidget {
 }
 
 class ConnectButton extends StatelessWidget {
-  const ConnectButton({super.key});
+  final Function(LatLng) onConnected;
+
+  const ConnectButton({super.key, required this.onConnected});
 
   @override
   Widget build(BuildContext context) {
     return Consumer<DriverStatusViewmodel>(
       builder: (context, provider, _) {
         return ElevatedButton(
-          onPressed: provider.isLoading ? null : () => provider.connectDriverViewmodel(context),
+          onPressed: provider.isLoading
+              ? null
+              : () async {
+                  LatLng? newLocation = await provider.connectDriverViewmodel(context);
+                  if (newLocation != null) {
+                    onConnected(newLocation);
+                  }
+                },
           style: ElevatedButton.styleFrom(
             backgroundColor: provider.isLoading ? Colors.grey : AppTheme.confirmationscolor,
             minimumSize: Size(MediaQuery.of(context).size.width * 0.9, 60),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(15),
             ),
-          ),         
-          child: provider.isLoading ? const SizedBox(
+          ),
+          child: provider.isLoading
+              ? const SizedBox(
                   width: 24,
                   height: 24,
                   child: CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     strokeWidth: 3,
                   ),
-                ) 
-                :
-             const Text(
-            'Conectarme',
-            style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-          ),
+                )
+              : const Text(
+                  'Conectarme',
+                  style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
+                ),
         );
       },
-    );  
+    );
   }
 }
 
@@ -162,18 +173,18 @@ class DisconnectButton extends StatelessWidget {
               ),
             )
           : const Stack(
-        alignment: Alignment.center,
-        children: [
-          Text(
-            "Salir",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+              alignment: Alignment.center,
+              children: [
+                Text(
+                  "Desconectarme",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -185,9 +196,14 @@ class ConfirmButton extends StatelessWidget {
   final String typeOfMove;
   final String estimatedTime;
   final List<Map<String, double>> route;
-  final double userLat;
-  final double userLng;
+  final LocationViewModel locationViewModel;
   final VoidCallback onConfirmed;
+  final double? destinationLat;
+  final double? destinationLng;
+  final String? originAddressText;
+  final String? destinationAddressText;
+  final String? paymentMethod;
+  final int userId;
 
   const ConfirmButton({
     required this.calculatedPrice,
@@ -196,30 +212,59 @@ class ConfirmButton extends StatelessWidget {
     required this.typeOfMove,
     required this.estimatedTime,
     required this.route,
-    required this.userLat,
-    required this.userLng,
+    required this.locationViewModel,
     required this.onConfirmed,
+    required this.userId,
+    this.destinationLat,
+    this.destinationLng,
+    this.originAddressText,
+    this.destinationAddressText,
+    this.paymentMethod,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
-    final confirmController = Provider.of<ConfirmMoveController>(context, listen: false);
-    return ElevatedButton(
-      onPressed: () {
-        confirmController.confirmMove(typeOfMove: typeOfMove, calculatedPrice: calculatedPrice, distanceKm: distanceKm, duration: duration, estimatedTime: estimatedTime, route: route, userLat: userLat, userLng: userLng);
-        onConfirmed();
-      },
+    final viewModel = Provider.of<ConfirmMoveViewModel>(context, listen: false);
+   return SizedBox(
+    width: MediaQuery.of(context).size.width * 0.9,
+    height: 100,
+      child: ElevatedButton(
+      onPressed: viewModel.isLoading
+          ? null
+          : () async {
+              final result = viewModel.confirmMove(
+                  context: context,
+                  typeOfMove: typeOfMove,
+                  calculatedPrice: calculatedPrice,
+                  distanceKm: distanceKm,
+                  duration: duration,
+                  estimatedTime: estimatedTime,
+                  route: route,
+                  locationViewModel: locationViewModel,
+                  destinationLat: destinationLat,
+                  destinationLng: destinationLng,
+                  originAddressText: viewModel.originAddressText,
+                  destinationAddressText: viewModel.destinationAddressText,
+                  paymentMethod: paymentMethod,
+                  userId: userId);
+
+              onConfirmed();
+            },
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.amber,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(15),
         ),
       ),
-      child: const Text(
-        "Buscar un vehículo",
-        style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.bold),
-      ),
-    );
+      child: viewModel.isLoading
+          ? const CircularProgressIndicator(
+              color: Colors.black,
+            )
+          : const Text(
+              "Confirmar",
+              style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.bold),
+            ),
+    ));
   }
 }

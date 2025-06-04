@@ -33,9 +33,7 @@ class ProfileView extends StatelessWidget {
                   final phoneController = TextEditingController(text: profile.phone);
                   final emailController = TextEditingController(text: profile.email);
                   final passwordController = TextEditingController(text: '••••••••••••');
-                  final licenseNumberController = TextEditingController(text: profile.licenseNumber);
-                  final vehicleTypeController = TextEditingController(text: profile.vehicleType);
-                  final enrollVehicleController = TextEditingController(text: profile.enrollVehicle);
+
 
               return SingleChildScrollView(
               child: Padding(padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -77,9 +75,6 @@ class ProfileView extends StatelessWidget {
                     const Center(child: Text("Información del vehículo",style: TextStyle(fontSize: 18),),),
                     const SizedBox(height: 20.0),
 
-                    _buildFieldCard("Licencia de conducir", "Licencia de conducir", licenseNumberController,readOnlyCondition: true),
-                    _buildFieldCard("Tipo de vehículo", "Ingresa el tipo de vehículo", vehicleTypeController,readOnlyCondition: true),
-                    _buildFieldCard("Placas del vehículo", "Placas del vehículo", enrollVehicleController,readOnlyCondition: true),
 
                     Container(
                       width: double.infinity,
@@ -117,10 +112,7 @@ class ProfileView extends StatelessWidget {
                             fullName: nameController.text,
                             email: emailController.text,
                             phone: phoneController.text,
-                            document: documentController.text.trim(),
-                            licenseNumber: licenseNumberController.text,
-                            vehicleType: vehicleTypeController.text,
-                            enrollVehicle: enrollVehicleController.text,);
+                            document: documentController.text.trim());
 
                       },
                     ),

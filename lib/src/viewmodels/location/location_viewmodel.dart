@@ -1,10 +1,11 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:holi/src/core/gps_validator/gps_validator_service.dart';
-import 'package:holi/src/service/data/repository/location_repository.dart';
 import 'package:geolocator/geolocator.dart';
 
 class LocationViewModel extends ChangeNotifier {
-  final LocationRepository _locationRepository = LocationRepository();
+  
 
   String _currentAddress = "Ubicación no disponible";
   Position? _currentPosition;
@@ -14,46 +15,57 @@ class LocationViewModel extends ChangeNotifier {
   Position? get currentPosition => _currentPosition;
   bool get isLoading => _isLoading;
 
-  Future<Position?> updateLocation(BuildContext context) async {
-    try {
-      _isLoading = true;
-      notifyListeners();
+Future<Position?> updateLocation(BuildContext context) async {
+    _isLoading = true;
+    notifyListeners();
 
-      bool gpsEnabled = await GpsValidatorService.isGpsActuallyEnabled();
-      bool gpsFuctioning = await _checkGpsFunctionality();
+    // 1. Validar permisos y GPS activo
+    final isGpsActive = await GpsValidatorService.ensureLocationServiceAndPermission(context);
 
-      if (!gpsEnabled || !gpsFuctioning) {
-        if (context.mounted) {
-          await GpsValidatorService.showGpsDialog(context);
-          gpsEnabled = await Geolocator.isLocationServiceEnabled();
-        }
-
-        if (!gpsEnabled) {
-          _currentAddress = "GPS no activado";
-          return null;
-        }
-      }
-
-      Position? position = await _getPositionWithRetry();
-
-      if (position != null) {
-        _currentPosition = position;
-        _currentAddress = await _getAddress(position);
-      } else {
-        _currentAddress = "No se pudo obtener ubicación";
-      }
-
-      return position;
-    } catch (e) {
-      _currentAddress = "Error: ${e.toString()}";
-      return null;
-    } finally {
+    if (!isGpsActive) {
+      // El usuario no activó el GPS, salimos
       _isLoading = false;
       notifyListeners();
+      _currentAddress = "Permisos o GPS no habilitados";
+      return null;
+    }
+
+    try {
+      // 2. Obtener ubicación actual
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      _currentPosition = position;
+      log("🟢 Coordenadas de origen obtenidas: lat=${position.latitude}, lng=${position.longitude}");
+
+      // 3. Obtener dirección usando reverse geocoding
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+
+      if (placemarks.isNotEmpty) {
+        final place = placemarks[0];
+        _currentAddress = "${place.street}, ${place.locality}, ${place.administrativeArea}, ${place.country}";
+      } else {
+        _currentAddress = "Dirección no encontrada";
+      }
+
+      _isLoading = false;
+      notifyListeners();
+      return position;
+    } catch (e) {
+      _isLoading = false;
+      _currentAddress = "Error al obtener ubicación: $e";
+      notifyListeners();
+      return null;
     }
   }
 
-   Future<bool> _checkGpsFunctionality() async {
+
+
+  /* Future<bool> _checkGpsFunctionality() async {
     try {
       final status = await Geolocator.checkPermission();
       return status == LocationPermission.always || status == LocationPermission.whileInUse;
@@ -87,6 +99,6 @@ class LocationViewModel extends ChangeNotifier {
     } catch (e) {
       return "Error obteniendo dirección";
     }
-  }
+  } */
 
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
-import 'package:holi/src/service/controllers/drivers/driver_profile_controller.dart';
+import 'package:holi/src/service/drivers/driver_profile_service.dart';
 import 'package:holi/src/view/screens/driver/configuration_driver_view.dart';
 import 'package:holi/src/view/widget/card/account_card_widget.dart';
 
@@ -21,8 +21,8 @@ class _DriverState extends State<Driver> {
   }
 
   Future<void> _fetchDriverData() async {
-    final profileController = DriverProfileController();
-    final driverData = await profileController.fetchDriverData();
+    final profileService = DriverProfileService();
+    final driverData = await profileService.fetchDriverData();
 
     if (driverData != null) {
       print("Datos del usuario: $driverData");

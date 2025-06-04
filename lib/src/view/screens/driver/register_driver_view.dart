@@ -1,7 +1,11 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/view/screens/driver/home_driver_view.dart';
-import 'package:holi/src/service/auth/auth_service.dart';
+import 'package:holi/src/viewmodels/auth/auth_viewmodel.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterDriver extends StatefulWidget {
   const RegisterDriver({super.key});
@@ -11,24 +15,23 @@ class RegisterDriver extends StatefulWidget {
 }
 
 class _RegisterDriverState extends State<RegisterDriver> {
-  final TextEditingController _fullNameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _documentController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _licenseController = TextEditingController();
   final TextEditingController _typeVehicleController = TextEditingController();
   final TextEditingController _enrollVehicleController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
 
   // Clave para el formulario
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final AuthService _registerDriver = AuthService();
+
   final double _numberOfRoomsYOffset = 100;
+  bool _isLoading = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
+        backgroundColor: AppTheme.colorbackgroundview,
         title: const Text(
           "Registrarme como conductor",
           style: TextStyle(fontWeight: FontWeight.bold),
@@ -52,128 +55,74 @@ class _RegisterDriverState extends State<RegisterDriver> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextFormField(
-                      controller: _fullNameController,
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(
-                          labelText: "Nombre Completo",
-                          border: OutlineInputBorder(),
-                          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 2.0)),
-                          floatingLabelStyle: TextStyle(
-                            color: Colors.black, // Cambia este color al que prefieras
-                            fontWeight: FontWeight.bold, // Opcional, para resaltar
-                          )),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // Campo de correo
-                    TextFormField(
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(
-                          labelText: "Email",
-                          border: OutlineInputBorder(),
-                          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 2.0)),
-                          floatingLabelStyle: TextStyle(
-                            color: Colors.black, // Cambia este color al que prefieras
-                            fontWeight: FontWeight.bold, // Opcional, para resaltar
-                          )),
-                    ),
-                    const SizedBox(height: 20),
-                    // Campo de contraseña
-                    TextFormField(
-                      controller: _documentController,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                          labelText: "Documento",
-                          border: OutlineInputBorder(),
-                          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 2.0)),
-                          floatingLabelStyle: TextStyle(
-                            color: Colors.black, // Cambia este color al que prefieras
-                            fontWeight: FontWeight.bold, // Opcional, para resaltar
-                          )),
-                    ),
-                    const SizedBox(height: 20),
-                    TextFormField(
-                      controller: _phoneController,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                          labelText: "Telefono",
-                          border: OutlineInputBorder(),
-                          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 2.0)),
-                          floatingLabelStyle: TextStyle(
-                            color: Colors.black, // Cambia este color al que prefieras
-                            fontWeight: FontWeight.bold, // Opcional, para resaltar
-                          )),
-                    ),
                     const SizedBox(height: 20),
                     TextFormField(
                       controller: _licenseController,
                       decoration: const InputDecoration(
-                          labelText: "Licencia ",
+                          labelText: "Licencia de conducir",
                           border: OutlineInputBorder(),
                           focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 2.0)),
                           floatingLabelStyle: TextStyle(
                             color: Colors.black, // Cambia este color al que prefieras
                             fontWeight: FontWeight.bold, // Opcional, para resaltar
                           )),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Este campo es obligatorio';
+                        }
+                        return null;
+                      },
                     ),
 
                     const SizedBox(height: 20),
 
                     TextFormField(
-                      controller: _typeVehicleController,
-                      decoration: const InputDecoration(
+                        controller: _typeVehicleController,
+                        decoration: const InputDecoration(
                           labelText: "Tipo de vehículo",
                           border: OutlineInputBorder(),
                           focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 2.0)),
                           floatingLabelStyle: TextStyle(
                             color: Colors.black, // Cambia este color al que prefieras
                             fontWeight: FontWeight.bold, // Opcional, para resaltar
-                          )),
-                    ),
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Este campo es obligatorio';
+                          }
+                          return null;
+                        }),
 
                     const SizedBox(height: 20),
 
                     TextFormField(
-                      controller: _enrollVehicleController,
-                      decoration: const InputDecoration(
-                          labelText: "Placas del vehículo",
-                          border: OutlineInputBorder(),
-                          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 2.0)),
-                          floatingLabelStyle: TextStyle(
-                            color: Colors.black, // Cambia este color al que prefieras
-                            fontWeight: FontWeight.bold, // Opcional, para resaltar
-                          )),
-                    ),
+                        controller: _enrollVehicleController,
+                        decoration: const InputDecoration(
+                            labelText: "Placas del vehículo",
+                            border: OutlineInputBorder(),
+                            focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 2.0)),
+                            floatingLabelStyle: TextStyle(
+                              color: Colors.black, // Cambia este color al que prefieras
+                              fontWeight: FontWeight.bold, // Opcional, para resaltar
+                            )),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Este campo es obligatorio';
+                          }
+                          return null;
+                        }),
 
-                    const SizedBox(height: 20),
-
-                    TextFormField(
-                      controller: _passwordController,
-                      decoration: const InputDecoration(
-                          labelText: "Contraseña",
-                          border: OutlineInputBorder(),
-                          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 2.0)),
-                          floatingLabelStyle: TextStyle(
-                            color: Colors.black, // Cambia este color al que prefieras
-                            fontWeight: FontWeight.bold, // Opcional, para resaltar
-                          )),
-                    ),
                     // Botón de login
                     const SizedBox(height: 20),
 
                     ElevatedButton(
-                      onPressed: () => {
-                        // _handleRegisterDriver()
-                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeDriver()))
-                      },
+                      onPressed: _handleRegisterDriver,
                       style: ElevatedButton.styleFrom(
                         minimumSize: Size(MediaQuery.of(context).size.width * 0.9, 60),
                         backgroundColor: Colors.black,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
+                          borderRadius: BorderRadius.circular(15),
                         ),
                       ),
                       child: const Text(
@@ -192,50 +141,58 @@ class _RegisterDriverState extends State<RegisterDriver> {
   }
 
   void _handleRegisterDriver() async {
-    final fullName = _fullNameController.text.trim();
-    final email = _emailController.text.trim();
-    final document = _documentController.text.trim();
-    final phone = _phoneController.text.trim();
-    final licenseNumber = _licenseController.text.trim();
-    final vehicleType = _typeVehicleController.text.trim();
-    final enrollVehicle = _enrollVehicleController.text.trim();
-    final password = _passwordController.text.trim();
-
     if (_formKey.currentState!.validate()) {
-      final messageError = await _registerDriver.registerDriver(
-          name: fullName,
-          email: email,
-          document: document,
-          phone: phone,
-          licenseNumber: licenseNumber,
-          vehicleType: vehicleType,
-          enrollVehicle: enrollVehicle,
-          password: password);
+      setState(() => _isLoading = true);
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt('userId');
 
-      if (messageError == null) {
-        print("Redirigiendo");
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeDriver()));
+      log("id del usuario actual $userId");
+
+      final registerDriverViewModel = Provider.of<AuthViewModel>(context, listen: false);
+
+      if (userId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Error: No se encontró el ID del usuario")),
+        );
+        return;
+      }
+
+
+
+      final success = await registerDriverViewModel.registerDriver(
+        userId,
+        _licenseController.text.trim(), 
+        _typeVehicleController.text.trim(), 
+        _enrollVehicleController.text.trim(),
+         
+         );
+
+      setState(() => _isLoading = false);
+
+      if (success) {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeDriverView()));
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        final error = registerDriverViewModel.errorMessage ?? "Algo salió mal";
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
             content: Text(
-              messageError ?? "Algo salio mal",
+              error,
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
             behavior: SnackBarBehavior.floating,
-            backgroundColor: Colors.red));
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }
 
   @override
   void dispose() {
-    _fullNameController.dispose();
-    _emailController.dispose();
     _documentController.dispose();
-    _phoneController.dispose();
     _licenseController.dispose();
     _typeVehicleController.dispose();
     _enrollVehicleController.dispose();
-    _passwordController.dispose();
     super.dispose();
   }
 }

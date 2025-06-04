@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
-class ProfileController {
+class ProfileService {
   final StreamController<Map<String, String>> _userDataController = StreamController();
   Stream<Map<String, String>> get userDataStream => _userDataController.stream;
 

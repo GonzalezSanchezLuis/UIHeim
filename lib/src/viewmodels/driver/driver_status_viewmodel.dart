@@ -1,44 +1,49 @@
+import 'dart:async';
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/enums/connection_status.dart';
 import 'package:holi/src/core/gps_validator/gps_validator_service.dart';
-import 'package:holi/src/service/controllers/drivers/driver_status_controller.dart';
+import 'package:holi/src/service/drivers/driver_status_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:geolocator/geolocator.dart' as geo;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class DriverStatusViewmodel extends ChangeNotifier {
   ConnectionStatus? _connectionStatus;
   bool _isLoading = false;
 
+  Map<String, dynamic>? tripData;
+
+  int _remainingTime = 15;
+
+  int get remainingTime => _remainingTime;
+
+  Timer? _timer;
+  bool isTimerRunning = false;
+
   bool get isLoading => _isLoading;
   ConnectionStatus? get connectionStatus => _connectionStatus;
 
-  Future<void> connectDriverViewmodel(BuildContext context) async {
+  Future<LatLng?> connectDriverViewmodel(BuildContext context) async {
     _isLoading = true;
     notifyListeners();
     print("Conectando...");
 
     try {
-      final gpsEnabled = await GpsValidatorService.isGpsActuallyEnabled();
-      if (!gpsEnabled) {
-        if (!context.mounted) return;
-
-        await GpsValidatorService.showGpsDialog(context);
-      }
+      bool gpsReady = await GpsValidatorService.ensureLocationServiceAndPermission(context);
+      if (!gpsReady) return null;
 
       final prefs = await SharedPreferences.getInstance();
       final driverId = prefs.getInt('userId');
 
       if (driverId == null) {
         print("❌ Driver ID no encontrado en SharedPreferences.");
-        return;
+        return null;
       }
 
       // Obtener la ubicación actual del conductor
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+      geo.Position position = await geo.Geolocator.getCurrentPosition(
+        desiredAccuracy: geo.LocationAccuracy.high,
       );
 
       print("📍 Ubicación obtenida: Lat: ${position.latitude}, Lng: ${position.longitude}");
@@ -47,13 +52,16 @@ class DriverStatusViewmodel extends ChangeNotifier {
       LatLng latLngPosition = LatLng(position.latitude, position.longitude);
 
       // Llamar a StatusController para conectar al conductor
-      final statusController = DriverStatusController();
-      await statusController.connectDriver(driverId, latLngPosition);
+      final statusService = DriverStatusSerive();
+      await statusService.connectDriver(driverId, latLngPosition);
       setStatus(ConnectionStatus.CONNECTED);
 
       print("✅ Conductor conectado exitosamente.");
+
+      return latLngPosition;
     } catch (e) {
       print("⚠️ Error al conectar: $e");
+      return null;
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -73,8 +81,8 @@ class DriverStatusViewmodel extends ChangeNotifier {
         return;
       }
 
-      final statusController = DriverStatusController();
-      await statusController.disconnectDriver(driverId);
+      final statusService = DriverStatusSerive();
+      await statusService.disconnectDriver(driverId);
       setStatus(ConnectionStatus.DISCONNECTED);
       notifyListeners();
     } catch (e) {
@@ -95,13 +103,13 @@ class DriverStatusViewmodel extends ChangeNotifier {
         return;
       }
 
-      final statusController = DriverStatusController();
-      final driverStatusResponse = await statusController.loadDriverStatus(driverId);
+      final statusService = DriverStatusSerive();
+      final driverStatusResponse = await statusService.loadDriverStatus(driverId);
 
       if (driverStatusResponse != null) {
         final connectionStatus = ConnectionStatus.fromString(driverStatusResponse.status);
         await prefs.setString('driverStatus', connectionStatus.toString());
-        log("🔐 Estado del conductor guardado en SharedPreferences: ${connectionStatus}");
+        log("🔐 Estado del conductor guardado en SharedPreferences: $connectionStatus");
 
         setStatus(connectionStatus);
       }
@@ -113,5 +121,57 @@ class DriverStatusViewmodel extends ChangeNotifier {
   void setStatus(ConnectionStatus status) {
     _connectionStatus = status;
     notifyListeners(); // Actualiza la UI
+  }
+
+  void updateTripData(Map<String, dynamic> newTripData) {
+    if (newTripData.containsKey('origin') && newTripData.containsKey('destination')) {
+      tripData = newTripData;
+
+      _startTimer();
+      isTimerRunning = true;
+
+      log("datos del viaje $tripData");
+      notifyListeners();
+    } else {
+      log("Datos de viaje incompletos");
+    }
+  }
+
+  void _startTimer() {
+    if (_timer != null) {
+      _timer!.cancel(); // Cancelar temporizador anterior si existe
+    }
+
+    _remainingTime = 15;
+
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_remainingTime > 0) {
+        _remainingTime--;
+        notifyListeners();
+      } else {
+        timer.cancel();
+        clearTripData();
+        //isTimerRunning = false;
+        notifyListeners();
+      }
+    });
+  }
+
+  void stopTimer() {
+    _timer?.cancel();
+    isTimerRunning = false;
+    _remainingTime = 15; // Reinicia a 30 o al valor inicial que desees
+    notifyListeners();
+  }
+
+  void clearTripData() {
+    tripData = null;
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 }

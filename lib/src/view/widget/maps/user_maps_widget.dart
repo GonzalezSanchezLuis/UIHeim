@@ -27,15 +27,14 @@ class _UserMapWidgetState extends State<UserMapWidget> {
   //BitmapDescriptor? destinationIcon;
   LatLng? currentLocation;
   bool iconLoaded = false;
-  bool _gpsEnabled = true;
   bool _mapReady = false;
 
   @override
   void initState() {
     super.initState();
-    _loadCustomIcons().then((_) {
-      _initializeMapData();
-    });
+    _initializeMapData();
+    // _loadCustomIcons().then((_) {});
+    _loadCustomIcons();
   }
 
   @override
@@ -44,13 +43,13 @@ class _UserMapWidgetState extends State<UserMapWidget> {
       children: [
         GoogleMap(
           polylines: _polylines,
-          myLocationButtonEnabled: true,
+          myLocationButtonEnabled: false,
           markers: markers,
           onMapCreated: (GoogleMapController controller) {
             googleMapController = controller;
             _controller.complete(controller);
             _mapReady = true;
-            //setDarkMode();
+          //  setDarkMode();
             _moveCameraToRoute();
           },
           initialCameraPosition: const CameraPosition(
@@ -64,7 +63,7 @@ class _UserMapWidgetState extends State<UserMapWidget> {
 
   Future<void> _loadCustomIcons() async {
     customIcon = await BitmapDescriptor.fromAssetImage(
-      const ImageConfiguration(size: Size(300, 300)),
+      const ImageConfiguration(),
       'assets/images/location.png',
     );
 
@@ -101,14 +100,13 @@ class _UserMapWidgetState extends State<UserMapWidget> {
       _polylines.add(Polyline(
         polylineId: const PolylineId("route"),
         points: widget.route.map((p) => LatLng(p['lat']!, p['lng']!)).toList(),
-        color: AppTheme.secondarycolor,
+        color: AppTheme.primarycolor,
         width: 2,
       ));
     }
 
     setState(() {});
   }
-
 
   Future<void> _moveCameraToRoute() async {
     if (!_mapReady || widget.route.isEmpty) return;

@@ -7,8 +7,8 @@ class LogoWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Image.asset(
       'assets/images/logo.png',
-      width: 400,
-      height: 400,
+      width: 800,
+      height: 800,
       fit: BoxFit.contain,
     );
   }

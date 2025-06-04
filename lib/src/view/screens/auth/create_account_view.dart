@@ -3,6 +3,10 @@ import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/view/screens/user/home_user_view.dart';
 import 'package:holi/src/view/widget/button/button_account_widget.dart';
 import 'package:holi/src/service/auth/auth_service.dart';
+import 'package:holi/src/viewmodels/auth/auth_viewmodel.dart';
+import 'package:holi/src/viewmodels/fcm/fcm_viewmodel.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CreateAccount extends StatefulWidget {
   const CreateAccount({super.key});
@@ -24,11 +28,14 @@ class _CreateAccountState extends State<CreateAccount> {
   final double _emailYOffset = 100;
   final double _passwordYOffset = 180;
 
+  bool _isPasswordVisible = false;
+  bool _isLoading = false; // Estado de carga
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-         backgroundColor: AppTheme.colorbackgroundview,
+        backgroundColor: AppTheme.colorbackgroundview,
         title: const Text(
           "Atras",
           style: TextStyle(fontWeight: FontWeight.bold),
@@ -96,7 +103,7 @@ class _CreateAccountState extends State<CreateAccount> {
                     // Campo de contraseña
                     TextFormField(
                       controller: _passwordController,
-                      obscureText: true,
+                      obscureText: !_isPasswordVisible,
                       decoration: const InputDecoration(
                           labelText: "Ingresa tu contraseña",
                           border: OutlineInputBorder(),
@@ -125,31 +132,52 @@ class _CreateAccountState extends State<CreateAccount> {
     final password = _passwordController.text.trim();
 
     if (_formKey.currentState!.validate()) {
-      final messageError = await _authService.registerUser(
-        name: name,
-        email: email,
-        password: password,
-      );
-
-      if (messageError == null) {
-        print("Registro exitoso, redirigiendo...");
-        // Si no hay error, redirige al HomeUser
-        Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => const HomeUser()),
-        );
-      } else {
-        // Si hay un error, muestra un mensaje
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(
-            messageError ?? "Algo salió mal",
+      if (name.isEmpty || email.isEmpty || password.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              "Por favor, completa todos los campos correctamente.",
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.red,
           ),
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: Colors.red,
-        ));
+        );
+        return;
       }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text("Por favor, completa todos los campos correctamente."),
-      ));
+
+      setState(() => _isLoading = true);
+
+      final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
+
+      final success = await authViewModel.registerUser(name, email, password);
+
+      setState(() => _isLoading = false);
+
+      if (success) {
+        final prefs = await SharedPreferences.getInstance();
+        final role = prefs.getString('role');
+        final userId = prefs.getInt('userId');
+
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeUser()));
+
+        if (userId != null && role != null) {
+          final fcmViewModel = FcmViewModel();
+          await fcmViewModel.initFcm(userId, role);
+        }
+      }else{
+        final error = authViewModel.errorMessage ?? "Algo salió mal";
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              error,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

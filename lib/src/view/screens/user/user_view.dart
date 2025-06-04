@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
-import 'package:holi/src/service/controllers/user/profile_controller.dart';
+import 'package:holi/src/service/user/profile_service.dart';
 import 'package:holi/src/view/screens/user/configuration_user_view.dart';
 import 'package:holi/src/view/screens/driver/join_driver_view.dart';
 import 'package:holi/src/view/widget/card/account_card_widget.dart';
@@ -22,8 +22,8 @@ class _UserState extends State<User> {
   }
 
   Future<void> _fetchUserData() async {
-    final profileController = ProfileController();
-    final userData = await profileController.fetchUserData();
+    final profileService = ProfileService();
+    final userData = await profileService.fetchUserData();
 
     if (userData != null) {
       print("Datos del usuario: $userData");
@@ -94,7 +94,7 @@ class _UserState extends State<User> {
 
             AccountCard(
               title: "Otros",
-              subtitle: "Realiza mudanzas con Holi",
+              subtitle: "Realiza mudanzas con Heim",
               width: 450,
               height: 130,
               icon: const Icon(Icons.fire_truck),

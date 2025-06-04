@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 
 class SelectPaymentMethod extends StatefulWidget {
-  const SelectPaymentMethod({super.key});
+  final String initialMethod;
+  const SelectPaymentMethod({super.key, required this.initialMethod});
 
   @override
   _SelectPaymentMethodState createState() => _SelectPaymentMethodState();
@@ -10,7 +11,13 @@ class SelectPaymentMethod extends StatefulWidget {
 
 class _SelectPaymentMethodState extends State<SelectPaymentMethod> {
   String selectedMethod = 'Nequi';
-
+ 
+@override
+  void initState() {
+    super.initState();
+    selectedMethod = widget.initialMethod; // 🔸 Iniciamos con el método recibido
+  }
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,7 +28,7 @@ class _SelectPaymentMethodState extends State<SelectPaymentMethod> {
             style: TextStyle(
               fontWeight: FontWeight.bold,
             )),
-          leading: IconButton(
+        leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => {Navigator.pop(context)},
         ),
@@ -32,14 +39,14 @@ class _SelectPaymentMethodState extends State<SelectPaymentMethod> {
           children: [
             _buildPaymentOption('Nequi', 'assets/images/nequi.png'),
             _buildPaymentOption('Daviplata', 'assets/images/daviplata.png'),
-            _buildPaymentOption('Tarjeta débito / crédito', 'assets/images/cards.png'),
+            _buildPaymentOption('Tarjeta crédito/débito', 'assets/images/cards.png'),
           ],
         ),
       ),
     );
   }
 
-    Widget _buildPaymentOption(String title, String assetPath) {
+  Widget _buildPaymentOption(String title, String assetPath) {
     return Card(
       color: Colors.white,
       shape: RoundedRectangleBorder(
@@ -49,7 +56,6 @@ class _SelectPaymentMethodState extends State<SelectPaymentMethod> {
           width: 2,
         ),
       ),
-
       child: RadioListTile<String>(
         value: title,
         groupValue: selectedMethod,
@@ -57,24 +63,24 @@ class _SelectPaymentMethodState extends State<SelectPaymentMethod> {
           setState(() {
             selectedMethod = value!;
           });
+          Navigator.pop(context, value);
         },
         title: Row(
           children: [
             Stack(
               alignment: Alignment.center,
               children: [
-              Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color:const Color.fromARGB(255, 219, 203, 203),
-                borderRadius: BorderRadius.circular(20),
-              ),
-            ),
-            Image.asset(assetPath, width: 30, height: 30),
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: const Color.fromARGB(255, 219, 203, 203),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                Image.asset(assetPath, width: 30, height: 30),
               ],
             ),
-   
             const SizedBox(width: 10),
             Text(title, style: const TextStyle(fontSize: 16)),
           ],
@@ -84,6 +90,3 @@ class _SelectPaymentMethodState extends State<SelectPaymentMethod> {
     );
   }
 }
-
-
-

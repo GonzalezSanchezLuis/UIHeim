@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:holi/src/service/auth/auth_service.dart';
 import 'package:holi/src/view/screens/about/about_view.dart';
+import 'package:holi/src/view/screens/auth/login_view.dart';
 import 'package:holi/src/view/screens/tearm/legal_view.dart';
 import 'package:holi/src/view/screens/driver/profile_view.dart';
 
@@ -13,6 +15,10 @@ class ConfigurationDriver extends StatefulWidget {
 }
 
 class _ConfigurationDriverState extends State<ConfigurationDriver> {
+
+    final AuthService _authService = AuthService();
+
+    
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -62,6 +68,25 @@ class _ConfigurationDriverState extends State<ConfigurationDriver> {
             onTap: () {
               // Acción al presionar esta opción
               Navigator.push(context, MaterialPageRoute(builder: (context) => const About()));
+            },
+          ),
+
+          _buildSettingOption(
+            title: "Cerrar sesión",
+            icon: Icons.logout,
+            onTap: () async {
+              final isLoggedOut = await _authService.logout();
+              if (isLoggedOut) {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginView()),
+                  (route) => false,
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Error al cerrar sesión")),
+                );
+              }
             },
           ),
         ],

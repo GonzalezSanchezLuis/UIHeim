@@ -103,9 +103,7 @@ class _ConfigurationUserState extends State<ConfigurationUser> {
           child: Row(
             children: [
               Icon(icon, color: Colors.grey[700]),
-              const SizedBox(
-                width: 12,
-              ),
+              const SizedBox(width: 12,),
               Expanded(child: Text(
                 title,
                 style: const TextStyle(

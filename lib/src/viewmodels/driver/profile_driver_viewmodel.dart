@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/model/driver/profile_driver_model.dart';
-import 'package:holi/src/service/controllers/drivers/driver_profile_controller.dart';
+import 'package:holi/src/service/drivers/driver_profile_service.dart';
 import 'package:holi/src/service/cloudinary/cloudinary_service.dart';
 import 'dart:io';
 
 class ProfileViewModel with ChangeNotifier {
-  final DriverProfileController _profileController = DriverProfileController();
+  final DriverProfileService _profileService = DriverProfileService();
   ProfileModel _profile = ProfileModel();
   bool _isLoading = false;
   File? _selectedImage;
@@ -18,7 +18,7 @@ class ProfileViewModel with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    final data = await _profileController.fetchDriverData();
+    final data = await _profileService.fetchDriverData();
     if (data != null) {
       _profile = ProfileModel.fromMap(data);
     }
@@ -37,10 +37,7 @@ class ProfileViewModel with ChangeNotifier {
       required String email,
       required String phone,
       required String document,
-      String? password,
-      required licenseNumber,
-      required String vehicleType,
-      required String enrollVehicle}) async {
+      String? password,}) async {
     _isLoading = true;
     notifyListeners();
 
@@ -58,16 +55,13 @@ class ProfileViewModel with ChangeNotifier {
     }
 
     // Actualiza el perfil con la nueva URL de la imagen
-    final response = await _profileController.updateDataDriver(
+    final response = await _profileService.updateDataDriver(
       imageUrl ?? _profile.urlAvatarProfile ?? '',
       fullName,
       document,
       email,
       phone,
-      password ?? '',
-      licenseNumber,
-      vehicleType,
-      enrollVehicle,
+      password ?? ''
     );
 
     _isLoading = false;
@@ -79,14 +73,11 @@ class ProfileViewModel with ChangeNotifier {
           fullName: fullName,
           document: document,
           email: email,
-          phone: phone,
-          licenseNumber: licenseNumber,
-          vehicleType: vehicleType,
-          enrollVehicle: enrollVehicle);
+          phone: phone);
     }
   }
 
   Future<void> deleteAccount(BuildContext context) async {
-    await _profileController.deleteAccount(context);
+    await _profileService.deleteAccount(context);
   }
 }

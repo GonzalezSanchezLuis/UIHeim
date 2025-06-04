@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-class DriverProfileController {
+class DriverProfileService {
   final StreamController<Map<String, String>> _driverDataController = StreamController();
   Stream<Map<String, String>> get driverDataStream => _driverDataController.stream;
 
@@ -16,8 +16,7 @@ class DriverProfileController {
   Future<Map<String, dynamic>?> fetchDriverData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final driverId =
-          prefs.getInt('userId'); // Asegúrate de que la clave sea 'userId'
+      final driverId = prefs.getInt('userId'); // Asegúrate de que la clave sea 'userId'
 
       log("ID DEL CONDUCTOR $driverId");
       if (driverId == null) {
@@ -53,9 +52,6 @@ class DriverProfileController {
     String email,
     String phone,
     String? password,
-    String licenseNumber,
-    String vehicleType,
-    String enrollVehicle,
     String urlAvatarProfile,
   ) async {
     try {
@@ -77,9 +73,6 @@ class DriverProfileController {
         'email': email,
         'phone': phone,
         'password': password,
-        'licenseNumber': licenseNumber,
-        'vehicleType': vehicleType,
-        'enrollVehicle': enrollVehicle,
         'urlAvatarProfile': urlAvatarProfile,
       };
       if (password != null && password.isNotEmpty) {
@@ -99,9 +92,6 @@ class DriverProfileController {
         await prefs.setString('fullName', updatedDataDriver['fullName']);
         await prefs.setString('email', updatedDataDriver['email']);
         await prefs.setString('phone', updatedDataDriver['phone']);
-        await prefs.setString('licenseNumber', updatedDataDriver['licenseNumber']);
-        await prefs.setString('vehicleType', updatedDataDriver['vehicleType']);
-        await prefs.setString('enrollVehicle', updatedDataDriver['enrollVehicle']);
         await prefs.setString('urlAvatarProfile', updatedDataDriver['urlAvatarProfile']);
 
         if (password != null && password.isNotEmpty) {

@@ -3,7 +3,7 @@ import 'package:geolocator/geolocator.dart';
 
 class LocationRepository {
   final LocationService _locationService = LocationService(
-    googleApiKey: "AIzaSyACSE_ZDRzWaajv35TLstALgz-NBJJnxoc",
+    googleApiKey: "AIzaSyDB04XLcypB4xsGaRqNPjAGmf1xTegz0Rg",
   );
 
   Future<Position?> fetchCurrentLocation() async {

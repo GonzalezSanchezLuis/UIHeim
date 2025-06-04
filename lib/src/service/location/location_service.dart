@@ -1,13 +1,13 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:holi/src/model/predictions/prediction_mdel.dart';
 import 'package:http/http.dart' as http;
 
-
 class LocationService {
-   final String googleApiKey;
+  final String googleApiKey;
   LocationService({required this.googleApiKey});
-
 
   // Verifica y solicita permisos de ubicación
   Future<bool> requestLocationPermission() async {
@@ -62,6 +62,8 @@ class LocationService {
     try {
       List<Location> locations = await locationFromAddress(address);
       if (locations.isNotEmpty) {
+        log("📍 Coordenadas de destino:::: lat=${locations.first.latitude}, lng=${locations.first.longitude}");
+
         return {'latitude': locations.first.latitude, 'longitude': locations.first.longitude};
       }
       return null;
@@ -71,31 +73,62 @@ class LocationService {
     }
   }
 
-  // Obtiene sugerencias de direcciones (requiere API key de Google)
-  Future<List<String>> getAddressSuggestions(String query) async {
-   if (googleApiKey.isEmpty) {
-      throw Exception("Google API key is required for address suggestions");
-    }
+  /// Obtiene coordenadas precisas usando un placeId
+  Future<Map<String, double>?> getCoordinatesFromPlaceId(String placeId) async {
+    final String url = "https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=AIzaSyDB04XLcypB4xsGaRqNPjAGmf1xTegz0Rg";
 
     try {
-      final String url = "https://maps.googleapis.com/maps/api/place/autocomplete/json"
-          "?input=$query"
-          "&key=$googleApiKey"
-          "&language=es";
-
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
-        if (data.containsKey('error_message')) {
-          throw Exception(data['error_message']);
+        if (data['status'] == 'OK') {
+          final location = data['result']['geometry']['location'];
+          final lat = location['lat'];
+          final lng = location['lng'];
+          log("📍 Coordenadas desde placeId: lat=$lat, lng=$lng");
+          return {'latitude': lat, 'longitude': lng};
+        } else {
+          log('❌ Google API Error: ${data['status']}');
         }
-
-        final predictions = data['predictions'] as List;
-        return predictions.map<String>((p) => p['description'].toString()).toList();
       } else {
-        throw Exception("Request failed with status: ${response.statusCode}");
+        log('❌ Falló la solicitud HTTP: ${response.statusCode}');
+      }
+    } catch (e) {
+      print("❌ Error en getCoordinatesFromPlaceId: $e");
+    }
+
+    return null;
+  }
+
+
+  // Obtiene sugerencias de direcciones (requiere API key de Google)
+  Future<List<Prediction>> getAddressSuggestions(String query) async {
+    if (googleApiKey.isEmpty) {
+      throw Exception("Google API key is required for address suggestions");
+    }
+
+    try {
+      
+     final encodedQuery = Uri.encodeComponent(query);
+     final String url = "https://maps.googleapis.com/maps/api/place/autocomplete/json"
+          "?input=$encodedQuery"
+          "&key=$googleApiKey"
+          "&language=es";
+
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final predictions = data['predictions'] as List;
+        return predictions
+            .map((p) => Prediction(
+                  description: p['description'],
+                  placeId: p['place_id'],
+                ))
+            .toList();
+      } else {
+        throw Exception("No se pudieron obtener predicciones");
       }
     } catch (e) {
       print("❌ Error en getAddressSuggestions: $e");
