@@ -93,6 +93,9 @@ class _CreateAccountState extends State<CreateAccount> {
                       decoration: const InputDecoration(
                           labelText: "Ingresa tu email",
                           border: OutlineInputBorder(),
+                          enabledBorder:  OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.black87, width: 2.0),
+                          ),
                           focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 2.0)),
                           floatingLabelStyle: TextStyle(
                             color: Colors.black,
@@ -107,6 +110,9 @@ class _CreateAccountState extends State<CreateAccount> {
                       decoration: const InputDecoration(
                           labelText: "Ingresa tu contraseña",
                           border: OutlineInputBorder(),
+                          enabledBorder:  OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.black87, width: 2.0),
+                          ),
                           focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 2.0)),
                           floatingLabelStyle: TextStyle(
                             color: Colors.black,
@@ -159,7 +165,7 @@ class _CreateAccountState extends State<CreateAccount> {
         final role = prefs.getString('role');
         final userId = prefs.getInt('userId');
 
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeUser()));
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeUserView()));
 
         if (userId != null && role != null) {
           final fcmViewModel = FcmViewModel();

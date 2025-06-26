@@ -21,13 +21,13 @@ class _ConfigurationUserState extends State<ConfigurationUser> {
     return Scaffold(
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
-        backgroundColor: AppTheme.colorbackgroundview,
+        backgroundColor: AppTheme.primarycolor,
         title: const Text(
           "Configuración",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white),
           onPressed: () {
             Navigator.pop(context); // Vuelve a la pantalla anterior
           },

@@ -10,7 +10,7 @@ class About extends StatelessWidget {
       backgroundColor: AppTheme.primarycolor,
       appBar: AppBar(
          backgroundColor: AppTheme.primarycolor,
-        title: const Text('Acerca de Holi', style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white)),
+        title: const Text('Acerca de Heim', style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back,color: Colors.white,),
           onPressed: () => Navigator.pop(context),

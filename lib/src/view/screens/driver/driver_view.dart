@@ -41,13 +41,13 @@ class _DriverState extends State<Driver> {
     return Scaffold(
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
-         backgroundColor: AppTheme.colorbackgroundview,
+         backgroundColor: AppTheme.primarycolor,
         title: const Text(
           "Mi cuenta",
-          style: TextStyle(fontWeight: FontWeight.w600),
+          style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white,),
           onPressed: () => {Navigator.pop(context)},
         ),
       ),

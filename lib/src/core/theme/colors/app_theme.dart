@@ -8,6 +8,8 @@ class AppTheme {
   static const Color colorbackgroundview = Color(0XFFCADCF0);
   static const Color warningcolor = Color(0XFFFF3D00);
   static const Color confirmationscolor = Color(0XFF076461);
+  static const Color greenColors = Color(0XFF2ecc71);
+
   
   static const Color colorcards = Color.fromARGB(255, 196, 213, 231);
   static const TextStyle paragraph = TextStyle(

@@ -4,6 +4,7 @@ import 'package:holi/src/service/user/profile_service.dart';
 import 'package:holi/src/view/screens/user/configuration_user_view.dart';
 import 'package:holi/src/view/screens/driver/join_driver_view.dart';
 import 'package:holi/src/view/widget/card/account_card_widget.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class User extends StatefulWidget {
   const User({super.key});
@@ -82,13 +83,12 @@ class _UserState extends State<User> {
 
             const SizedBox(height: 20),
 
-            AccountCard(
-              
+            AccountCard(           
               title: "Mi cuenta",
               subtitle: "Configuracion",
               width: 450,
               height: 130,
-              icon: const Icon(Icons.settings),
+              icon: const Icon(Icons.settings,size: 30,),
               onTap: () => {Navigator.push(context, MaterialPageRoute(builder: (context) => const ConfigurationUser()))},
             ),
 
@@ -97,7 +97,7 @@ class _UserState extends State<User> {
               subtitle: "Realiza mudanzas con Heim",
               width: 450,
               height: 130,
-              icon: const Icon(Icons.fire_truck),
+              icon: const Icon(FontAwesomeIcons.truckFront,size: 20,),
               onTap: () => {Navigator.push(context, MaterialPageRoute(builder: (context) => const JoinDriver()))},
             ),
           ],

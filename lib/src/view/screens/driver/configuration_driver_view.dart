@@ -5,6 +5,7 @@ import 'package:holi/src/view/screens/about/about_view.dart';
 import 'package:holi/src/view/screens/auth/login_view.dart';
 import 'package:holi/src/view/screens/tearm/legal_view.dart';
 import 'package:holi/src/view/screens/driver/profile_view.dart';
+import 'package:holi/src/view/screens/tearm/tearm_and__condition_view.dart';
 
 
 class ConfigurationDriver extends StatefulWidget {
@@ -24,13 +25,13 @@ class _ConfigurationDriverState extends State<ConfigurationDriver> {
     return Scaffold(
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
-         backgroundColor: AppTheme.colorbackgroundview,
+         backgroundColor: AppTheme.primarycolor,
         title: const Text(
           "Configuración",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,color: Colors.white,),
           onPressed: () {
             Navigator.pop(context); // Vuelve a la pantalla anterior
           },
@@ -51,7 +52,6 @@ class _ConfigurationDriverState extends State<ConfigurationDriver> {
             title: "Legal",
             icon: Icons.gavel,
             onTap: () {
-              // Acción al presionar esta opción
               Navigator.push(context, MaterialPageRoute(builder: (context) => const Legal()));
             },
           ),
@@ -59,7 +59,7 @@ class _ConfigurationDriverState extends State<ConfigurationDriver> {
             title: "Privacidad",
             icon:  Icons.privacy_tip,
             onTap: () {
-              // Acción al presionar esta opción
+               Navigator.push(context, MaterialPageRoute(builder: (context) => const TearmAndCondition()));
             },
           ),
           _buildSettingOption(

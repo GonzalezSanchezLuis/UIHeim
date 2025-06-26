@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 
 
@@ -9,7 +10,7 @@ class ConfirmMoveService {
       required String duration, 
       required String typeOfMove, 
       required String estimatedTime, 
-      required List<Map<String, double>> route, 
+      required List<LatLng> route, 
       required double userLat, 
       required double userLng, 
       required int userId,
@@ -20,7 +21,7 @@ class ConfirmMoveService {
       String? paymentMethod
       }) async {
     try {
-      final url = Uri.parse("http://192.168.20.49:8080/api/v1/trips/confirm");
+      final url = Uri.parse("http://192.168.20.49:8080/api/v1/move/confirm");
     
       final Map<String, dynamic> requestBody = {
         "price": calculatedPrice, 

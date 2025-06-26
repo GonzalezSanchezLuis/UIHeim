@@ -1,13 +1,24 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:holi/src/model/route/route_model.dart';
 import 'package:holi/src/service/auth/auth_service.dart';
 import 'package:holi/src/service/fcm/firebase_messaging_service.dart';
+import 'package:holi/src/service/moves/accept_move_service.dart';
 import 'package:holi/src/view/screens/driver/home_driver_view.dart';
+import 'package:holi/src/view/screens/user/home_user_view.dart';
 import 'package:holi/src/viewmodels/auth/auth_viewmodel.dart';
+import 'package:holi/src/viewmodels/auth/password_reset_viewmodel.dart';
+import 'package:holi/src/viewmodels/auth/sesion_viewmodel.dart';
+import 'package:holi/src/viewmodels/driver/route_driver_viewmodel.dart';
+import 'package:holi/src/viewmodels/driver/driver_location_viewmodel.dart';
 import 'package:holi/src/viewmodels/driver/driver_status_viewmodel.dart';
 import 'package:holi/src/viewmodels/location/location_viewmodel.dart';
+import 'package:holi/src/viewmodels/move/accept_move_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/calculate_price_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/confirm_move_viewmodel.dart';
+import 'package:holi/src/viewmodels/move/update_status_move_viewmodel.dart';
+import 'package:holi/src/viewmodels/user/get_driver_location_viewmodel.dart';
+import 'package:holi/src/viewmodels/user/route_user_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:holi/src/view/screens/welcome/logo_view.dart';
 import 'package:holi/src/viewmodels/user/profile_user_viewmodel.dart';
@@ -17,7 +28,19 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+   WidgetsFlutterBinding.ensureInitialized();
+  final sessionVM = SessionViewModel();
+  await sessionVM.loadSession();
+   
+   FlutterError.onError = (FlutterErrorDetails details) {
+    print('❗️EXCEPCIÓN DE FLUTTER❗️');
+    print('EXCEPCIÓN: ${details.exception}');
+    print('STACKTRACE:\n${details.stack}');
+    FlutterError.dumpErrorToConsole(details);
+  };
+
+
+ 
   await FirebaseMessagingService.init();
 
   if (kDebugMode) {
@@ -29,22 +52,36 @@ void main() async {
   await FirebaseMessaging.instance.requestPermission();
 
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-    print('📲 Notificación abierta por el usuario');
+    print('📲 Notificación abierta por el conductor');
 
     if (message.data.isNotEmpty) {
       print('📦 Datos del viaje: ${message.data}');
+
+      final role = message.data['role'];
 
       // Espera a que el contexto esté disponible
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final context = navigatorKey.currentContext;
         if (context != null && context.mounted) {
-          final viewModel = Provider.of<DriverStatusViewmodel>(context, listen: false);
-          viewModel.updateTripData(message.data);
+          final viewModel = Provider.of<RouteDriverViewmodel>(context, listen: false);
+          final getDriverLocationViewmodel = Provider.of<GetDriverLocationViewmodel>(context, listen: false);
+          viewModel.updateMoveData(message.data);
+          getDriverLocationViewmodel.setMoveData(message.data);
 
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const HomeDriverView()),
-            (route) => false,
-          );
+
+          if (role =='DRIVER') {
+             Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const HomeDriverView()),
+              (route) => false,
+            );
+          }else{
+             Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const HomeUserView()),
+              (route) => false,
+            );
+          }
+
+         
         } else {
           print('⚠️ Contexto no disponible aún');
         }
@@ -52,27 +89,28 @@ void main() async {
     }
   });
 
- RemoteMessage? initialMessage = await FirebaseMessaging.instance.getInitialMessage();
-if (initialMessage != null && initialMessage.data.isNotEmpty) {
-  // Espera a que la app esté completamente inicializada
-  Future.delayed(Duration.zero, () {
-    final context = navigatorKey.currentContext;
-    if (context != null && context.mounted) {
-      final viewModel = Provider.of<DriverStatusViewmodel>(context, listen: false);
-      viewModel.updateTripData(initialMessage.data);
-      
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const HomeDriverView()),
-        (route) => false,
-      );
-    }
-  });
+  RemoteMessage? initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+  if (initialMessage != null && initialMessage.data.isNotEmpty) {
+    // Espera a que la app esté completamente inicializada
+    Future.delayed(Duration.zero, () {
+      final context = navigatorKey.currentContext;
+      if (context != null && context.mounted) {
+        final viewModel = Provider.of<RouteDriverViewmodel>(context, listen: false);
+        viewModel.updateMoveData(initialMessage.data);
 
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const HomeDriverView()),
+          (route) => false,
+        );
+      }
+    });
   }
 
-  
-
-  runApp(App(navigatorKey: navigatorKey));
+  runApp(ChangeNotifierProvider.value(
+    value: sessionVM,
+    child:  App(navigatorKey: navigatorKey)
+    )
+   );
 }
 
 class App extends StatelessWidget {
@@ -87,10 +125,17 @@ class App extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => LocationViewModel()),
         ChangeNotifierProvider(create: (context) => ConfirmMoveViewModel()),
         ChangeNotifierProvider(create: (context) => DriverStatusViewmodel()),
-        ChangeNotifierProvider(
-          create: (context) => AuthViewModel(AuthService()),
-        ),
+        ChangeNotifierProvider(create: (context) => RouteDriverViewmodel()),
+        ChangeNotifierProvider(create: (context) => DriverLocationViewmodel()),
+        ChangeNotifierProvider(create: (context) => AcceptMoveViewmodel(AcceptMoveService())),
+        ChangeNotifierProvider(create: (context) => GetDriverLocationViewmodel()),
+        ChangeNotifierProvider(create: (context) => UpdateStatusMoveViewmodel()),
+        ChangeNotifierProvider( create: (context) =>AuthViewModel(AuthService())),
         ChangeNotifierProvider(create: (context) => CalculatePriceViewmodel()),
+        ChangeNotifierProvider(create: (context) => PasswordResetViewmodel()),
+        ChangeNotifierProvider(create: (context) => RouteUserViewmodel()),
+
+
       ],
       child: MaterialApp(
         navigatorKey: navigatorKey,

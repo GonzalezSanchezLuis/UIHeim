@@ -1,40 +1,56 @@
 import 'dart:async';
-import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 
-class UserMapWidget extends StatefulWidget {
+/*class UserMapWidget extends StatefulWidget {
   final List<Map<String, double>> route;
   final LatLng origin;
   final LatLng destination;
   final Function(LatLng)? onLocationUpdated;
+  final LatLng? driverLocation;
 
-  const UserMapWidget({super.key, required this.route, required this.origin, required this.destination, this.onLocationUpdated});
+  const UserMapWidget({super.key, required this.route, required this.origin, required this.destination, this.onLocationUpdated, this.driverLocation});
 
   @override
   State<UserMapWidget> createState() => _UserMapWidgetState();
-}
+} */
 
-class _UserMapWidgetState extends State<UserMapWidget> {
+/*class _UserMapWidgetState extends State<UserMapWidget> {
   late GoogleMapController googleMapController;
   final Completer<GoogleMapController> _controller = Completer();
   Set<Marker> markers = {};
   final Set<Polyline> _polylines = {};
   BitmapDescriptor? customIcon;
-  //BitmapDescriptor? originIcon;
-  //BitmapDescriptor? destinationIcon;
+  BitmapDescriptor? originIcon;
+  BitmapDescriptor? destinationIcon;
   LatLng? currentLocation;
   bool iconLoaded = false;
   bool _mapReady = false;
+  Marker? driverMarker;
 
   @override
   void initState() {
     super.initState();
     _initializeMapData();
-    // _loadCustomIcons().then((_) {});
     _loadCustomIcons();
+  }
+
+  @override
+  void didUpdateWidget(UserMapWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.route != oldWidget.route) {
+      _initializeMapData();
+      _moveCameraToRoute();
+    }
+
+    if (widget.driverLocation != null && widget.driverLocation != oldWidget.driverLocation) {
+      _updateDriverMarker(widget.driverLocation!);
+      _moveToCameraToDriver(widget.driverLocation!);
+    }
   }
 
   @override
@@ -49,11 +65,11 @@ class _UserMapWidgetState extends State<UserMapWidget> {
             googleMapController = controller;
             _controller.complete(controller);
             _mapReady = true;
-          //  setDarkMode();
+            //  setDarkMode();
             _moveCameraToRoute();
           },
           initialCameraPosition: const CameraPosition(
-            target: LatLng(4.709870566194833, -74.07554855445838), // Centro aproximado de Colombia
+            target: LatLng(4.709870566194833, -74.07554855445838),
             zoom: 5.5,
           ),
         ),
@@ -62,13 +78,14 @@ class _UserMapWidgetState extends State<UserMapWidget> {
   }
 
   Future<void> _loadCustomIcons() async {
-    customIcon = await BitmapDescriptor.fromAssetImage(
-      const ImageConfiguration(),
-      'assets/images/location.png',
-    );
+   originIcon =    await _getMarkerFromIcon(Icons.circle, const Color(0xFF076461), size: 75.0);
+   destinationIcon =   await _getMarkerFromIcon(Icons.circle, Colors.red, size: 75.0);
+  /*  customIcon = await BitmapDescriptor.fromAssetImage(
+      const ImageConfiguration(size: Size(20, 20)),
+      'assets/images/location.png',      
+    ); */
 
     setState(() {
-      customIcon = customIcon;
       iconLoaded = true;
     });
   }
@@ -83,7 +100,7 @@ class _UserMapWidgetState extends State<UserMapWidget> {
           markerId: const MarkerId('origin'),
           position: widget.origin,
           infoWindow: const InfoWindow(title: "Origen"),
-          icon: customIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+          icon: originIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
         ),
       );
 
@@ -91,7 +108,7 @@ class _UserMapWidgetState extends State<UserMapWidget> {
         Marker(
           markerId: const MarkerId('destination'),
           position: widget.destination,
-          icon: customIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+          icon: destinationIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
         ),
       );
     }
@@ -101,10 +118,10 @@ class _UserMapWidgetState extends State<UserMapWidget> {
         polylineId: const PolylineId("route"),
         points: widget.route.map((p) => LatLng(p['lat']!, p['lng']!)).toList(),
         color: AppTheme.primarycolor,
-        width: 2,
+        width: 7,
       ));
     }
-
+    print("🚗 Dibujando ruta con ${widget.route.length} puntos");
     setState(() {});
   }
 
@@ -119,10 +136,9 @@ class _UserMapWidgetState extends State<UserMapWidget> {
 
     try {
       await controller.animateCamera(
-        CameraUpdate.newLatLngBounds(bounds, 100), // 100px de padding
+        CameraUpdate.newLatLngBounds(bounds, 100),
       );
     } catch (e) {
-      // Fallback si el bounds es demasiado pequeño
       final center = LatLng(
         (bounds.northeast.latitude + bounds.southwest.latitude) / 2,
         (bounds.northeast.longitude + bounds.southwest.longitude) / 2,
@@ -160,19 +176,328 @@ class _UserMapWidgetState extends State<UserMapWidget> {
     }
   }
 
-  @override
-  void didUpdateWidget(UserMapWidget oldWidget) {
-    super.didUpdateWidget(oldWidget);
+  Future<void> _moveToCameraToDriver(LatLng driverPosition) async {
+    if (!_mapReady) return;
 
-    if (widget.route != oldWidget.route) {
-      _initializeMapData(); // Vuelve a inicializar con los nuevos datos
-      _moveCameraToRoute();
+    final controller = await _controller.future;
+
+    controller.animateCamera(CameraUpdate.newLatLngZoom(driverPosition, 15));
+  }
+
+  void _updateDriverMarker(LatLng newPosition) {
+    if (widget.driverLocation != null && customIcon != null) {
+      final newMarker = Marker(
+        markerId: const MarkerId('driver'),
+        position: newPosition,
+        infoWindow: const InfoWindow(title: "Conductor"),
+        icon: customIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
+      );
+
+      setState(() {
+        markers.removeWhere((m) => m.markerId == const MarkerId('driver'));
+        markers.add(newMarker);
+      });
+    }
+  }
+
+    Future<BitmapDescriptor> _getMarkerFromIcon(IconData iconData, Color color, {double size = 80.0}) async {
+    try {
+      final pictureRecorder = PictureRecorder();
+      final canvas = Canvas(pictureRecorder);
+      final textPainter = TextPainter(textDirection: TextDirection.ltr);
+
+      final textStyle = TextStyle(
+        fontSize: size * 0.8,
+        fontFamily: iconData.fontFamily,
+        color: color,
+      );
+
+      textPainter.text = TextSpan(text: String.fromCharCode(iconData.codePoint), style: textStyle);
+      textPainter.layout();
+      textPainter.paint(canvas, Offset(size * 0.2, size * 0.1)); // Mejor centrado
+
+      final image = await pictureRecorder.endRecording().toImage(size.toInt(), size.toInt());
+      final byteData = await image.toByteData(format: ImageByteFormat.png);
+
+      if (byteData == null) throw Exception("No se pudo generar el ícono");
+      return BitmapDescriptor.fromBytes(byteData.buffer.asUint8List());
+    } catch (e) {
+      print("❌ Fallo al crear ícono: $e");
+      return BitmapDescriptor.defaultMarker; // Fallback explícito
     }
   }
 
   @override
   void dispose() {
     googleMapController.dispose();
+    super.dispose();
+  }
+} */
+
+class UserMapWidget extends StatefulWidget {
+  final List<LatLng> route;
+  final LatLng origin;
+  final LatLng destination;
+  final Function(LatLng)? onLocationUpdated;
+  final LatLng? driverLocation;
+
+  const UserMapWidget({
+    super.key,
+    required this.route,
+    required this.origin,
+    required this.destination,
+    this.onLocationUpdated,
+    this.driverLocation,
+  });
+
+  @override
+  State<UserMapWidget> createState() => _UserMapWidgetState();
+}
+
+class _UserMapWidgetState extends State<UserMapWidget> {
+  final Completer<GoogleMapController> _controller = Completer();
+  GoogleMapController? _mapController;
+  Set<Marker> _markers = {};
+  Set<Polyline> _polylines = {};
+  bool _mapReady = false;
+
+  BitmapDescriptor? _originIcon;
+  BitmapDescriptor? _destinationIcon;
+  BitmapDescriptor? _driverIcon;
+
+  final LatLng _defaultLocation = const LatLng(4.709870566194833, -74.07554855445838);
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCustomIcons();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _drawRoute();
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant UserMapWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.route != oldWidget.route && _mapReady) {
+      _drawRoute();
+    }
+
+    if (widget.driverLocation != null && widget.driverLocation != oldWidget.driverLocation && _mapReady) {
+      _updateDriverMarker(widget.driverLocation!);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        GoogleMap(
+          myLocationEnabled: false,
+          myLocationButtonEnabled: false,
+          markers: _markers,
+          polylines: _polylines,
+          onMapCreated: (controller) async {
+            _mapController = controller;
+            _controller.complete(controller);
+            _mapReady = true;
+
+            await Future.delayed(const Duration(microseconds: 300));
+            if (widget.route.isNotEmpty) {
+              _drawRoute();
+            }
+          },
+          initialCameraPosition: CameraPosition(
+            target: widget.route.isNotEmpty ? widget.origin : _defaultLocation,
+            zoom: widget.route.isNotEmpty ? 14 : 5.5,
+          ),
+        ),
+         Positioned(
+          top: 20,
+          right: 10,
+          child: Column(
+            children: [
+              FloatingActionButton(
+                backgroundColor: Colors.white,
+                heroTag: "zoom_in",
+                mini: true,
+                onPressed: () async {
+                  final controller = await _controller.future;
+                  controller.animateCamera(CameraUpdate.zoomIn());
+                },
+                child: const Icon(Icons.add),
+              ),
+              const SizedBox(height: 1),
+              FloatingActionButton(
+                backgroundColor: Colors.white,
+                heroTag: "zoom_out",
+                mini: true,
+                onPressed: () async {
+                  final controller = await _controller.future;
+                  controller.animateCamera(CameraUpdate.zoomOut());
+                },
+                child: const Icon(Icons.remove),
+              ),
+            ],
+          ),
+        ), 
+      ],
+    );
+  }
+
+  Future<void> _loadCustomIcons() async {
+    _originIcon = await _getMarkerFromIcon(Icons.circle, AppTheme.greenColors, size: 30);
+    _destinationIcon = await _getMarkerFromIcon(Icons.circle, Colors.red, size: 30);
+    _driverIcon = await _getMarkerFromIcon(Icons.navigation, Colors.black);
+  }
+
+  void _drawRoute() {
+    if (!_mapReady || widget.route.isEmpty) {
+      print("⚠️ No hay suficientes puntos para dibujar la ruta.");
+      return;
+    }
+
+    Future.delayed(const Duration(microseconds: 300), () {
+      _centerMap(widget.route);
+    });
+
+    final Set<Marker> newMarkers = {
+      Marker(markerId: const MarkerId('origin'), position: widget.origin, icon: _originIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen), anchor: const Offset(0.5, 0.5)),
+      Marker(
+        markerId: const MarkerId('destination'),
+        position: widget.route.isNotEmpty ? widget.route.last : widget.destination,
+        icon: _destinationIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+        anchor: const Offset(0.5, 0.5),
+      ),
+
+    };
+
+    if (widget.driverLocation != null) {
+      newMarkers.add(
+        Marker(
+          markerId: const MarkerId('driver'),
+          position: widget.driverLocation!,
+          icon: _driverIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+        ),
+      );
+    }
+
+    print("📍 Dibujando ${widget.route.length} puntos en la ruta:");
+    for (var i = 0; i < widget.route.length; i++) {
+      print("   Punto $i: ${widget.route[i].latitude}, ${widget.route[i].longitude}");
+    }
+
+    final Polyline routePolyline = Polyline(
+      polylineId: const PolylineId('user_route'),
+      color: AppTheme.primarycolor,
+      width: 7,
+      points: widget.route,
+      geodesic: false,
+      jointType: JointType.round,
+      startCap: Cap.roundCap,
+      endCap: Cap.roundCap,
+    );
+    
+
+    setState(() {
+      _polylines.clear();
+      _markers = newMarkers;
+      _polylines = {routePolyline};
+    });
+
+    _centerMap(widget.route);
+  }
+
+  Future<void> _centerMap(List<LatLng> points) async {
+    try {
+      if (points.length < 2) {
+        print("⚠️ Muy pocos puntos para centrar el mapa");
+        return;
+      }
+
+      if (_mapController == null) {
+        print("⚠️ Controlador de mapa no inicializado");
+        return;
+      }
+
+      final bounds = _calculateBounds(points);
+
+      await _mapController!.animateCamera(
+        CameraUpdate.newLatLngBounds(bounds, 100),
+      );
+    } catch (e) {
+      print("🎯 Error centrando mapa: $e");
+      // Fallback: centrar en el primer punto con zoom adecuado
+      if (points.isNotEmpty && _mapController != null) {
+        await _mapController!.animateCamera(
+          CameraUpdate.newLatLngZoom(points.first, 15),
+        );
+      }
+    }
+  }
+
+  LatLngBounds _calculateBounds(List<LatLng> points) {
+    double minLat = points.first.latitude;
+    double maxLat = points.first.latitude;
+    double minLng = points.first.longitude;
+    double maxLng = points.first.longitude;
+
+    for (var point in points) {
+      if (point.latitude < minLat) minLat = point.latitude;
+      if (point.latitude > maxLat) maxLat = point.latitude;
+      if (point.longitude < minLng) minLng = point.longitude;
+      if (point.longitude > maxLng) maxLng = point.longitude;
+    }
+
+    return LatLngBounds(
+      southwest: LatLng(minLat, minLng),
+      northeast: LatLng(maxLat, maxLng),
+    );
+  }
+
+  void _updateDriverMarker(LatLng location) {
+    final marker = Marker(
+      markerId: const MarkerId("driver"),
+      position: location,
+      icon: _driverIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
+    );
+
+    setState(() {
+      _markers.removeWhere((m) => m.markerId.value == "driver");
+      _markers.add(marker);
+    });
+  }
+
+  Future<BitmapDescriptor> _getMarkerFromIcon(IconData iconData, Color color, {double size = 80.0}) async {
+    try {
+      final pictureRecorder = PictureRecorder();
+      final canvas = Canvas(pictureRecorder);
+      final textPainter = TextPainter(textDirection: TextDirection.ltr);
+
+      final textStyle = TextStyle(
+        fontSize: size * 0.8,
+        fontFamily: iconData.fontFamily,
+        color: color,
+      );
+
+      textPainter.text = TextSpan(text: String.fromCharCode(iconData.codePoint), style: textStyle);
+      textPainter.layout();
+      textPainter.paint(canvas, Offset(size * 0.2, size * 0.1));
+
+      final image = await pictureRecorder.endRecording().toImage(size.toInt(), size.toInt());
+      final byteData = await image.toByteData(format: ImageByteFormat.png);
+
+      if (byteData == null) throw Exception("No se pudo generar el ícono");
+      return BitmapDescriptor.fromBytes(byteData.buffer.asUint8List());
+    } catch (e) {
+      print("❌ Error generando ícono: $e");
+      return BitmapDescriptor.defaultMarker;
+    }
+  }
+
+  @override
+  void dispose() {
+    _mapController?.dispose();
     super.dispose();
   }
 }

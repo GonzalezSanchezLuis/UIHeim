@@ -1,95 +1,82 @@
-import 'package:geolocator/geolocator.dart';
 import 'package:flutter/material.dart';
-import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:another_flushbar/flushbar.dart';
 
 class GpsValidatorService {
- static Future<bool> ensureLocationServiceAndPermission(BuildContext context) async {
-    // 1. Verificar permisos
+  static Future<bool> ensureLocationServiceAndPermission(BuildContext context) async {
+    // 1. Verificar si el GPS está encendido
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      if (context.mounted) {
+        _showFlushbar(
+          context,
+          title: "GPS desactivado",
+          message: "Por favor, activa tu ubicación para continuar.",
+          actionText: "Ajustes",
+          onAction: () => Geolocator.openLocationSettings(),
+          icon: Icons.gps_off,
+          color: Colors.redAccent,
+        );
+      }
+      return false;
+    }
+
+    // 2. Verificar permisos
     LocationPermission permission = await Geolocator.checkPermission();
 
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) return false;
     }
 
-    // 2. Detectar si están denegados permanentemente
     if (permission == LocationPermission.deniedForever) {
-      final openSettings = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Permiso requerido'),
-          content: const Text('Los permisos de ubicación han sido denegados permanentemente. Por favor, actívalos desde la configuración.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Abrir configuración'),
-            ),
-          ],
-        ),
-      );
-
-      if (openSettings == true) {
-        await Geolocator.openAppSettings();
+      if (context.mounted) {
+        _showFlushbar(
+          context,
+          title: "Permisos denegados",
+          message: "Debes habilitar el permiso de ubicación desde ajustes.",
+          actionText: "Ajustes",
+          onAction: () => Geolocator.openAppSettings(),
+          icon: Icons.location_disabled,
+          color: Colors.blueAccent,
+        );
       }
-
       return false;
     }
 
-    if (permission == LocationPermission.denied) {
-      // Aún negado después del request
-      return false;
-    }
-
-    // 3. Verificar si el GPS está activo
-    bool gpsEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!gpsEnabled) {
-      await _showGpsDialog(context);
-      gpsEnabled = await Geolocator.isLocationServiceEnabled();
-    }
-
-    return gpsEnabled;
+    return true;
   }
 
-   
-
-
-  static Future<void> _showGpsDialog(BuildContext context) async {
-    if (!context.mounted) return;
-
-    await showDialog(
-      context: context,
-      barrierDismissible: false,
-      useRootNavigator: true,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.black,
-        title: const Text("GPS Requerido", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 17.0)),
-        content: const Text(
-          "Para continuar, el dispositivo necesita usar la precisión de la ubicación",
-          style: TextStyle(color: Colors.white),
+  static void _showFlushbar(
+    BuildContext context, {
+    required String title,
+    required String message,
+    required String actionText,
+    required VoidCallback onAction,
+    required IconData icon,
+    required Color color,
+  }) {
+    Flushbar(
+      title: title,
+      message: message,
+      backgroundColor: color,
+      icon: Icon(icon, color: Colors.white, size: 28),
+      duration: const Duration(seconds: 5),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      borderRadius: BorderRadius.circular(10),
+      flushbarPosition: FlushbarPosition.TOP,
+      animationDuration: const Duration(milliseconds: 400),
+      mainButton: TextButton(
+        onPressed: onAction,
+        child: Text(
+          actionText,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            decoration: TextDecoration.underline,
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("No, gracias", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-            style: TextButton.styleFrom(backgroundColor: AppTheme.thirdcolor2, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)), padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10)),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              await Geolocator.openLocationSettings();
-            },
-            style: TextButton.styleFrom(backgroundColor: AppTheme.secondarycolor, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)), padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10)),
-            child: const Text(
-              "Activar GPS",
-              style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
       ),
-    );
-
+    ).show(context);
   }
 }

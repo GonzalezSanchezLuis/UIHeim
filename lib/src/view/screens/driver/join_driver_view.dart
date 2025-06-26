@@ -11,10 +11,10 @@ class JoinDriver extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
-           backgroundColor: AppTheme.colorbackgroundview,
-        title: const Text("Únete al equipo de conductores de Holi"),
+           backgroundColor: AppTheme.primarycolor,
+        title: const Text("Nos gustaria trabajar contigo", style: TextStyle(fontWeight: FontWeight.bold, color:  Colors.white),),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_ios_rounded,color: Colors.white,),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -29,8 +29,9 @@ class JoinDriver extends StatelessWidget {
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      Color(0xFFFF1E1E), // Color principal
-                      Color(0xFF101010), // Un tono más oscuro
+                      AppTheme.confirmationscolor,
+                      AppTheme.primarycolor, 
+
                     ],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
@@ -44,7 +45,7 @@ class JoinDriver extends StatelessWidget {
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20),
                       child: Text(
-                        'Con DiDi Food, gana\nhasta \$630.000 por semana',
+                        'Tus ruedas, tus reglas, \nHaz que cada trayecto cuente.',
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -56,10 +57,10 @@ class JoinDriver extends StatelessWidget {
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20),
                       child: Text(
-                        'Ganancias semanales por ser nivel Leyenda',
+                        'Súmate hoy.',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 16,
+                          fontSize: 18,
                         ),
                       ),
                     ),
@@ -68,7 +69,7 @@ class JoinDriver extends StatelessWidget {
                     // Imagen SVG del repartidor
                     Center(
                       child: SvgPicture.asset(
-                        'assets/images/background-driver.svg', // Cambia esta ruta por la imagen adecuada
+                        'assets/images/background-driver.svg',
                         height: 200,
                       ),
                     ),
@@ -79,7 +80,7 @@ class JoinDriver extends StatelessWidget {
               const SizedBox(height: 70),
               const Center(
                 child: Text(
-                  "Holi te acompaña",
+                  "Que te ofrecemos",
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -90,14 +91,14 @@ class JoinDriver extends StatelessWidget {
               const SizedBox(height: 30),
               // Sección de beneficios
               _buildFeatureCard(
-                icon: Icons.headset_mic,
-                title: 'Reportes de zonas de riesgo',
-                description: 'Reporta zonas peligrosas para mejorar la seguridad de todos los conductores.',
+                icon: Icons.monetization_on_sharp,
+                title: '100%',
+                description: 'Ganas el 100% de cada servicio que completes. Conduce sin comisiones. Tú ganas, tú decides.',
               ),
               const SizedBox(height: 20),
               _buildFeatureCard(
-                icon: Icons.favorite,
-                title: 'Recibe atención personalizada',
+                icon: Icons.headset_mic_rounded,
+                title: 'Estamos para ayudarte. Sin robots, sin esperar horas.',
                 description: 'Nuestro equipo de soporte está disponible para ayudarte en todo momento.',
               ),
               const SizedBox(height: 20),
@@ -190,8 +191,8 @@ Widget buildRequirementsSection() {
           ),
           const SizedBox(width: 10),
           _buildRequirementCard(
-            icon: Icons.download,
-            title: 'Descargar\naplicación',
+            icon: Icons.local_shipping,
+            title: 'Vehiculo de\ncarga',
           ),
         ],
       ),

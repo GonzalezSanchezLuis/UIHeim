@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:holi/src/service/location/location_service.dart';
 import 'package:holi/src/service/moves/calculate_price_service.dart';
 import 'package:holi/src/view/screens/user/home_user_view.dart';
@@ -78,17 +79,32 @@ class CalculatePriceViewmodel extends ChangeNotifier {
 
     );
 
+   
+
     if (response != null) {
       try {
         formattedPrice = response['formattedPrice'] ?? "N/A";
         distanceKm = response['distanceKm']?.toString() ?? "0.0";
         timeMin = response['timeMin']?.toString() ?? "0";
-        route = List<Map<String, double>>.from(response['route'] ?? []);
+
+        final routeData = List<Map<String, double>>.from(response['route'] ?? []);
+
+        final List<LatLng> route = routeData
+            .map((point) => LatLng(
+                point['lat'] ?? 0.0, 
+                point['lng'] ?? 0.0 
+                ))
+            .toList();
+            
+            for (var p in route) {
+          print("📍 Punto: ${p.latitude}, ${p.longitude}");
+        }
+
 
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => HomeUser(
+            builder: (context) => HomeUserView(
               calculatedPrice: formattedPrice!,
               distanceKm: distanceKm!,
               duration: timeMin!,
@@ -97,6 +113,8 @@ class CalculatePriceViewmodel extends ChangeNotifier {
               route: route ?? [],
               destinationLat: destinationCoords!['latitude']!,
               destinationLng: destinationCoords!['longitude']!,
+              origin: LatLng(originCoords!['latitude']!, originCoords['longitude']!),
+              destination: LatLng(destinationCoords!['latitude']!, destinationCoords['longitude']!),
             ),
           ),
         );

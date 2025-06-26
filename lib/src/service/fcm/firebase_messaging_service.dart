@@ -63,7 +63,6 @@ class FirebaseMessagingService {
       if (message.data.containsKey('message')) {
         print('📨 Mensaje adicional: ${message.data['message']}');
       }
-
     } else {
       log("paylod VACIO");
     }
@@ -73,14 +72,14 @@ class FirebaseMessagingService {
   static Future<void> init() async {
     await Firebase.initializeApp();
 
-    // 📬 Configurar handler de mensajes en background
     FirebaseMessaging.onBackgroundMessage(_backgroundHandler);
 
-    // 📬 Configurar listener para mensajes en foreground
+
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('🔔 Notificación en foreground');
       print('Título: ${message.notification?.title}');
       print('Mensaje: ${message.notification?.body}');
+      print(message.data);
 
       final data = message.data;
       if (onNewTripData != null) {

@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:holi/src/model/driver/driver_location.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,7 +14,7 @@ class DriverLocationService {
       return null;
     }
     
-    final response = await http.post(Uri.parse('http://192.168.20.49:8080/api/v1/drivers/location/$driverId'),
+    final response = await http.post(Uri.parse('https://5d69-2800-484-3981-2300-6c2d-a295-49e3-d121.ngrok-free.app/api/v1/drivers/location/$driverId'),
     
     headers: {'Content-Type' : 'application/json'}, 
     body: jsonEncode({

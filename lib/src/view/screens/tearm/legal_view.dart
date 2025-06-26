@@ -11,12 +11,12 @@ class Legal extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
-        backgroundColor: AppTheme.colorbackgroundview,
-        title: const Text("Centro de privacidad"),
+        backgroundColor: AppTheme.primarycolor,
+        title: const Text("Centro de privacidad",style: TextStyle(color: Colors.white),),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white,),
           onPressed: () {
-            Navigator.pop(context); // Vuelve a la pantalla anterior
+            Navigator.pop(context); 
           },
         ),
       ),

@@ -40,6 +40,8 @@ class CalculatePriceService {
 
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
+       //   log("🛰️ Respuesta cruda del servidor: ${response.body}");
+
         return {
           'success': true,
           'formattedPrice': decoded['formattedPrice'],
@@ -52,6 +54,7 @@ class CalculatePriceService {
                   })
               .toList(),
         };
+        
       } else {
         final errorData = jsonDecode(response.body);
   

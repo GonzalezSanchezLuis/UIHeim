@@ -14,7 +14,7 @@ class DriverStatusViewmodel extends ChangeNotifier {
 
   Map<String, dynamic>? tripData;
 
-  int _remainingTime = 15;
+ final  int _remainingTime = 15;
 
   int get remainingTime => _remainingTime;
 
@@ -123,11 +123,11 @@ class DriverStatusViewmodel extends ChangeNotifier {
     notifyListeners(); // Actualiza la UI
   }
 
-  void updateTripData(Map<String, dynamic> newTripData) {
+ /*void updateTripData(Map<String, dynamic> newTripData) {
     if (newTripData.containsKey('origin') && newTripData.containsKey('destination')) {
       tripData = newTripData;
 
-      _startTimer();
+     _startTimer();
       isTimerRunning = true;
 
       log("datos del viaje $tripData");
@@ -151,7 +151,7 @@ class DriverStatusViewmodel extends ChangeNotifier {
       } else {
         timer.cancel();
         clearTripData();
-        //isTimerRunning = false;
+        isTimerRunning = false;
         notifyListeners();
       }
     });
@@ -167,11 +167,11 @@ class DriverStatusViewmodel extends ChangeNotifier {
   void clearTripData() {
     tripData = null;
     notifyListeners();
-  }
+  } 
 
   @override
   void dispose() {
     _timer?.cancel();
     super.dispose();
-  }
+  }*/
 }

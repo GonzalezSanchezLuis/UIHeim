@@ -17,13 +17,13 @@ class ProfileView extends StatelessWidget {
       child: Scaffold(
         backgroundColor: AppTheme.colorbackgroundview,
         appBar: AppBar(
-          backgroundColor: AppTheme.colorbackgroundview,
+          backgroundColor: AppTheme.primarycolor,
           title: const Text(
             "Mi cuenta",
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
           ),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
+            icon: const Icon(Icons.arrow_back_ios_new_outlined,color: Colors.white,),
             onPressed: () {
               Navigator.pop(context);
             },
@@ -90,8 +90,9 @@ class ProfileView extends StatelessWidget {
                           backgroundColor: Colors.red[600],
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(30),
                           ),
+                          
                         ),
                         onPressed: () async {
                           await viewModel.deleteAccount(context).then((_) {
@@ -112,7 +113,7 @@ class ProfileView extends StatelessWidget {
                       ),
                     ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
                     
                     ButtonUpdateData(
                       onPressed: () async {
@@ -165,6 +166,9 @@ class ProfileView extends StatelessWidget {
                   focusedBorder: const OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.black87, width: 2.0),
                   ),
+                  enabledBorder: const OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black87, width: 2.0),
+                  ),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 12.0),
                 ),
                 readOnly: readOnlyCondition && controller.text.isNotEmpty,
@@ -204,6 +208,9 @@ class ProfileView extends StatelessWidget {
                   hintText: hintText,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  enabledBorder: const OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black87, width: 2.0),
                   ),
                   focusedBorder: const OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.black87, width: 2.0),

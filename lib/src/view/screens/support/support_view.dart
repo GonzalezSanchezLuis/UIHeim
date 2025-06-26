@@ -11,13 +11,13 @@ class Support extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
-        backgroundColor: AppTheme.colorbackgroundview,
+        backgroundColor: AppTheme.primarycolor,
         title: const Text(
           "Atras",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_ios_new_outlined,color: Colors.white,),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -46,59 +46,6 @@ class Support extends StatelessWidget {
           ),
         ),
       ),
-      /* body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Selecciona tu método de pago",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 20),
-              _buildPaymentOption(Icons.account_balance_wallet, "Nequi"),
-              _buildPaymentOption(Icons.account_balance, "Daviplata"),
-              _buildPaymentOption(
-                  Icons.credit_card, "Tarjeta débito / crédito"),
-              const SizedBox(height: 30),
-              const Divider(thickness: 1),
-              const SizedBox(height: 20),
-              const Text(
-                "Bienvenido a soporte",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                "¿En qué podemos ayudarte hoy?",
-                style: TextStyle(
-                    fontSize: 14, color: Color.fromARGB(255, 155, 149, 149)),
-              ),
-              const SizedBox(height: 20),
-              Card(
-                elevation: 2,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 16.0, horizontal: 12.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        "Contactar Soporte",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.support_agent),
-                        onPressed: () {},
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ), */
     );
   }
 

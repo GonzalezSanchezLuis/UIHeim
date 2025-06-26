@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/view/screens/driver/home_driver_view.dart';
@@ -31,13 +30,13 @@ class _RegisterDriverState extends State<RegisterDriver> {
     return Scaffold(
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
-        backgroundColor: AppTheme.colorbackgroundview,
+        backgroundColor: AppTheme.primarycolor,
         title: const Text(
           "Registrarme como conductor",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => {Navigator.pop(context)},
         ),
       ),
@@ -61,6 +60,9 @@ class _RegisterDriverState extends State<RegisterDriver> {
                       decoration: const InputDecoration(
                           labelText: "Licencia de conducir",
                           border: OutlineInputBorder(),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide:  BorderSide(color: Colors.black87, width: 2.0),
+                          ),
                           focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 2.0)),
                           floatingLabelStyle: TextStyle(
                             color: Colors.black, // Cambia este color al que prefieras
@@ -73,6 +75,29 @@ class _RegisterDriverState extends State<RegisterDriver> {
                         return null;
                       },
                     ),
+                    const SizedBox(height: 20),
+
+
+                    TextFormField(
+                        controller: _typeVehicleController,
+                        decoration: const InputDecoration(
+                          labelText: "Categoria autorizada de licencia",
+                          border: OutlineInputBorder(),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.black87, width: 2.0),
+                          ),
+                          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 2.0)),
+                          floatingLabelStyle: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Este campo es obligatorio';
+                          }
+                          return null;
+                        }),
 
                     const SizedBox(height: 20),
 
@@ -81,10 +106,13 @@ class _RegisterDriverState extends State<RegisterDriver> {
                         decoration: const InputDecoration(
                           labelText: "Tipo de vehículo",
                           border: OutlineInputBorder(),
+                           enabledBorder: OutlineInputBorder(
+                            borderSide:  BorderSide(color: Colors.black87, width: 2.0),
+                          ),
                           focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 2.0)),
                           floatingLabelStyle: TextStyle(
-                            color: Colors.black, // Cambia este color al que prefieras
-                            fontWeight: FontWeight.bold, // Opcional, para resaltar
+                            color: Colors.black, 
+                            fontWeight: FontWeight.bold, 
                           ),
                         ),
                         validator: (value) {
@@ -101,10 +129,13 @@ class _RegisterDriverState extends State<RegisterDriver> {
                         decoration: const InputDecoration(
                             labelText: "Placas del vehículo",
                             border: OutlineInputBorder(),
+                             enabledBorder: OutlineInputBorder(
+                            borderSide:  BorderSide(color: Colors.black87, width: 2.0),
+                          ),
                             focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 2.0)),
                             floatingLabelStyle: TextStyle(
-                              color: Colors.black, // Cambia este color al que prefieras
-                              fontWeight: FontWeight.bold, // Opcional, para resaltar
+                              color: Colors.black, 
+                              fontWeight: FontWeight.bold, 
                             )),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
@@ -122,7 +153,7 @@ class _RegisterDriverState extends State<RegisterDriver> {
                         minimumSize: Size(MediaQuery.of(context).size.width * 0.9, 60),
                         backgroundColor: Colors.black,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
+                          borderRadius: BorderRadius.circular(30),
                         ),
                       ),
                       child: const Text(

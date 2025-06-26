@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:holi/src/service/moves/confirm_move_service.dart';
 import 'package:holi/src/viewmodels/location/location_viewmodel.dart';
-
 
 class ConfirmMoveViewModel with ChangeNotifier {
   final ConfirmMoveService _service = ConfirmMoveService();
@@ -24,7 +24,7 @@ class ConfirmMoveViewModel with ChangeNotifier {
     required String duration,
     required String typeOfMove,
     required String estimatedTime,
-    required List<Map<String, double>> route,
+    required List<LatLng> route,
     required int userId,
     required LocationViewModel locationViewModel,
     double? destinationLat, 

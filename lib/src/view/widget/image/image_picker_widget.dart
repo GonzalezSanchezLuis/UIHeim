@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/viewmodels/user/profile_user_viewmodel.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -51,19 +52,20 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
   void _showImageSourceDialog() {
     showModalBottomSheet(
       context: context,
+      backgroundColor: AppTheme.primarycolor,
       builder: (context) => Wrap(
         children: [
           ListTile(
-            leading: const Icon(Icons.camera_alt),
-            title: const Text("Tomar foto"),
+            leading: const Icon(Icons.camera_alt,color: Colors.white,),
+            title: const Text("Tomar foto",style: TextStyle(color: Colors.white),),
             onTap: () {
               Navigator.pop(context);
               _pickImage(ImageSource.camera);
             },
           ),
           ListTile(
-            leading: const Icon(Icons.photo_library),
-            title: const Text("Seleccionar de la galería"),
+            leading: const Icon(Icons.photo_library, color: Colors.white),
+            title: const Text("Seleccionar de la galería", style: TextStyle(color: Colors.white),),
             onTap: () {
               Navigator.pop(context);
               _pickImage(ImageSource.gallery);
@@ -87,7 +89,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
             children: [
               CircleAvatar(
                 radius: 40,
-                backgroundColor: Colors.grey.shade300,
+                backgroundColor: AppTheme.colorcards,
                 backgroundImage: _uploadedImageUrl != null
                     ? NetworkImage(_uploadedImageUrl!)
                     : _selectedImage != null

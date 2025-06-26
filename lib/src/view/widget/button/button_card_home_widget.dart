@@ -26,7 +26,7 @@ class ButtonCalculatePrice extends StatelessWidget {
         minimumSize: Size(MediaQuery.of(context).size.width * 0.9, 60),
         backgroundColor: const Color(0xFFFFBC11),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(30),
         ),
       ),
       child: const Text(
@@ -111,19 +111,19 @@ class ConnectButton extends StatelessWidget {
     return Consumer<DriverStatusViewmodel>(
       builder: (context, provider, _) {
         return ElevatedButton(
-          onPressed: provider.isLoading
-              ? null
-              : () async {
-                  LatLng? newLocation = await provider.connectDriverViewmodel(context);
-                  if (newLocation != null) {
-                    onConnected(newLocation);
-                  }
-                },
+            onPressed: () async {
+            if (!provider.isLoading) {
+              LatLng? newLocation = await provider.connectDriverViewmodel(context);
+              if (newLocation != null) {
+                onConnected(newLocation);
+              }
+            }
+          },
           style: ElevatedButton.styleFrom(
             backgroundColor: provider.isLoading ? Colors.grey : AppTheme.confirmationscolor,
             minimumSize: Size(MediaQuery.of(context).size.width * 0.9, 60),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
+              borderRadius: BorderRadius.circular(30),
             ),
           ),
           child: provider.isLoading
@@ -160,7 +160,7 @@ class DisconnectButton extends StatelessWidget {
         backgroundColor: AppTheme.warningcolor,
         minimumSize: Size(MediaQuery.of(context).size.width * 0.9, 60),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(30),
         ),
       ),
       child: provider.isLoading
@@ -195,7 +195,7 @@ class ConfirmButton extends StatelessWidget {
   final String duration;
   final String typeOfMove;
   final String estimatedTime;
-  final List<Map<String, double>> route;
+  final List<LatLng> route;
   final LocationViewModel locationViewModel;
   final VoidCallback onConfirmed;
   final double? destinationLat;
@@ -252,9 +252,9 @@ class ConfirmButton extends StatelessWidget {
               onConfirmed();
             },
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.amber,
+        backgroundColor: Colors.green,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(30),
         ),
       ),
       child: viewModel.isLoading
@@ -263,7 +263,7 @@ class ConfirmButton extends StatelessWidget {
             )
           : const Text(
               "Confirmar",
-              style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
             ),
     ));
   }

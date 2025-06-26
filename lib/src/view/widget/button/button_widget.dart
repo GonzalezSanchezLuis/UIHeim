@@ -13,7 +13,7 @@ class ButtonUpdateData extends StatelessWidget {
         minimumSize: Size(MediaQuery.of(context).size.width * 0.9, 60),
         backgroundColor: Colors.black,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(30),
         ),
       ),
       child: const Text(
@@ -39,12 +39,12 @@ class ButtonRegisterDriver extends StatelessWidget {
         minimumSize: Size(MediaQuery.of(context).size.width * 0.9, 60),
         backgroundColor: Colors.black,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(30),
         ),
       ),
       child: const Text(
         "Registrarme",
-        style: TextStyle(color: Colors.white, fontSize: 20),
+        style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
       ),
     );
   }

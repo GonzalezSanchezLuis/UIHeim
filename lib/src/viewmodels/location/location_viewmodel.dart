@@ -6,7 +6,6 @@ import 'package:geolocator/geolocator.dart';
 
 class LocationViewModel extends ChangeNotifier {
   
-
   String _currentAddress = "Ubicación no disponible";
   Position? _currentPosition;
   bool _isLoading = false;
@@ -62,43 +61,5 @@ Future<Position?> updateLocation(BuildContext context) async {
       return null;
     }
   }
-
-
-
-  /* Future<bool> _checkGpsFunctionality() async {
-    try {
-      final status = await Geolocator.checkPermission();
-      return status == LocationPermission.always || status == LocationPermission.whileInUse;
-    } catch (e) {
-      return false;
-    }
-  }
-
-
-  Future<Position?> _getPositionWithRetry({int retries = 2}) async {
-    for (int i = 0; i < retries; i++) {
-      try {
-        return await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.best,
-          timeLimit: const Duration(seconds: 10),
-        );
-      } catch (e) {
-        if (i == retries - 1) rethrow;
-        await Future.delayed(const Duration(seconds: 1));
-      }
-    }
-    return null;
-  }
-
-  Future<String> _getAddress(Position position) async {
-    try {
-      return await _locationRepository.fetchAddress(
-        position.latitude, 
-        position.longitude
-      ) ?? "Dirección no encontrada";
-    } catch (e) {
-      return "Error obteniendo dirección";
-    }
-  } */
 
 }

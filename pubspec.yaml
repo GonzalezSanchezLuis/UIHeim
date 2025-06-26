@@ -53,6 +53,11 @@ dependencies:
   firebase_messaging: ^15.2.5
   flutter_local_notifications: ^19.2.1
   decimal: ^3.2.1
+  slide_to_act: ^2.0.1
+  lottie: ^3.0.0
+  webview_flutter: ^4.2.2 
+  another_flushbar: ^1.10.29
+  font_awesome_flutter: ^10.7.0
 
 
   
@@ -101,7 +106,10 @@ flutter:
     - assets/images/daviplata.png
     - assets/images/cards.png
     - assets/images/location.png
+    - assets/images/navigation.png
     - assets/maps/maps_style.json
+    - assets/animations/Animation_searching.json
+
 
 
 

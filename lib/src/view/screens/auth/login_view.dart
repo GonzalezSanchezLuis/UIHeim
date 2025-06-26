@@ -8,6 +8,7 @@ import 'package:holi/src/view/screens/support/support_view.dart';
 import 'package:holi/src/view/screens/user/home_user_view.dart';
 import 'package:holi/src/view/widget/button/button_account_widget.dart';
 import 'package:holi/src/core/theme/fonts/style_fonts_account.dart';
+import 'package:holi/src/viewmodels/auth/password_reset_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -31,6 +32,7 @@ class _LoginState extends State<LoginView> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+    final passwordVM = Provider.of<PasswordResetViewmodel>(context);
 
     return Scaffold(
         resizeToAvoidBottomInset: true,
@@ -63,6 +65,9 @@ class _LoginState extends State<LoginView> {
                             decoration: const InputDecoration(
                               labelText: "Ingresa tu correo electrónico",
                               border: OutlineInputBorder(),
+                              enabledBorder:  OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.black87, width: 2.0),
+                              ),
                               focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 2.0)),
                               floatingLabelStyle: TextStyle(
                                 color: Colors.black,
@@ -78,6 +83,9 @@ class _LoginState extends State<LoginView> {
                               labelText: "Ingresa tu contraseña",
                               border: const OutlineInputBorder(),
                               focusedBorder: const OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.black87, width: 2.0),
+                              ),
+                              enabledBorder: const OutlineInputBorder(
                                 borderSide: BorderSide(color: Colors.black87, width: 2.0),
                               ),
                               floatingLabelStyle: const TextStyle(
@@ -122,63 +130,83 @@ class _LoginState extends State<LoginView> {
                           ),
                         ),
                         const SizedBox(width: 10),
-                        GestureDetector(
+                       GestureDetector(
                           onTap: () {
-                            showDialog(
+                            String email = '';
+                            showModalBottomSheet(
                               context: context,
+                              isScrollControlled: true,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                              ),
+                              backgroundColor: AppTheme.primarycolor,
                               builder: (BuildContext context) {
-                                String email = '';
-                                return AlertDialog(
-                                  backgroundColor: Colors.black,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                                  content: SizedBox(
-                                    width: 300.0,
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Text(
-                                          'Recuperar contraseña',
-                                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
+                                final passwordVM = Provider.of<PasswordResetViewmodel>(context);
+                                return Padding(
+                                  padding: EdgeInsets.only(
+                                    bottom: MediaQuery.of(context).viewInsets.bottom,
+                                    left: 20,
+                                    right: 20,
+                                    top: 20,
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Text(
+                                        'Recuperar contraseña',
+                                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
+                                      ),
+                                      const SizedBox(height: 10),
+                                      TextFormField(
+                                        onChanged: (value) => email = value,
+                                        decoration: InputDecoration(
+                                          labelText: 'Ingresa tu correo electrónico',
+                                          errorText: passwordVM.errorMessage,
+                                          border: const OutlineInputBorder(),
+                                          focusedBorder: const OutlineInputBorder(
+                                            borderSide: BorderSide(color: Colors.white, width: 2.0),
+                                          ),
+                                          enabledBorder: const OutlineInputBorder(
+                                            borderSide: BorderSide(color: Colors.white, width: 2.0),
+                                          ),
+                                          floatingLabelStyle: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
-                                        const SizedBox(
-                                          height: 10.0,
-                                        ),
-                                        TextField(
-                                          onChanged: (value) => email = value,
-                                          decoration: const InputDecoration(
-                                            labelText: 'Ingresa tu correo electrónico',
-                                            border: OutlineInputBorder(),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(color: Colors.white, width: 2.0),
-                                            ),
-                                            floatingLabelStyle: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
+                                        style: const TextStyle(color: Colors.white),
+                                        keyboardType: TextInputType.emailAddress,
+                                      ),
+                                      const SizedBox(height: 20),
+                                      Row(
+                                        children: [
+                                         
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                            child: ElevatedButton(
+                                              onPressed: passwordVM.isLoading
+                                                  ? null
+                                                  : () async {
+                                                      await passwordVM.resetPassword(email);
+                                                    },
+                                                 style: TextButton.styleFrom(
+                                                backgroundColor: AppTheme.greenColors,
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+                                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                                              ),
+                                              child: passwordVM.isLoading ? const CircularProgressIndicator() : const Text('Enviar mi email ', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20)),
                                             ),
                                           ),
-                                          keyboardType: TextInputType.emailAddress,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      child: Text('Cancelar', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-                                      onPressed: () => Navigator.of(context).pop(),
-                                      style: TextButton.styleFrom(backgroundColor: AppTheme.thirdcolor2, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)), padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10)),
-                                    ),
-                                    ElevatedButton(
-                                      child: const Text(
-                                        'Confirmar',
-                                        style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                                        ],
                                       ),
-                                      style: TextButton.styleFrom(backgroundColor: AppTheme.secondarycolor, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)), padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10)),
-                                      onPressed: () {
-                                        // Lógica de recuperación aquí
-                                        Navigator.of(context).pop();
-                                      },
-                                    ),
-                                  ],
+                                      if (passwordVM.successMessage != null)
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 10),
+                                          child: Text(passwordVM.successMessage!, style: const TextStyle(color: Colors.green)),
+                                        ),
+                                      const SizedBox(height: 20),
+                                    ],
+                                  ),
                                 );
                               },
                             );
@@ -191,6 +219,7 @@ class _LoginState extends State<LoginView> {
                             ),
                           ),
                         ),
+
                       ],
                     ),
                   ),
@@ -243,7 +272,7 @@ class _LoginState extends State<LoginView> {
 
 
         if (role == "USER") {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeUser()));
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeUserView()));
         } else if (role == "DRIVER") {
           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeDriverView()));
         }

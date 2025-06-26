@@ -16,8 +16,9 @@ class ProfileView extends StatelessWidget {
         child: Scaffold(
           backgroundColor: AppTheme.colorbackgroundview,
           appBar: AppBar(
-            title: const Text("Mi cuenta",style: TextStyle(fontWeight: FontWeight.bold),),
-            leading: IconButton(icon: const Icon(Icons.arrow_back),
+            backgroundColor: AppTheme.primarycolor,
+            title: const Text("Mi cuenta",style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),),
+            leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded,color: Colors.white,),
               onPressed: () {
                 Navigator.pop(context); 
               },
@@ -84,7 +85,7 @@ class ProfileView extends StatelessWidget {
                           backgroundColor: Colors.red[600],
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(30),
                           ),
                         ),
                         onPressed: () async {
