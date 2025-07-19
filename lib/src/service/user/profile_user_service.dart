@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
-class ProfileService {
+class ProfileUserService {
   final StreamController<Map<String, String>> _userDataController = StreamController();
   Stream<Map<String, String>> get userDataStream => _userDataController.stream;
 
@@ -25,9 +25,10 @@ class ProfileService {
 
       // Construir la solicitud
       final response = await http.get(
-        Uri.parse('http://192.168.20.49:8080/api/v1/users/user/$userId'), // El ID va en la URL
+       // Uri.parse('https://4cf6-2800-484-3981-2300-c3f7-9add-4145-51a4.ngrok-free.app/api/v1/users/user/$userId'),
+        Uri.parse('http://192.168.20.49:8080/api/v1/users/user/$userId'),
         headers: {
-          'Content-Type': 'application/json', // (opcional) Indica el tipo de contenido
+          'Content-Type': 'application/json',
         },
       );
 
@@ -45,17 +46,10 @@ class ProfileService {
     }
   }
 
-  Future<Map<String, dynamic>?> updateDataUser(
-    String urlAvatarProfile, 
-    String fullName, 
-    String document, 
-    String email, 
-    String phone, 
-    String? password) async {
+  Future<Map<String, dynamic>?> updateDataUser(String urlAvatarProfile, String fullName, String document, String email, String phone, String? password) async {
     try {
       const String apiUrl = 'http://192.168.20.49:8080/api/v1/users/update/';
 
-      // Verificar si el ID de usuario está disponible en SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getInt('userId');
 
@@ -64,14 +58,12 @@ class ProfileService {
         return {'status': 'error', 'message': 'ID de usuario no encontrado'};
       }
 
-      // Crear el objeto de datos
       final Map<String, dynamic> data = {
         'fullName': fullName,
         'urlAvatarProfile': urlAvatarProfile,
         'document': document,
         'email': email,
         'phone': phone,
-        'password': password
       };
       print("url del avatar $urlAvatarProfile");
 
@@ -79,7 +71,11 @@ class ProfileService {
         data['password'] = password;
       }
 
-      // Hacer la solicitud HTTP POST
+      print("🧾 Payload para actualizar usuario:");
+      data.forEach((key, value) {
+        print("🔹 $key: $value (${value.runtimeType})");
+      });
+
       final response = await http.put(
         Uri.parse('$apiUrl$userId'),
         headers: {
@@ -99,7 +95,7 @@ class ProfileService {
         await prefs.setString('phone', updatedUser['phone']);
 
         if (password != null && password.isNotEmpty) {
-          data['password'] = password; // Solo agrega la contraseña si no es null
+          data['password'] = password;
         }
 
         debugPrint("Datos actualizados exitosamente.");

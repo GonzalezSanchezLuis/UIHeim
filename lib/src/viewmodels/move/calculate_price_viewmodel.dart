@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:holi/src/core/enums/move_type.dart';
 import 'package:holi/src/service/location/location_service.dart';
 import 'package:holi/src/service/moves/calculate_price_service.dart';
 import 'package:holi/src/view/screens/user/home_user_view.dart';
@@ -18,7 +19,7 @@ class CalculatePriceViewmodel extends ChangeNotifier {
 
   Future<void> handleRequestVehicle({
     required BuildContext context,
-    required String typeOfMove,
+    required MoveType? typeOfMove,
     required String numberOfRooms,
     required String originAddress,
     required String destinationAddress,

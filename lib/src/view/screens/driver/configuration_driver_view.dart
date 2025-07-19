@@ -3,6 +3,7 @@ import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/service/auth/auth_service.dart';
 import 'package:holi/src/view/screens/about/about_view.dart';
 import 'package:holi/src/view/screens/auth/login_view.dart';
+import 'package:holi/src/view/screens/driver/vehicle_information.dart';
 import 'package:holi/src/view/screens/tearm/legal_view.dart';
 import 'package:holi/src/view/screens/driver/profile_view.dart';
 import 'package:holi/src/view/screens/tearm/tearm_and__condition_view.dart';
@@ -46,6 +47,14 @@ class _ConfigurationDriverState extends State<ConfigurationDriver> {
             onTap: () {
               // Acción al presionar esta opción
               Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileView()));
+            },
+          ),
+           _buildSettingOption(
+            title: "Info del vehículo",
+            icon: Icons.car_rental,
+            onTap: () {
+              // Acción al presionar esta opción
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const VehicleInformation()));
             },
           ),
           _buildSettingOption(

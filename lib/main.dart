@@ -9,6 +9,7 @@ import 'package:holi/src/view/screens/user/home_user_view.dart';
 import 'package:holi/src/viewmodels/auth/auth_viewmodel.dart';
 import 'package:holi/src/viewmodels/auth/password_reset_viewmodel.dart';
 import 'package:holi/src/viewmodels/auth/sesion_viewmodel.dart';
+import 'package:holi/src/viewmodels/driver/profile_driver_viewmodel.dart';
 import 'package:holi/src/viewmodels/driver/route_driver_viewmodel.dart';
 import 'package:holi/src/viewmodels/driver/driver_location_viewmodel.dart';
 import 'package:holi/src/viewmodels/driver/driver_status_viewmodel.dart';
@@ -17,6 +18,7 @@ import 'package:holi/src/viewmodels/move/accept_move_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/calculate_price_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/confirm_move_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/update_status_move_viewmodel.dart';
+import 'package:holi/src/viewmodels/payment/payment_viewmodel.dart';
 import 'package:holi/src/viewmodels/user/get_driver_location_viewmodel.dart';
 import 'package:holi/src/viewmodels/user/route_user_viewmodel.dart';
 import 'package:provider/provider.dart';
@@ -67,7 +69,6 @@ void main() async {
           final getDriverLocationViewmodel = Provider.of<GetDriverLocationViewmodel>(context, listen: false);
           viewModel.updateMoveData(message.data);
           getDriverLocationViewmodel.setMoveData(message.data);
-
 
           if (role =='DRIVER') {
              Navigator.of(context).pushAndRemoveUntil(
@@ -121,7 +122,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => ProfileViewModel()),
+        ChangeNotifierProvider(create: (context) => ProfileUserViewModel()),
         ChangeNotifierProvider(create: (context) => LocationViewModel()),
         ChangeNotifierProvider(create: (context) => ConfirmMoveViewModel()),
         ChangeNotifierProvider(create: (context) => DriverStatusViewmodel()),
@@ -134,7 +135,8 @@ class App extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => CalculatePriceViewmodel()),
         ChangeNotifierProvider(create: (context) => PasswordResetViewmodel()),
         ChangeNotifierProvider(create: (context) => RouteUserViewmodel()),
-
+        ChangeNotifierProvider(create: (_) => ProfileDriverViewModel()..fetchDriverData()),
+        ChangeNotifierProvider(create: (context) => PaymentViewmodel()),
 
       ],
       child: MaterialApp(

@@ -1,13 +1,14 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'package:holi/src/core/enums/move_type.dart';
 import 'package:http/http.dart' as http;
 
 class CalculatePriceService {
   final String _baseUrl = "http://192.168.20.49:8080/api/v1";
 
   Future<Map<String, dynamic>> calculatedPrice({
-     required String? typeOfMove,
+    required MoveType? typeOfMove,
     required String numberOfRooms,
     required String originAddress,
     required String destinationAddress,
@@ -20,7 +21,7 @@ class CalculatePriceService {
       final url = Uri.parse("$_baseUrl/price/calculate");
 
       final Map<String, dynamic> requestBody = {
-        'typeOfMove': typeOfMove,
+        'typeOfMove': typeOfMove?.name,
         'numberOfRooms': numberOfRooms,
         'origin': originAddress,
         'destination': destinationAddress,

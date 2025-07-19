@@ -13,6 +13,7 @@ class Driver extends StatefulWidget {
 
 class _DriverState extends State<Driver> {
   String name = "";
+  String? avatarUrl;
 
   @override
   void initState() {
@@ -28,10 +29,13 @@ class _DriverState extends State<Driver> {
       print("Datos del usuario: $driverData");
       setState(() {
         name = driverData['fullName'] ?? 'Nombre no disponible';
+        avatarUrl = driverData['urlAvatarProfile'] ?? 'Nombre no disponible';
+
       });
     } else {
       setState(() {
-        name = 'Nombre no disponible'; // Si no se encuentran datos, mostramos un valor por defecto
+        name = 'Nombre no disponible'; 
+        avatarUrl = null;
       });
     }
   }
@@ -56,36 +60,61 @@ class _DriverState extends State<Driver> {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             const SizedBox(
-              height: 80,
+              height: 60,
             ),
-            Row(children: [
-              const CircleAvatar(
-                radius: 35.0,
-                backgroundImage: AssetImage("assets/images/profile.jpg"),
-              ),
-              const SizedBox(width: 10.0),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
                 children: [
-                  Text(
-                    name, // Reemplaza con el nombre real
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                  Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
+                    child: avatarUrl != null && avatarUrl!.isNotEmpty
+                        ? CircleAvatar(
+                            radius: 35,
+                            backgroundImage: NetworkImage(avatarUrl!),
+                          )
+                        : const CircleAvatar(
+                            radius: 35,
+                            backgroundColor: Colors.grey,
+                            child: Icon(Icons.person, size: 35, color: Colors.white),
+                          ),
                   ),
-                  const SizedBox(height: 2.0),
-                  const Text(
-                    "¡Hola!", // Reemplaza con el texto deseado
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
-                    ),
-                  ),
+                  const SizedBox(width: 10.0),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 2.0),
+                      const Text(
+                        "¡Hola!",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  )
                 ],
-              )
-            ]),
+              ),
+            ),
             const SizedBox(height: 20),
             AccountCard(
               title: "Mi cuenta",

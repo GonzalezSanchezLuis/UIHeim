@@ -19,6 +19,37 @@ class _BottomMoveCardState extends State<BottomMoveCard> {
   StatusOfTheMove _statusOfTheMove = StatusOfTheMove.DRIVER_ARRIVED;
 
   @override
+  void initState() {
+    super.initState();
+    _fetchCurrentMoveStatus();
+  }
+
+  void _fetchCurrentMoveStatus() async {
+    final status = await Provider.of<UpdateStatusMoveViewmodel>(context, listen: false).getCurrentStatus(widget.moveId);
+
+    setState(() {
+      _statusOfTheMove = status;
+      _isExpanded = true;
+    });
+  }
+
+  /*@override
+  void initState() {
+    super.initState();
+
+    // Simular que se expande cuando se acepta el viaje
+    if (_statusOfTheMove == StatusOfTheMove.DRIVER_ARRIVED) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          _isExpanded = true;
+        });
+      });
+    }
+  } */
+
+
+
+  @override
   Widget build(BuildContext context) {
     final updateStausMoveViewmodel = Provider.of<UpdateStatusMoveViewmodel>(context);
 
@@ -54,7 +85,7 @@ class _BottomMoveCardState extends State<BottomMoveCard> {
                   'Rumbo al punto de encuentro',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 18,
+                    fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -64,87 +95,94 @@ class _BottomMoveCardState extends State<BottomMoveCard> {
 
           const SizedBox(height: 20),
 
-          // Contenido con animación suave
-          AnimatedCrossFade(
+         AnimatedCrossFade(
             duration: const Duration(milliseconds: 300),
             crossFadeState: _isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
             firstChild: const SizedBox.shrink(),
-            secondChild: Builder(
-              builder: (context) {
-                switch (_statusOfTheMove) {
-                  case StatusOfTheMove.DRIVER_ARRIVED:
-                    return SlideAction(
-                      onSubmit: () async {
-                        print("✅ Enviando DRIVER_ARRIVED con moveId: ${widget.moveId}, driverId: ${widget.driverId}");
-                        await updateStausMoveViewmodel.changeStatus(
-                          moveId: widget.moveId,
-                          driverId: widget.driverId,
-                        );
-                        setState(() {
-                          _statusOfTheMove = StatusOfTheMove.MOVING_STARTED;
-                        });
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Esperando al pasajero...")),
-                        );
-                      },
-                      text: 'Desliza para notificar que llegaste',
-                      outerColor: AppTheme.primarycolor,
-                    );
+            secondChild: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Builder(
+                builder: (context) {
+                  if (!_isExpanded) return const SizedBox.shrink(); 
 
-                  case StatusOfTheMove.MOVING_STARTED:
-                    return SlideAction(
-                      onSubmit: () {
-                        print("🟢 Iniciando recorrido...");
-                        setState(() {
-                          _statusOfTheMove = StatusOfTheMove.MOVE_COMPLETE;
-                        });
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Recorrido iniciado")),
-                        );
-                      },
-                      text: 'Iniciar mudanza',
-                      outerColor: AppTheme.confirmationscolor,
-                    );
-
-                  case StatusOfTheMove.MOVE_COMPLETE:
-                  return SlideAction(
-                      onSubmit: () async {
-                        print("🟢 FInalizando recorrido...");
-                        await updateStausMoveViewmodel.changeStatus(
-                          moveId: widget.moveId,
-                          driverId: widget.driverId,
-                        );
-                        setState(() {
-                          _statusOfTheMove = StatusOfTheMove.MOVE_FINISHED;
-                        });
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Recorrido finalizado")),
-                        );
-                      },
-                      text: 'Finalizar mudanza',
-                      outerColor: AppTheme.warningcolor,
-                    );
-
-                  case StatusOfTheMove.MOVE_FINISHED:
-                   return const Column(
-                      children: [
-                        Icon(Icons.check_circle_outline, color: Colors.greenAccent, size: 60),
-                        SizedBox(height: 12),
-                        Text(
-                          "✅ Mudanza finalizada con éxito",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
+                  switch (_statusOfTheMove) {
+                    case StatusOfTheMove.DRIVER_ARRIVED:
+                      return SlideAction(
+                        onSubmit: () async {
+                          await updateStausMoveViewmodel.changeStatus(
+                            moveId: widget.moveId,
+                            driverId: widget.driverId,
+                            status: StatusOfTheMove.DRIVER_ARRIVED
+                          );
+                          setState(() {
+                            _statusOfTheMove = StatusOfTheMove.MOVING_STARTED;
+                          });
+                        },
+                        child:  Text(
+                          'Desliza para notificar que llegaste',
+                          style: TextStyle(fontSize: 17, color: Colors.white, fontWeight: FontWeight.bold),
                         ),
-                      ],
-                    );
-                }
-              },
+                        outerColor: AppTheme.primarycolor,
+                      );
+
+                   case StatusOfTheMove.MOVING_STARTED:
+                      return SlideAction(
+                        onSubmit: () async {
+                          await updateStausMoveViewmodel.changeStatus(
+                            moveId: widget.moveId,
+                            driverId: widget.driverId,
+                            status: StatusOfTheMove.MOVING_STARTED,
+                          );
+                          setState(() {
+                            _statusOfTheMove = StatusOfTheMove.MOVE_COMPLETE;
+                          });
+                        },
+                        text: 'Iniciar mudanza',
+                        outerColor: AppTheme.confirmationscolor,
+                      );
+
+                 case StatusOfTheMove.MOVE_COMPLETE:
+                      return SlideAction(
+                        onSubmit: () async {
+                          // ENVÍA AL BACKEND EL ESTADO MOVE_FINISHED (NO MOVE_COMPLETE)
+                          await updateStausMoveViewmodel.changeStatus(
+                            moveId: widget.moveId,
+                            driverId: widget.driverId,
+                            status: StatusOfTheMove.MOVE_FINISHED,
+                          );
+
+                          setState(() {
+                            _statusOfTheMove = StatusOfTheMove.MOVE_FINISHED;
+                          });
+
+                          // (Opcional) Mostrar confirmación al conductor
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("✅ Mudanza finalizada correctamente")),
+                          );
+                        },
+                        text: 'Finalizar mudanza',
+                        outerColor: AppTheme.warningcolor,
+                      );
+
+
+                    case StatusOfTheMove.MOVE_FINISHED:
+                      return const Column(
+                        children: [
+                          Icon(Icons.check_circle_outline, color: Colors.greenAccent, size: 60),
+                          SizedBox(height: 12),
+                          Text(
+                            "✅ Mudanza finalizada con éxito",
+                            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      );
+                  }
+                },
+              ),
             ),
-          ),
+          )
+
         ],
       ),
     );

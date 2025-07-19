@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'dart:ui' as ui;
 import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
+import 'package:holi/src/core/enums/move_type.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/model/predictions/prediction_mdel.dart';
 import 'package:holi/src/service/location/location_service.dart';
@@ -33,7 +34,7 @@ class _CalculatePriceState extends State<CalculatePrice> {
   // Variables de desplazamiento
   final double _numberOfRoomsYOffset = 100;
   final double _sourceAddressYOffset = 180;
-  String? _selectedMovingType;
+  MoveType? _selectedMovingType;
   List<Prediction> _suggestions = [];
   Map<String, double>? _destinationCoords;
 
@@ -63,13 +64,9 @@ class _CalculatePriceState extends State<CalculatePrice> {
               fontWeight: FontWeight.bold,
               color: Colors.white
             )),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white,),
-          onPressed: () => {Navigator.pop(context)},
-        ),
       ),
       body: Padding(
-        padding: const EdgeInsets.only(top: 100.0, left: 15.0, right: 15.0),
+        padding: const EdgeInsets.only(top: 10.0, left: 15.0, right: 15.0),
         child: Stack(
           // Usamos Stack para manejar la posición absoluta
           children: [
@@ -83,21 +80,14 @@ class _CalculatePriceState extends State<CalculatePrice> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-               ValidatedDropdownFormField(
+                     ValidatedDropdownFormField(
                       value: _selectedMovingType,
                       label: "Tipo de mudanza",
                       items: const  ["Pequeña", "Mediana", "Grande"],
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          _selectedMovingType = newValue;
-                        });
-                      },
+                        onChanged: (value) => setState(() => _selectedMovingType = value),
                       validator: (value) => value == null ? 'Selecciona un tipo de mudanza' : null,
                     ),
-
-
                     const SizedBox(height: 20),
-
                     ValidatedTextFormField(
                       controller: _numberOfRoomsController,
                       label: "Número de habitaciones",
@@ -188,7 +178,7 @@ class _CalculatePriceState extends State<CalculatePrice> {
 
                                   await viewmodel.handleRequestVehicle(
                                     context: context,
-                                    typeOfMove: _selectedMovingType!,
+                                    typeOfMove: _selectedMovingType,
                                     numberOfRooms: _numberOfRoomsController.text,
                                     originAddress: _originAddressController.text.trim(),
                                     destinationAddress: _destinationAddressController.text.trim(),

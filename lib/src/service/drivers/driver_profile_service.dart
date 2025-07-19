@@ -16,7 +16,7 @@ class DriverProfileService {
   Future<Map<String, dynamic>?> fetchDriverData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final driverId = prefs.getInt('userId'); // Asegúrate de que la clave sea 'userId'
+      final driverId = prefs.getInt('userId');
 
       log("ID DEL CONDUCTOR $driverId");
       if (driverId == null) {
@@ -32,9 +32,8 @@ class DriverProfileService {
           });
     
 
-      // Manejar la respuesta del servidor
       if (response.statusCode == 200) {
-        print(response.body); // Devuelve los datos del usuario
+        print(response.body); 
         return jsonDecode(response.body);
       } else {
         print("Error al obtener los datos del usuario: ${response.body}");
@@ -55,9 +54,8 @@ class DriverProfileService {
     String urlAvatarProfile,
   ) async {
     try {
-      const String apiUrl = 'http://192.168.20.49:8080/api/v1/drivers/update/';
+      const String apiUrl = 'http://192.168.20.49:8080/api/v1/users/update/';
 
-      // Verificar si el ID de usuario está disponible en SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       final driverId = prefs.getInt('userId');
 
@@ -72,7 +70,6 @@ class DriverProfileService {
         'fullName': fullName,
         'email': email,
         'phone': phone,
-        'password': password,
         'urlAvatarProfile': urlAvatarProfile,
       };
       if (password != null && password.isNotEmpty) {
@@ -95,8 +92,7 @@ class DriverProfileService {
         await prefs.setString('urlAvatarProfile', updatedDataDriver['urlAvatarProfile']);
 
         if (password != null && password.isNotEmpty) {
-          data['password'] =
-              password; // Solo agrega la contraseña si no es null
+          data['password'] = password; 
         }
 
         debugPrint("Datos actualizados exitosamente.");

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:holi/src/core/enums/move_type.dart';
 import 'package:holi/src/service/moves/confirm_move_service.dart';
 import 'package:holi/src/viewmodels/location/location_viewmodel.dart';
 
@@ -22,7 +23,7 @@ class ConfirmMoveViewModel with ChangeNotifier {
     required String calculatedPrice,
     required String distanceKm,
     required String duration,
-    required String typeOfMove,
+    required MoveType typeOfMove,
     required String estimatedTime,
     required List<LatLng> route,
     required int userId,

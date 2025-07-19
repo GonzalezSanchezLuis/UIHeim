@@ -8,9 +8,12 @@ class WaitingForDriverWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: Colors.black,
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Center(
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center, 
+        crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Lottie.asset(
               'assets/animations/Animation_searching.json',
@@ -20,8 +23,18 @@ class WaitingForDriverWidget extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             const Text(
-              'Estamos buscando el vehículo adecuado',
-              style: TextStyle(color: Colors.white, fontSize: 16),
+              'Buscando un conductor confiable...',
+              style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+
+             const Text(
+              'Esto puede tardar unos segundos. Mantente atento.',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 15,
+              ),
               textAlign: TextAlign.center,
             ),
           ],

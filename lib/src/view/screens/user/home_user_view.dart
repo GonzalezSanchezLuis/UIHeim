@@ -1,14 +1,20 @@
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:holi/src/core/enums/move_type.dart';
+import 'package:holi/src/core/extensions/move_type_extension.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:holi/src/model/payment/payment_model.dart';
 import 'package:holi/src/utils/format_price.dart';
+import 'package:holi/src/view/screens/move/calculate_price_view.dart';
 import 'package:holi/src/view/screens/move/history_move_view.dart';
 import 'package:holi/src/view/screens/move/select_payment_method_view.dart';
+import 'package:holi/src/view/screens/payment/payment_button_view.dart';
 import 'package:holi/src/view/screens/user/user_view.dart';
 import 'package:holi/src/view/widget/button/button_card_home_widget.dart';
+import 'package:holi/src/view/widget/card/driver_info_card.dart';
 import 'package:holi/src/view/widget/maps/user_maps_widget.dart';
+import 'package:holi/src/view/widget/navbar/custom_bottom_navbar.dart';
 import 'package:holi/src/view/widget/user/build_waiting_widget.dart';
 import 'package:holi/src/viewmodels/location/location_viewmodel.dart';
 import 'package:holi/src/viewmodels/user/get_driver_location_viewmodel.dart';
@@ -20,7 +26,7 @@ class HomeUserView extends StatefulWidget {
   final String? calculatedPrice;
   final String? distanceKm;
   final String? duration;
-  final String? typeOfMove;
+  final MoveType? typeOfMove;
   final String? estimatedTime;
   final List<LatLng>? route;
   final double? destinationLat;
@@ -57,6 +63,7 @@ class _HomeUserState extends State<HomeUserView> {
   bool isWaitingForDriver = false;
   LatLng? userCurrentLocation;
   int? userId;
+  Map<String, dynamic>? _currentMoveData;
 
   @override
   void initState() {
@@ -68,7 +75,6 @@ class _HomeUserState extends State<HomeUserView> {
     print("ORIGIN desde widget: ${widget.origin}");
     print("DESTINO desde widget: ${widget.destination}");
 
-
     if (widget.origin != null && widget.destination != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _fetchRoute();
@@ -78,97 +84,165 @@ class _HomeUserState extends State<HomeUserView> {
 
   @override
   Widget build(BuildContext context) {
+   
     return Scaffold(
       backgroundColor: Colors.black,
-      bottomNavigationBar: showPriceModal
-          ? Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: SizedBox(
-                      height: 50,
-                  //   child: ButtonCalculatePrice(),
-
-                     child:ConfirmButton(
-                        typeOfMove: widget.typeOfMove ?? '',
-                        calculatedPrice: widget.calculatedPrice ?? '',
-                        distanceKm: widget.distanceKm ?? '',
-                        duration: widget.duration ?? '',
-                        estimatedTime: widget.estimatedTime ?? '',
-                        route: widget.route ?? [],
-                        locationViewModel: locationViewModel,
-                        userId: userId ?? 0,
-                        destinationLat: widget.destinationLat,
-                        destinationLng: widget.destinationLng,
-                        paymentMethod: _selectedPaymentMethod,
-                        onConfirmed: () {
-                          setState(() {
-                            showPriceModal = false;
-                            isWaitingForDriver = true;
-                          });
-                          Future.delayed(const Duration(seconds: 10), () {
-                            if (mounted) {
-                              setState(() {
-                                isWaitingForDriver = false;
-                                showPriceModal = true;
-                              });
-                            }
-                          });
-                        },
-                      ), 
+      body: Stack(
+        children: [
+          IndexedStack(
+            index: currentPageIndex,
+            children: [   
+           /*   PaymentButtonView(paymentModel: PaymentModel(
+                name: 'Luis',
+                description: 'Mudanza con conductor',
+                currency: "cop",
+                amount: '40000',
+                email: 'luisrbn10@outlook.es',               
+                invoice: 'INV123456',
+                method: 'NEQUI',
+              )
+              ), */    
+              _buildHomePage(context),
+              const CalculatePrice(),
+              const HistoryMove(),
+              const User(),
+              
+            ],
+          ),
+        
+          Consumer<GetDriverLocationViewmodel>(
+            builder: (context, driverVM, _) {
+              final moveData = driverVM.moveData;
+              if (currentPageIndex == 0 && moveData != null) {
+                return Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 30,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                    child: Container(
+                      decoration: BoxDecoration(color: AppTheme.primarycolor, borderRadius: BorderRadius.circular(30)),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                      child: DriverInfoCard(
+                        plate: moveData['enrollVehicle'] ?? 'Sin placa',
+                        vehicleType: moveData['vehicleType'] ?? 'NPR',
+                        driverImageUrl: moveData['driverImageUrl'] ?? '',
+                        vehicleImageUrl: 'assets/images/vehicle.png',
+                        phone: moveData['driverPhone'] ?? '',
+                        nameDriver: moveData['driverName'] ?? '',
+                      ),
                     ),
                   ),
-                ],
-              ),
-            )
-          : NavigationBarTheme(
-              data: NavigationBarThemeData(
-                labelTextStyle: MaterialStateProperty.resolveWith<TextStyle>(
-                  (Set<MaterialState> states) {
-                    if (states.contains(MaterialState.selected)) {
-                      return const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold);
-                    }
-                    return const TextStyle(color: Color(0xFF8E8E8E));
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
+
+          // BottomNavBar flotante para todas las pantallas
+          Positioned(
+            left: 16,
+            right: 16,
+            bottom: 16,
+            child: Consumer<GetDriverLocationViewmodel>(
+              builder: (context, driverVM, _) {
+                final moveData = driverVM.moveData;
+
+                // Ocultar en estos estados (solo en la página de inicio)
+                if (currentPageIndex == 0 && (moveData != null || showPriceModal || isWaitingForDriver)) {
+                  return const SizedBox.shrink();
+                }
+
+                return CustomBottomNavBar(
+                  currentIndex: currentPageIndex,
+                  onTap: (index) {
+                    setState(() {
+                      currentPageIndex = index;
+                    });
                   },
-                ),
-              ),
-              child: NavigationBar(
-                backgroundColor: Colors.black,
-                onDestinationSelected: (int index) {
-                  setState(() {
-                    currentPageIndex = index;
-                  });
-                },
-                indicatorColor: Colors.amber,
-                selectedIndex: currentPageIndex,
-                destinations: const <Widget>[
-                  NavigationDestination(
-                    selectedIcon: Icon(Icons.home_filled, color: Colors.black),
-                    icon: Icon(Icons.home_filled, color: Color(0xFF8E8E8E)),
-                    label: 'Inicio',
-                  ),
-                  NavigationDestination(
-                    selectedIcon: Icon(Icons.history_toggle_off_rounded, color: Colors.black,),
-                    icon: Icon(Icons.history_toggle_off_rounded, color: Color(0xFF8E8E8E)),
-                    label: 'Historial',
-                  ),
-                  NavigationDestination(
-                    selectedIcon: Icon(Icons.supervised_user_circle, color: Colors.black),
-                    icon: Icon(Icons.supervised_user_circle, color: Color(0xFF8E8E8E)),
-                    label: 'Perfil',
-                  ),
-                ],
-              ),
+                );
+              },
             ),
-      body: IndexedStack(
-        index: currentPageIndex,
-        children: [
-          _buildHomePage(context),
-          const HistoryMove(),
-          const User(),
+          ),
         ],
       ),
+
+      // BottomBar para estados especiales (solo en página de inicio)
+      bottomNavigationBar: currentPageIndex == 0
+          ? Consumer<GetDriverLocationViewmodel>(
+              builder: (context, driverVM, _) {
+                final moveData = driverVM.moveData;
+
+                /* if (moveData != null) {
+                  return ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 120),
+                    child: Container(
+                      decoration: const BoxDecoration(
+                       color: Colors.black,
+                        borderRadius: BorderRadius.only(
+                          topRight: Radius.circular(20),
+                          topLeft: Radius.circular(20),
+                        ),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: DriverInfoCard(
+                        plate: moveData['enrollVehicle'] ?? 'Sin placa',
+                        vehicleType: moveData['vehicleType'] ?? "NPR",
+                        driverImageUrl: 'assets/images/driver.jpg',
+                        vehicleImageUrl: 'assets/images/npr.png',
+                        phone: moveData['driverPhone'] ?? '',
+                        nameDriver: moveData['driverName'] ?? '',
+                      ),
+                    ),
+                  );
+                } */
+
+                if (showPriceModal) {
+                  return Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: SizedBox(
+                            height: 50,
+                            child: ConfirmButton(
+                              typeOfMove: widget.typeOfMove!,
+                              calculatedPrice: widget.calculatedPrice ?? '',
+                              distanceKm: widget.distanceKm ?? '',
+                              duration: widget.duration ?? '',
+                              estimatedTime: widget.estimatedTime ?? '',
+                              route: widget.route ?? [],
+                              locationViewModel: locationViewModel,
+                              userId: userId ?? 0,
+                              destinationLat: widget.destinationLat,
+                              destinationLng: widget.destinationLng,
+                              paymentMethod: _selectedPaymentMethod,
+                              onConfirmed: () {
+                                setState(() {
+                                  showPriceModal = false;
+                                  isWaitingForDriver = true;
+                                });
+                                Future.delayed(const Duration(seconds: 10), () {
+                                  if (mounted) {
+                                    setState(() {
+                                      isWaitingForDriver = false;
+                                      showPriceModal = true;
+                                    });
+                                  }
+                                });
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return const SizedBox.shrink();
+              },
+            )
+          : null,
     );
   }
 
@@ -178,7 +252,6 @@ class _HomeUserState extends State<HomeUserView> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final getDriverLocation = Provider.of<GetDriverLocationViewmodel>(context);
         final routeVM = Provider.of<RouteUserViewmodel>(context, listen: false);
         double containerHeight;
 
@@ -193,79 +266,79 @@ class _HomeUserState extends State<HomeUserView> {
         }
         return Stack(
           children: [
-            UserMapWidget(
-              route: _realRoute,
-              origin: origin,
-              destination: destination,
-              driverLocation: getDriverLocation.driverLocation,
-              onLocationUpdated: (location) => {
-                setState(() {
-                  userCurrentLocation = location;
-                })
-              },
+            Positioned.fill(
+              child: Consumer<GetDriverLocationViewmodel>(builder: (context, getDriverLocation, _) {
+                return UserMapWidget(
+                  route: _realRoute,
+                  origin: origin,
+                  destination: destination,
+                  driverLocation: getDriverLocation.driverLocation,
+                  onLocationUpdated: (location) => {
+                    setState(() {
+                      userCurrentLocation = location;
+                    })
+                  },
+                );
+              }),
             ),
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.black,
-                  borderRadius: const BorderRadius.only(
-                    topRight: Radius.circular(20),
-                    topLeft: Radius.circular(20),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 8,
-                    ),
-                  ],
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 20),
-                      if (showHomeButtons) ...[
-                        const Center(
-                          child: Text(
-                            "¿Listo para un nuevo hogar?",
-                            style: TextStyle(color: Colors.white, fontSize: 20.0, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        const ButtonCalculatePrice(),
-                        /*     ElevatedButton(
-                          
-                    onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) =>  PaymentWebViewScreen(paymentUrl: paymentUrl,)));
-                    },
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: Size(MediaQuery.of(context).size.width * 0.9, 60),
-                      backgroundColor: const Color(0xFFFFBC11),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                    ),
-                    child: const Text(
-                      "¡Comencemos!",
-                      style: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                  ),*/
+            if (showPriceModal || isWaitingForDriver)
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Consumer<GetDriverLocationViewmodel>(
+                  builder: (context, driverVM, _) {
+                    final moveData = driverVM.moveData;
 
-                        const SizedBox(height: 10),
-                        //  const ScheduleMoveWidget(),
-                      ],
-                      if (showPriceModal) ...[_buildDataMove()],
-                      if (isWaitingForDriver) ...[const WaitingForDriverWidget()]
-                    ],
-                  ),
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        borderRadius: const BorderRadius.only(
+                          topRight: Radius.circular(20),
+                          topLeft: Radius.circular(20),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 20),
+
+                          // ✅ Oculta la card si hay moveData
+                          /* if (showHomeButtons && moveData == null) ...[
+                          const Center(
+                            child: Text(
+                              "¡Listo, quiero mudarme!",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 20.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          const ButtonCalculatePrice(),
+                        ], */
+
+                          if (showPriceModal) ...[
+                            _buildDataMove(),
+                          ],
+                          if (isWaitingForDriver) ...[
+                            const WaitingForDriverWidget(),
+                          ],
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ),
-            ),
           ],
         );
       },
@@ -365,7 +438,12 @@ class _HomeUserState extends State<HomeUserView> {
   }
 
   Widget _buildDataMove() {
-    Decimal price = Decimal.tryParse(widget.calculatedPrice ?? '0') ?? Decimal.zero;
+    print("🔢 Precio bruto recibido: ${widget.calculatedPrice}");
+   String? priceString = widget.calculatedPrice?.replaceAll(",", "");
+    Decimal correctedPrice = Decimal.tryParse(priceString ?? '0') ?? Decimal.zero;
+
+
+    print("🔢 Precio real convertido: $correctedPrice");
 
     return Center(
       child: Column(
@@ -375,7 +453,7 @@ class _HomeUserState extends State<HomeUserView> {
             children: [
               Expanded(
                 child: Text(
-                  formatPrice(price),
+                    formatPriceToHundreds(widget.calculatedPrice ?? '0'),
                   style: const TextStyle(
                     fontSize: 25,
                     fontWeight: FontWeight.bold,
@@ -443,7 +521,7 @@ class _HomeUserState extends State<HomeUserView> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("${widget.typeOfMove}", style: const TextStyle(fontSize: 17, color: Colors.white)),
+                  Text(widget.typeOfMove?.displayName ?? '', style: const TextStyle(fontSize: 17, color: Colors.white)),
                   Text("${widget.estimatedTime}", style: const TextStyle(fontSize: 17, color: Colors.white)),
                   Text("${widget.distanceKm}", style: const TextStyle(fontSize: 17, color: Colors.white)),
                 ],

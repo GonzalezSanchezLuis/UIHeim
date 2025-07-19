@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 

@@ -284,17 +284,21 @@ class _UserMapWidgetState extends State<UserMapWidget> {
     }
 
     if (widget.driverLocation != null && widget.driverLocation != oldWidget.driverLocation && _mapReady) {
+      print("📍 [didUpdateWidget] Nueva ubicación del conductor: ${widget.driverLocation}");
       _updateDriverMarker(widget.driverLocation!);
+      _moveCameraToDriver(widget.driverLocation!);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    print("🧱 UserMapWidget.build ejecutado con driverLocation: ${widget.driverLocation}");
     return Stack(
       children: [
         GoogleMap(
           myLocationEnabled: false,
           myLocationButtonEnabled: false,
+          zoomControlsEnabled: false,
           markers: _markers,
           polylines: _polylines,
           onMapCreated: (controller) async {
@@ -303,6 +307,12 @@ class _UserMapWidgetState extends State<UserMapWidget> {
             _mapReady = true;
 
             await Future.delayed(const Duration(microseconds: 300));
+
+            if (widget.driverLocation != null) {
+              print("🚀 onMapCreated: driverLocation disponible, creando marcador...");
+              _updateDriverMarker(widget.driverLocation!);
+              _moveCameraToDriver(widget.driverLocation!);
+            }
             if (widget.route.isNotEmpty) {
               _drawRoute();
             }
@@ -312,7 +322,7 @@ class _UserMapWidgetState extends State<UserMapWidget> {
             zoom: widget.route.isNotEmpty ? 14 : 5.5,
           ),
         ),
-         Positioned(
+        Positioned(
           top: 20,
           right: 10,
           child: Column(
@@ -340,15 +350,21 @@ class _UserMapWidgetState extends State<UserMapWidget> {
               ),
             ],
           ),
-        ), 
+        ),
       ],
     );
   }
 
   Future<void> _loadCustomIcons() async {
-    _originIcon = await _getMarkerFromIcon(Icons.circle, AppTheme.greenColors, size: 30);
-    _destinationIcon = await _getMarkerFromIcon(Icons.circle, Colors.red, size: 30);
-    _driverIcon = await _getMarkerFromIcon(Icons.navigation, Colors.black);
+    _originIcon = await _getMarkerFromIcon(Icons.circle, AppTheme.greenColors, size: 30, );
+    _destinationIcon = await _getMarkerFromIcon(Icons.circle, Colors.blueAccent, size: 30,);
+    _driverIcon = await _getMarkerFromIconDriver(Icons.navigation, Colors.black, size: 50.0);
+
+     if (_mapReady && widget.driverLocation != null) {
+      print("🛠 Desde _loadCustomIcons: Agregando marcador del conductor");
+      _updateDriverMarker(widget.driverLocation!);
+      _moveCameraToDriver(widget.driverLocation!);
+    }
   }
 
   void _drawRoute() {
@@ -369,7 +385,6 @@ class _UserMapWidgetState extends State<UserMapWidget> {
         icon: _destinationIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
         anchor: const Offset(0.5, 0.5),
       ),
-
     };
 
     if (widget.driverLocation != null) {
@@ -397,7 +412,6 @@ class _UserMapWidgetState extends State<UserMapWidget> {
       startCap: Cap.roundCap,
       endCap: Cap.roundCap,
     );
-    
 
     setState(() {
       _polylines.clear();
@@ -456,6 +470,10 @@ class _UserMapWidgetState extends State<UserMapWidget> {
   }
 
   void _updateDriverMarker(LatLng location) {
+    print("🚗 [updateDriverMarker] Actualizando marcador a: $location");
+    print("🧩 ¿Driver icon está listo? ${_driverIcon != null}");
+    print("🎯 Total de marcadores antes: ${_markers.length}");
+
     final marker = Marker(
       markerId: const MarkerId("driver"),
       position: location,
@@ -468,7 +486,68 @@ class _UserMapWidgetState extends State<UserMapWidget> {
     });
   }
 
-  Future<BitmapDescriptor> _getMarkerFromIcon(IconData iconData, Color color, {double size = 80.0}) async {
+   Future<BitmapDescriptor> _getMarkerFromIconDriver(
+    IconData iconData,
+    Color fillColor, {
+    double size = 80.0,
+    Color borderColor = Colors.white, // color del borde
+    double borderWidth = 6.0, // grosor del borde
+  }) async {
+    try {
+      final pictureRecorder = PictureRecorder();
+      final canvas = Canvas(pictureRecorder);
+      final iconSize = size;
+
+      final center = Offset(iconSize / 2, iconSize / 2);
+      final radius = iconSize / 2;
+
+      // 1. Dibuja el borde
+      final borderPaint = Paint()
+        ..color = borderColor
+        ..style = PaintingStyle.fill;
+
+      canvas.drawCircle(center, radius, borderPaint);
+
+      // 2. Dibuja el círculo interior (relleno principal)
+      final fillPaint = Paint()
+        ..color = fillColor
+        ..style = PaintingStyle.fill;
+
+      canvas.drawCircle(center, radius - borderWidth, fillPaint);
+
+      // 3. Dibuja el icono encima
+      final textPainter = TextPainter(textDirection: TextDirection.ltr);
+      final textStyle = TextStyle(
+        fontSize: iconSize * 0.8,
+        fontFamily: iconData.fontFamily,
+        package: iconData.fontPackage,
+        color: Colors.white, // color del ícono
+      );
+
+      textPainter.text = TextSpan(text: String.fromCharCode(iconData.codePoint), style: textStyle);
+      textPainter.layout();
+      final iconOffset = Offset(
+        center.dx - (textPainter.width / 2),
+        center.dy - (textPainter.height / 2),
+      );
+
+      textPainter.paint(canvas, iconOffset);
+
+      // 4. Convierte a imagen
+      final image = await pictureRecorder.endRecording().toImage(iconSize.toInt(), iconSize.toInt());
+      final byteData = await image.toByteData(format: ImageByteFormat.png);
+
+      if (byteData == null) throw Exception("No se pudo generar el ícono");
+      return BitmapDescriptor.fromBytes(byteData.buffer.asUint8List());
+    } catch (e) {
+      print("❌ Error generando ícono con borde: $e");
+      return BitmapDescriptor.defaultMarker;
+    }
+  }
+
+
+
+ Future<BitmapDescriptor> _getMarkerFromIcon(IconData iconData, Color color, {double size = 80.0}) async {
     try {
       final pictureRecorder = PictureRecorder();
       final canvas = Canvas(pictureRecorder);
@@ -492,6 +571,17 @@ class _UserMapWidgetState extends State<UserMapWidget> {
     } catch (e) {
       print("❌ Error generando ícono: $e");
       return BitmapDescriptor.defaultMarker;
+    }
+  } 
+
+  Future<void> _moveCameraToDriver(LatLng driverPosition) async {
+    try {
+      final controller = await _controller.future;
+      await controller.animateCamera(
+        CameraUpdate.newLatLngZoom(driverPosition, 16),
+      );
+    } catch (e) {
+      print("❌ Error al mover la cámara al conductor: $e");
     }
   }
 

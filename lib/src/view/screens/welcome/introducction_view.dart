@@ -57,13 +57,13 @@ class _IntroductionViewState extends State<IntroductionView> {
               children: [
                 _buildPageContent(
                   image: 'assets/images/intro1.svg',
-                  title: "Pierdes tiempo buscando transporte",
-                  description: "Empieza a disfrutar de una mudanza rápida y sin complicaciones.",
+                  title: "Mudarte ya no es un dolor de cabeza.",
+                  description: "Puede ser tan fácil como pedir un taxi.",
                 ),
                 _buildPageContent(
                   image: 'assets/images/intro2.svg',
-                  title: "No quieres salir de casa para",
-                  description: "Pide tu vehículo 100% online sin salir de casa.",
+                  title: "Mudarte no debería doler",
+                  description: "Nosotros lo hacemos fácil, rápido y sin complicaciones.",
                 ),
               ],
             ),

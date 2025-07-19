@@ -1,74 +1,50 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
-import 'package:holi/src/viewmodels/user/profile_user_viewmodel.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:provider/provider.dart';
 
-class ImagePickerWidget extends StatefulWidget {
+class ImagePickerWidget extends StatelessWidget {
+  final File? selectedImage;
+  final String? imageUrl;
   final Function(File?) onImageSelected;
-  final String? initialImageUrl; // URL inicial si ya hay una imagen
 
   const ImagePickerWidget({
     super.key,
     required this.onImageSelected,
-    this.initialImageUrl,
+    this.selectedImage,
+    this.imageUrl,
   });
 
-  @override
-  _ImagePickerWidgetState createState() => _ImagePickerWidgetState();
-}
-
-class _ImagePickerWidgetState extends State<ImagePickerWidget> {
-  File? _selectedImage;
-  bool _isUploading = false;
-  String? _uploadedImageUrl;
-
-  @override
-  void initState() {
-    super.initState();
-    _uploadedImageUrl = widget.initialImageUrl; // Cargar la imagen inicial
-  }
-
-  Future<void> _pickImage(ImageSource source) async {
+  Future<void> _pickImage(BuildContext context, ImageSource source) async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: source);
 
-    if (pickedFile == null) return;
-
-    if (!mounted) return;
-    setState(() {
-      _selectedImage = File(pickedFile.path);
-      _isUploading = true;
-    });
-
-    // Enviar la imagen seleccionada al callback del widget
-    widget.onImageSelected(_selectedImage);
-    setState(() {
-      _isUploading = false;
-    });
+    if (pickedFile != null) {
+      final imageFile = File(pickedFile.path);
+      onImageSelected(imageFile);
+    }
   }
 
-  void _showImageSourceDialog() {
+  void _showImageSourceDialog(BuildContext context) {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppTheme.primarycolor,
       builder: (context) => Wrap(
         children: [
           ListTile(
-            leading: const Icon(Icons.camera_alt,color: Colors.white,),
-            title: const Text("Tomar foto",style: TextStyle(color: Colors.white),),
+            leading: const Icon(Icons.camera_alt, color: Colors.white),
+            title: const Text("Tomar foto", style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
-              _pickImage(ImageSource.camera);
+              _pickImage(context, ImageSource.camera);
             },
           ),
           ListTile(
             leading: const Icon(Icons.photo_library, color: Colors.white),
-            title: const Text("Seleccionar de la galería", style: TextStyle(color: Colors.white),),
+            title: const Text("Seleccionar de la galería", style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
-              _pickImage(ImageSource.gallery);
+              _pickImage(context, ImageSource.gallery);
             },
           ),
         ],
@@ -78,29 +54,22 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final profileViewModel = Provider.of<ProfileViewModel>(context);
-    final String? storedImageUrl = profileViewModel.profile.urlAvatarProfile;
+    ImageProvider? imageProvider;
+    if (selectedImage != null) {
+      imageProvider = FileImage(selectedImage!);
+    } else if (imageUrl != null && imageUrl!.isNotEmpty) {
+      imageProvider = NetworkImage(imageUrl!);
+    }
+
     return GestureDetector(
-      onTap: _showImageSourceDialog,
+      onTap: () => _showImageSourceDialog(context),
       child: Row(
         children: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              CircleAvatar(
-                radius: 40,
-                backgroundColor: AppTheme.colorcards,
-                backgroundImage: _uploadedImageUrl != null
-                    ? NetworkImage(_uploadedImageUrl!)
-                    : _selectedImage != null
-                        ? FileImage(_selectedImage!) as ImageProvider
-                        : storedImageUrl != null
-                            ? NetworkImage(storedImageUrl)
-                            : null,
-                child: (_uploadedImageUrl == null && _selectedImage == null) ? const Icon(Icons.person, size: 40, color: Colors.white) : null,
-              ),
-              if (_isUploading) const CircularProgressIndicator(),
-            ],
+          CircleAvatar(
+            radius: 40,
+            backgroundColor: AppTheme.colorcards,
+            backgroundImage: imageProvider,
+            child: imageProvider == null ? const Icon(Icons.person, size: 40, color: Colors.white) : null,
           ),
           const SizedBox(width: 16),
           const Expanded(
@@ -115,3 +84,4 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
     );
   }
 }
+

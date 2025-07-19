@@ -1,13 +1,14 @@
 
 import 'package:flutter/material.dart';
+import 'package:holi/src/core/enums/move_type.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 
 class ValidatedDropdownFormField extends StatefulWidget {
-  final String? value;
+  final MoveType? value;
   final List<String> items;
   final String label;
-  final void Function(String?) onChanged;
-  final String? Function(String?) validator;
+  final void Function(MoveType?) onChanged;
+  final String? Function(MoveType?) validator;
 
   const ValidatedDropdownFormField({
     Key? key,
@@ -31,7 +32,7 @@ class _ValidatedDropdownFormFieldState extends State<ValidatedDropdownFormField>
     _validate(widget.value);
   }
 
-  void _validate(String? value) {
+  void _validate(MoveType? value) {
     final result = widget.validator(value);
     setState(() {
       isValid = result == null;
@@ -45,7 +46,7 @@ class _ValidatedDropdownFormFieldState extends State<ValidatedDropdownFormField>
 
   @override
   Widget build(BuildContext context) {
-    return DropdownButtonFormField<String>(
+    return DropdownButtonFormField<MoveType>(
       value: widget.value,
       validator: (value) {
         final result = widget.validator(value);
@@ -54,11 +55,11 @@ class _ValidatedDropdownFormFieldState extends State<ValidatedDropdownFormField>
         });
         return result;
       },
-      onChanged: (String? newValue) {
+      onChanged: ( newValue) {
         widget.onChanged(newValue);
         _validate(newValue);
       },
-      items: widget.items.map((value) => DropdownMenuItem(value: value, child: Text(value))).toList(),
+      items: MoveType.values .map((type) => DropdownMenuItem(value: type,child: Text(type.label),)).toList(),
       decoration: InputDecoration(
         labelText: widget.label,
         border: OutlineInputBorder(

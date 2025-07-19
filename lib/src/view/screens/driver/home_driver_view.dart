@@ -5,14 +5,18 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:holi/src/core/enums/connection_status.dart';
+import 'package:holi/src/core/enums/move_type.dart';
+import 'package:holi/src/core/extensions/move_type_extension.dart';
 import 'package:holi/src/core/gps_validator/gps_validator_service.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/utils/format_price.dart';
 import 'package:holi/src/view/screens/driver/driver_view.dart';
 import 'package:holi/src/view/widget/button/button_card_home_widget.dart';
 import 'package:holi/src/view/widget/card/bottom_move_card.dart';
+import 'package:holi/src/view/widget/card/floating_move_card_wrapper.dart';
 import 'package:holi/src/view/widget/maps/driver_maps_widget.dart';
 import 'package:holi/src/viewmodels/auth/sesion_viewmodel.dart';
+import 'package:holi/src/viewmodels/driver/profile_driver_viewmodel.dart';
 import 'package:holi/src/viewmodels/driver/route_driver_viewmodel.dart';
 import 'package:holi/src/viewmodels/driver/driver_location_viewmodel.dart';
 import 'package:holi/src/viewmodels/driver/driver_status_viewmodel.dart';
@@ -40,6 +44,7 @@ class _HomeDriverState extends State<HomeDriverView> {
   StreamSubscription<Position>? _locationSubscription;
   ConnectionStatus? driverStatus;
   Map<String, dynamic>? _currentMoveData;
+  bool _isMapReady = false;
 
   @override
   void initState() {
@@ -81,120 +86,123 @@ class _HomeDriverState extends State<HomeDriverView> {
   }
 
   Widget _buildHomeScreen() {
-    return Stack(
-      children: [
-        Consumer<RouteDriverViewmodel>(builder: (context, directionsViewmodel, _) {
-          return DriverMapWidget(
-            driverLocation: _currentDriverLocation,
-            route: directionsViewmodel.route,
-            driverToOriginRoute: directionsViewmodel.driverToOriginRoute,
-          );
-          
-        }),
+    return Consumer<ProfileDriverViewModel>(builder: (context, profileViewModel, _) {
+      final profile = profileViewModel.profile;
+      return Stack(
+        children: [
+          Consumer<RouteDriverViewmodel>(builder: (context, directionsViewmodel, _) {
+            return DriverMapWidget(
+              driverLocation: _currentDriverLocation,
+              route: directionsViewmodel.route,
+              driverToOriginRoute: directionsViewmodel.driverToOriginRoute,
+            );
+          }),
 
-        // Botón de perfil con borde dinámico
-        if (_currentMoveData == null)
-          Positioned(
-            top: 50,
-            left: 20,
-            child: GestureDetector(
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const Driver()),
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppTheme.primarycolor,
-                    width: 3,
-                  ),
+          // Botón de perfil con borde dinámico
+          if (_currentMoveData == null)
+            Positioned(
+              top: 50,
+              left: 20,
+              child: GestureDetector(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Driver()),
                 ),
-                child: const CircleAvatar(
-                  radius: 25,
-                  backgroundImage: AssetImage("assets/images/profile.jpg"),
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppTheme.primarycolor,
+                      width: 3,
+                    ),
+                  ),
+                  child: CircleAvatar(
+                    radius: 30,
+                    backgroundImage: profile.urlAvatarProfile != null && profile.urlAvatarProfile!.isNotEmpty ? NetworkImage(profile.urlAvatarProfile!) : null,
+                    child: profile.urlAvatarProfile == null || profile.urlAvatarProfile!.isEmpty ? const Icon(Icons.person, size: 40) : null,
+                  ),
                 ),
               ),
             ),
-          ),
 
-        if (_currentMoveData != null)
-          Positioned(
-            top: 40,
-            left: 5,
-            right: 5,
-            child: _buildFloatingMoveCard(context, _currentMoveData!),
-          ),
+          if (_currentMoveData != null)
+            Positioned(
+              top: 40,
+              left: 5,
+              right: 5,
+              child: FloatingMoveCardWrapper(moveData: _currentMoveData!),
+            ),
 
-        // Tarjeta inferior con botones
-        _currentMoveData == null
-            ? Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: Consumer2<RouteDriverViewmodel, DriverStatusViewmodel>(
-                  builder: (context, directionsViewModel, driverViewModel, child) {
-                    final bool hasMoveData = directionsViewModel.moveData != null && directionsViewModel.moveData!.isNotEmpty && _currentMoveData == null;
-                    return AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      height: hasMoveData ? MediaQuery.of(context).size.height * 0.47 : MediaQuery.of(context).size.height * 0.13,
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: const BorderRadius.only(
-                          topRight: Radius.circular(20),
-                          topLeft: Radius.circular(20),
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 8,
+          // Tarjeta inferior con botones
+          _currentMoveData == null
+              ? Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Consumer2<RouteDriverViewmodel, DriverStatusViewmodel>(
+                    builder: (context, directionsViewModel, driverViewModel, child) {
+                      final bool hasMoveData = directionsViewModel.moveData != null && directionsViewModel.moveData!.isNotEmpty && _currentMoveData == null;
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        height: hasMoveData ? MediaQuery.of(context).size.height * 0.47 : MediaQuery.of(context).size.height * 0.13,
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          borderRadius: const BorderRadius.only(
+                            topRight: Radius.circular(20),
+                            topLeft: Radius.circular(20),
                           ),
-                        ],
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: driverViewModel.connectionStatus == null
-                            ? const Center(child: CircularProgressIndicator())
-                            : hasMoveData
-                                ? _buildMoveDataCard(directionsViewModel.moveData!)
-                                : Column(
-                                    children: [
-                                      const SizedBox(height: 10),
-                                      driverViewModel.connectionStatus!.isConnected ? _buildDisconnectCard() : _buildConnectCard(),
-                                    ],
-                                  ),
-                      ),
-                    );
-                  },
-                ),
-              )
-            : Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: Consumer<SessionViewModel>(
-                  builder: (context, sessionVM, child) {
-                    debugPrint("🔥 sessionVM.isInitialized: ${sessionVM.isInitialized}");
-                    debugPrint("🔥 _currentMoveData: $_currentMoveData");
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 8,
+                            ),
+                          ],
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: driverViewModel.connectionStatus == null
+                              ? const Center(child: CircularProgressIndicator())
+                              : hasMoveData
+                                  ? _buildMoveDataCard(directionsViewModel.moveData!)
+                                  : Column(
+                                      children: [
+                                        const SizedBox(height: 10),
+                                        driverViewModel.connectionStatus!.isConnected ? _buildDisconnectCard() : _buildConnectCard(),
+                                      ],
+                                    ),
+                        ),
+                      );
+                    },
+                  ),
+                )
+              : Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Consumer<SessionViewModel>(
+                    builder: (context, sessionVM, child) {
+                      debugPrint("🔥 sessionVM.isInitialized: ${sessionVM.isInitialized}");
+                      debugPrint("🔥 _currentMoveData: $_currentMoveData");
 
-                    final rawMoveId = _currentMoveData?['moveId'];
-                    final moveId = rawMoveId is int ? rawMoveId : int.tryParse(rawMoveId?.toString() ?? '');
+                      final rawMoveId = _currentMoveData?['moveId'];
+                      final moveId = rawMoveId is int ? rawMoveId : int.tryParse(rawMoveId?.toString() ?? '');
 
-                    print("ID DE LA MUDANZA $moveId");
-                    final driverId = sessionVM.userId;
+                      print("ID DE LA MUDANZA $moveId");
+                      final driverId = sessionVM.userId;
 
-                    if (moveId == null || driverId == null) {
-                      return Text('Datos inválidos');
-                    }
+                      if (moveId == null || driverId == null) {
+                        return Text('Datos inválidos');
+                      }
 
-                    return BottomMoveCard(
-                      moveId: moveId,
-                      driverId: driverId,
-                    );
-                  },
-                )),
-      ],
-    );
+                      return BottomMoveCard(
+                        moveId: moveId,
+                        driverId: driverId,
+                      );
+                    },
+                  )),
+        ],
+      );
+    });
   }
 
   Future<void> _validateGpsAndPermissions(BuildContext context) async {
@@ -263,11 +271,18 @@ class _HomeDriverState extends State<HomeDriverView> {
 
   Widget _buildMoveDataCard(Map<String, dynamic> moveData) {
     String? priceString = moveData['price'];
-    Decimal price = Decimal.tryParse(priceString ?? '0') ?? Decimal.zero;
+    double priceInPesos = (double.tryParse(priceString ?? '0') ?? 0) / 100;
+
+    String formattedPrice = formatPriceToHundredsDriver(priceInPesos.toString());
 
     String originalAddress = moveData['origin'];
     List<String> parts = originalAddress.split(',');
     String reduced = parts.take(3).join(',').trim();
+
+    final typeOfMoveStr = moveData['typeOfMove'] ?? '';
+    final typeOfMove = MoveType.values.firstWhere((e) => e.value == typeOfMoveStr, orElse: () => MoveType.PEQUENA);
+
+    final displayName = typeOfMove.displayName;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -296,7 +311,7 @@ class _HomeDriverState extends State<HomeDriverView> {
                   )),
                   Expanded(
                     child: Text(
-                      formatPrice(price),
+                      formattedPrice,
                       style: const TextStyle(color: Colors.white, fontSize: 23),
                       textAlign: TextAlign.center,
                     ),
@@ -324,7 +339,7 @@ class _HomeDriverState extends State<HomeDriverView> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  '${moveData['distance']} (${moveData['estimatedTimeOfArrival']})',
+                                  '(Origen) ${moveData['distance']} (${moveData['estimatedTimeOfArrival']})',
                                   style: const TextStyle(color: Colors.white, fontSize: 18),
                                 ),
                                 const SizedBox(height: 4),
@@ -350,7 +365,7 @@ class _HomeDriverState extends State<HomeDriverView> {
                 children: [
                   const Icon(
                     Icons.circle,
-                    color: Colors.red,
+                    color: Colors.blueAccent,
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -358,7 +373,7 @@ class _HomeDriverState extends State<HomeDriverView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${moveData['distanceToDestination']} (${moveData['timeToDestination']})',
+                        '(Destino) ${moveData['distanceToDestination']} (${moveData['timeToDestination']})',
                         style: const TextStyle(color: Colors.white, fontSize: 18),
                       ),
                       Text(
@@ -385,7 +400,7 @@ class _HomeDriverState extends State<HomeDriverView> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'Mudanza ${moveData['typeOfMove']}',
+                      'Mudanza ${typeOfMove.displayName}',
                       style: const TextStyle(color: Colors.white, fontSize: 18),
                     ),
                   ),
@@ -399,9 +414,18 @@ class _HomeDriverState extends State<HomeDriverView> {
                 children: [
                   Row(
                     children: [
-                      const CircleAvatar(
-                        radius: 15,
-                        backgroundImage: AssetImage("assets/images/profile.jpg"),
+                      Container(
+                        width: 35,
+                        height: 35,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.grey, width: 2), // <- Cambia el color del borde aquí
+                        ),
+                        child: CircleAvatar(
+                          backgroundColor: Colors.grey[300], // Fondo del círculo
+                          backgroundImage: (moveData['avatarProfile'] != null && moveData['avatarProfile'].toString().isNotEmpty) ? NetworkImage(moveData['avatarProfile']) as ImageProvider : null,
+                          child: (moveData['avatarProfile'] == null || moveData['avatarProfile'].toString().isEmpty) ? const Icon(Icons.person, size: 18, color: Colors.white) : null,
+                        ),
                       ),
                       const SizedBox(width: 8),
                       Text(
@@ -488,105 +512,6 @@ class _HomeDriverState extends State<HomeDriverView> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildFloatingMoveCard(BuildContext context, Map<String, dynamic> moveData) {
-    return Card(
-      color: Colors.black.withOpacity(0.9),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-        side: const BorderSide(color: AppTheme.primarycolor, width: 2),
-      ),
-      elevation: 10,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.green, size: 30),
-                SizedBox(width: 10),
-                Text(
-                  'Viaje Aceptado',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 15),
-
-            // Información resumida del viaje
-            Row(
-              children: [
-                const Icon(Icons.person, color: Colors.white, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  'Vamos por ${moveData['userName'] ?? 'Usuario'}',
-                  style: const TextStyle(color: Colors.white, fontSize: 16),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 8),
-
-            Row(
-              children: [
-                const Icon(Icons.circle, color: Colors.green, size: 20),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Origen ${moveData['origin']}',
-                    style: const TextStyle(color: Colors.white, fontSize: 16),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 8),
-
-            Row(
-              children: [
-                const Icon(Icons.circle, color: Colors.red, size: 20),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Destino ${moveData['destination']}',
-                    style: const TextStyle(color: Colors.white, fontSize: 16),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 15),
-
-            // Botón para continuar
-            /*  ElevatedButton(
-              onPressed: () {
-                // Aquí puedes navegar a la siguiente pantalla o realizar otra acción
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primarycolor,
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              child: const  Text(
-                'Iniciar Navegación',
-                style: TextStyle(fontSize: 18),
-              ),
-            ), */
-          ],
-        ),
-      ),
     );
   }
 }

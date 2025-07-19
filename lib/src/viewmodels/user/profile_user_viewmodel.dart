@@ -1,11 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:holi/src/model/user/profile_user_model.dart';
-import 'package:holi/src/service/user/profile_service.dart';
+import 'package:holi/src/service/user/profile_user_service.dart';
 import 'package:holi/src/service/cloudinary/cloudinary_service.dart';
 
-class ProfileViewModel with ChangeNotifier {
-  final ProfileService _profileService = ProfileService();
+class ProfileUserViewModel with ChangeNotifier {
+  final ProfileUserService _profileService = ProfileUserService();
   ProfileModel _profile = ProfileModel();
   bool _isLoading = false;
   File? _selectedImage;
@@ -28,7 +28,7 @@ class ProfileViewModel with ChangeNotifier {
   }
 
   void onImageSelected(File? imageFile) {
-    _selectedImage = imageFile; // Guarda la imagen seleccionada
+    _selectedImage = imageFile; 
     notifyListeners();
   }
 
@@ -62,7 +62,7 @@ class ProfileViewModel with ChangeNotifier {
       document,
       email,
       phone,
-      password,
+      (password != null && password.isNotEmpty) ? password : null,
     );
 
     _isLoading = false;

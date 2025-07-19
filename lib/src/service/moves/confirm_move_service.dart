@@ -1,44 +1,44 @@
 import 'dart:convert';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:holi/src/core/enums/move_type.dart';
 import 'package:http/http.dart' as http;
-
 
 class ConfirmMoveService {
   Future<Map<String, dynamic>?> confirmMove(
-      {required String calculatedPrice, 
-      required String distanceKm, 
-      required String duration, 
-      required String typeOfMove, 
-      required String estimatedTime, 
-      required List<LatLng> route, 
-      required double userLat, 
-      required double userLng, 
+      {required String calculatedPrice,
+      required String distanceKm,
+      required String duration,
+      required MoveType typeOfMove,
+      required String estimatedTime,
+      required List<LatLng> route,
+      required double userLat,
+      required double userLng,
       required int userId,
-      double? destinationLat, 
-      double? destinationLng, 
-      String? originAddressText, 
-      String? destinationAddressText, 
-      String? paymentMethod
-      }) async {
+      double? destinationLat,
+      double? destinationLng,
+      String? originAddressText,
+      String? destinationAddressText,
+      String? paymentMethod}) async {
     try {
-      final url = Uri.parse("http://192.168.20.49:8080/api/v1/move/confirm");
-    
+      final url = Uri.parse("https://3e2dd06df8fb.ngrok-free.app/api/v1/move/confirm");
+      final cleanedPrice = calculatedPrice.replaceAll(',', '');
+
       final Map<String, dynamic> requestBody = {
-        "price": calculatedPrice, 
-        "distanceKm": distanceKm, 
-        "duration": duration, 
-        "typeOfMove": typeOfMove, 
-        "estimatedTime": estimatedTime, 
-        "route": route, 
-        "originLat": userLat, 
+        "price": cleanedPrice,
+        "distanceKm": distanceKm,
+        "duration": duration,
+        "typeOfMove": typeOfMove.name,
+        "estimatedTime": estimatedTime,
+        "route": route,
+        "originLat": userLat,
         "originLng": userLng,
         "destinationLat": destinationLat,
-        "destinationLng": destinationLng, 
+        "destinationLng": destinationLng,
         "origin": originAddressText,
         "destination": destinationAddressText,
         'paymentMethod': paymentMethod,
         "userId": userId
-        };
+      };
 
       // o getInt si es entero
 

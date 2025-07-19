@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:holi/src/core/enums/connection_status.dart';
+import 'package:holi/src/core/enums/move_type.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/view/screens/move/calculate_price_view.dart';
 import 'package:holi/src/view/screens/move/schedule_move_view.dart';
@@ -110,8 +111,43 @@ class ConnectButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<DriverStatusViewmodel>(
       builder: (context, provider, _) {
+        // Determina el color del botón
+        final Color buttonBackgroundColor = provider.isLoading
+            ? AppTheme.confirmationscolor.withOpacity(0.6) // Color con opacidad cuando está cargando
+            : AppTheme.confirmationscolor; // Color normal
+
+        // Determina el contenido del botón (texto o indicador de carga)
+        final Widget buttonChild = provider.isLoading
+            ? const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      strokeWidth: 3,
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  Text(
+                    "Conectando...", // Texto que aparece mientras carga
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              )
+            : const Text(
+                'Conectarme',
+                style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
+              );
+
         return ElevatedButton(
-            onPressed: () async {
+          // La clave: onPressed siempre es una función para evitar que el botón se "deshabilite"
+          onPressed: () async {
             if (!provider.isLoading) {
               LatLng? newLocation = await provider.connectDriverViewmodel(context);
               if (newLocation != null) {
@@ -120,25 +156,18 @@ class ConnectButton extends StatelessWidget {
             }
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: provider.isLoading ? Colors.grey : AppTheme.confirmationscolor,
+            backgroundColor: buttonBackgroundColor, // Usa el color determinado
             minimumSize: Size(MediaQuery.of(context).size.width * 0.9, 60),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(30),
             ),
           ),
-          child: provider.isLoading
-              ? const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    strokeWidth: 3,
-                  ),
-                )
-              : const Text(
-                  'Conectarme',
-                  style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
-                ),
+          child: SizedBox(
+            height: 40,
+            child: Center(
+              child: buttonChild, 
+            ),
+          ),
         );
       },
     );
@@ -150,50 +179,79 @@ class DisconnectButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<DriverStatusViewmodel>(context);
-    if (provider.connectionStatus != ConnectionStatus.CONNECTED) {
-      return const SizedBox.shrink();
-    }
-    return ElevatedButton(
-      onPressed: provider.isLoading ? null : provider.disconnectDriverViewmodel,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppTheme.warningcolor,
-        minimumSize: Size(MediaQuery.of(context).size.width * 0.9, 60),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30),
-        ),
-      ),
-      child: provider.isLoading
-          ? const SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                strokeWidth: 3,
-              ),
-            )
-          : const Stack(
-              alignment: Alignment.center,
-              children: [
-                Text(
-                  "Desconectarme",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+    return Consumer<DriverStatusViewmodel>(
+      builder: (context, provider, _) {
+        // Oculta el botón si no está conectado
+        if (provider.connectionStatus != ConnectionStatus.CONNECTED) {
+          return const SizedBox.shrink();
+        }
+
+        final Color buttonBackgroundColor = provider.isLoading
+            ? AppTheme.warningcolor.withOpacity(0.6) 
+            : AppTheme.warningcolor; 
+
+        return ElevatedButton(
+          onPressed: () {
+            if (!provider.isLoading) {
+              provider.disconnectDriverViewmodel();
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: buttonBackgroundColor, // Usamos el color determinado
+            minimumSize: Size(MediaQuery.of(context).size.width * 0.9, 60),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
             ),
+          ),
+          child: SizedBox(
+            height: 40,
+            child: Center(
+              child: provider.isLoading
+                  ? const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            strokeWidth: 3,
+                          ),
+                        ),
+                        SizedBox(width: 16),
+                        Text(
+                          "Desconectando...",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    )
+                  : const Text(
+                      "Desconectarme",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
+
+
 
 class ConfirmButton extends StatelessWidget {
   final String calculatedPrice;
   final String distanceKm;
   final String duration;
-  final String typeOfMove;
+  final MoveType? typeOfMove;
   final String estimatedTime;
   final List<LatLng> route;
   final LocationViewModel locationViewModel;
@@ -235,7 +293,7 @@ class ConfirmButton extends StatelessWidget {
           : () async {
               final result = viewModel.confirmMove(
                   context: context,
-                  typeOfMove: typeOfMove,
+                  typeOfMove: typeOfMove!,
                   calculatedPrice: calculatedPrice,
                   distanceKm: distanceKm,
                   duration: duration,
@@ -262,7 +320,7 @@ class ConfirmButton extends StatelessWidget {
               color: Colors.black,
             )
           : const Text(
-              "Confirmar",
+              "Confirmar y relajarme",
               style: TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
             ),
     ));

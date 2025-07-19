@@ -23,13 +23,14 @@ class _SelectPaymentMethodState extends State<SelectPaymentMethod> {
     return Scaffold(
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
-        backgroundColor: AppTheme.colorbackgroundview,
-        title: const Text("Seleccionar un metodo de pago",
+        backgroundColor: AppTheme.primarycolor,
+        title: const Text("Selecciona un metodo de pago",
             style: TextStyle(
               fontWeight: FontWeight.bold,
+              color: Colors.white
             )),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white,),
           onPressed: () => {Navigator.pop(context)},
         ),
       ),

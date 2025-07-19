@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
-import 'package:holi/src/service/user/profile_service.dart';
+import 'package:holi/src/service/user/profile_user_service.dart';
 import 'package:holi/src/view/screens/user/configuration_user_view.dart';
 import 'package:holi/src/view/screens/driver/join_driver_view.dart';
 import 'package:holi/src/view/widget/card/account_card_widget.dart';
@@ -15,6 +15,7 @@ class User extends StatefulWidget {
 
 class _UserState extends State<User> {
   String name = "";
+  String? avatarUrl;
 
   @override
   void initState() {
@@ -23,17 +24,19 @@ class _UserState extends State<User> {
   }
 
   Future<void> _fetchUserData() async {
-    final profileService = ProfileService();
+    final profileService = ProfileUserService();
     final userData = await profileService.fetchUserData();
 
     if (userData != null) {
       print("Datos del usuario: $userData");
       setState(() {
         name = userData['fullName'] ?? 'Nombre no disponible';
+        avatarUrl = userData['urlAvatarProfile'];
       });
     } else {
       setState(() {
-        name = 'Nombre no disponible'; // Si no se encuentran datos, mostramos un valor por defecto
+        name = 'Nombre no disponible';
+        avatarUrl = null;
       });
     }
   }
@@ -47,57 +50,82 @@ class _UserState extends State<User> {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             const SizedBox(
-              height: 150,
+              height: 60,
             ),
-            Row(children: [
-              const CircleAvatar(
-                radius: 35.0,
-                backgroundImage: AssetImage("assets/images/profile.jpg"),
-              ),
-              const SizedBox(width: 10.0),
-              Column(
-                
-                crossAxisAlignment: CrossAxisAlignment.start,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
                 children: [
-                  Text(
-                    name, // Reemplaza con el nombre real
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                  Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
+                    child: avatarUrl != null && avatarUrl!.isNotEmpty
+                        ? CircleAvatar(
+                            radius: 35,
+                            backgroundImage: NetworkImage(avatarUrl!),
+                          )
+                        : const CircleAvatar(
+                            radius: 35,
+                            backgroundColor: Colors.grey,
+                            child: Icon(Icons.person, size: 35, color: Colors.white),
+                          ),
                   ),
-
-                  const SizedBox(height: 2.0),
-
-                  const Text(
-                    "¡Hola!", 
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
-                    ),
-                  ),
+                  const SizedBox(width: 10.0),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 2.0),
+                      const Text(
+                        "¡Hola!",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  )
                 ],
-              )
-            ]),
-
+              ),
+            ),
             const SizedBox(height: 20),
-
-            AccountCard(           
+            AccountCard(
               title: "Mi cuenta",
               subtitle: "Configuracion",
               width: 450,
               height: 130,
-              icon: const Icon(Icons.settings,size: 30,),
+              icon: const Icon(
+                Icons.settings,
+                size: 30,
+              ),
               onTap: () => {Navigator.push(context, MaterialPageRoute(builder: (context) => const ConfigurationUser()))},
             ),
-
             AccountCard(
               title: "Otros",
               subtitle: "Realiza mudanzas con Heim",
               width: 450,
               height: 130,
-              icon: const Icon(FontAwesomeIcons.truckFront,size: 20,),
+              icon: const Icon(
+                FontAwesomeIcons.truckFront,
+                size: 20,
+              ),
               onTap: () => {Navigator.push(context, MaterialPageRoute(builder: (context) => const JoinDriver()))},
             ),
           ],

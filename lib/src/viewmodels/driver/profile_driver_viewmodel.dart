@@ -4,14 +4,14 @@ import 'package:holi/src/service/drivers/driver_profile_service.dart';
 import 'package:holi/src/service/cloudinary/cloudinary_service.dart';
 import 'dart:io';
 
-class ProfileViewModel with ChangeNotifier {
+class ProfileDriverViewModel with ChangeNotifier {
   final DriverProfileService _profileService = DriverProfileService();
-  ProfileModel _profile = ProfileModel();
+  ProfileDriverModel _profile = ProfileDriverModel();
   bool _isLoading = false;
   File? _selectedImage;
   File? get selectedImage => _selectedImage;
 
-  ProfileModel get profile => _profile;
+  ProfileDriverModel get profile => _profile;
   bool get isLoading => _isLoading;
 
   Future<void> fetchDriverData() async {
@@ -20,7 +20,7 @@ class ProfileViewModel with ChangeNotifier {
 
     final data = await _profileService.fetchDriverData();
     if (data != null) {
-      _profile = ProfileModel.fromMap(data);
+      _profile = ProfileDriverModel.fromMap(data);
     }
 
     _isLoading = false;
@@ -28,7 +28,7 @@ class ProfileViewModel with ChangeNotifier {
   }
 
   void onImageSelected(File? imageFile) {
-    _selectedImage = imageFile; // Guarda la imagen seleccionada
+    _selectedImage = imageFile; 
     notifyListeners();
   }
 
@@ -43,7 +43,6 @@ class ProfileViewModel with ChangeNotifier {
 
     String? imageUrl = _profile.urlAvatarProfile;
 
-    // Sube la imagen a Cloudinary si se seleccionó una nueva
     if (_selectedImage != null) {
       imageUrl = await CloudinaryService.uploadImage(_selectedImage!);
       print("URL DE LA IMAGEN $imageUrl");
@@ -55,14 +54,15 @@ class ProfileViewModel with ChangeNotifier {
     }
 
     // Actualiza el perfil con la nueva URL de la imagen
-    final response = await _profileService.updateDataDriver(
-      imageUrl ?? _profile.urlAvatarProfile ?? '',
+   final response = await _profileService.updateDataDriver(
       fullName,
       document,
       email,
       phone,
-      password ?? ''
+      password ?? '',
+      imageUrl ?? _profile.urlAvatarProfile ?? '',
     );
+
 
     _isLoading = false;
     notifyListeners();
@@ -73,7 +73,8 @@ class ProfileViewModel with ChangeNotifier {
           fullName: fullName,
           document: document,
           email: email,
-          phone: phone);
+          phone: phone, 
+          );
     }
   }
 

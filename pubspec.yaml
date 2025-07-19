@@ -58,6 +58,7 @@ dependencies:
   webview_flutter: ^4.2.2 
   another_flushbar: ^1.10.29
   font_awesome_flutter: ^10.7.0
+  stomp_dart_client: ^0.4.4
 
 
   
@@ -105,10 +106,12 @@ flutter:
     - assets/images/nequi.png
     - assets/images/daviplata.png
     - assets/images/cards.png
+    - assets/images/vehicle.png
     - assets/images/location.png
     - assets/images/navigation.png
     - assets/maps/maps_style.json
     - assets/animations/Animation_searching.json
+    
 
 
 

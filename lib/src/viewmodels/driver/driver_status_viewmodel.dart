@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:holi/src/core/enums/connection_status.dart';
 import 'package:holi/src/core/gps_validator/gps_validator_service.dart';
 import 'package:holi/src/service/drivers/driver_status_service.dart';
+import 'package:holi/src/service/websocket/websocket_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart' as geo;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -11,16 +12,13 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 class DriverStatusViewmodel extends ChangeNotifier {
   ConnectionStatus? _connectionStatus;
   bool _isLoading = false;
+  WebSocketService? _webSocketService;
 
   Map<String, dynamic>? tripData;
-
- final  int _remainingTime = 15;
-
+  final int _remainingTime = 15;
   int get remainingTime => _remainingTime;
-
   Timer? _timer;
   bool isTimerRunning = false;
-
   bool get isLoading => _isLoading;
   ConnectionStatus? get connectionStatus => _connectionStatus;
 
@@ -58,6 +56,14 @@ class DriverStatusViewmodel extends ChangeNotifier {
 
       print("✅ Conductor conectado exitosamente.");
 
+      _webSocketService = WebSocketService(
+          driverId: driverId.toString(),
+          onMessage: (data) {
+            print("🧾 Mensaje WebSocket recibido: $data");
+            // Puedes notificar listeners o actualizar el estado aquí
+          });
+      _webSocketService!.connect();
+
       return latLngPosition;
     } catch (e) {
       print("⚠️ Error al conectar: $e");
@@ -84,6 +90,10 @@ class DriverStatusViewmodel extends ChangeNotifier {
       final statusService = DriverStatusSerive();
       await statusService.disconnectDriver(driverId);
       setStatus(ConnectionStatus.DISCONNECTED);
+
+      _webSocketService?.disconnect();
+      _webSocketService =  null;
+
       notifyListeners();
     } catch (e) {
       debugPrint("⚠️ Error al desconectar: $e");
@@ -122,56 +132,4 @@ class DriverStatusViewmodel extends ChangeNotifier {
     _connectionStatus = status;
     notifyListeners(); // Actualiza la UI
   }
-
- /*void updateTripData(Map<String, dynamic> newTripData) {
-    if (newTripData.containsKey('origin') && newTripData.containsKey('destination')) {
-      tripData = newTripData;
-
-     _startTimer();
-      isTimerRunning = true;
-
-      log("datos del viaje $tripData");
-      notifyListeners();
-    } else {
-      log("Datos de viaje incompletos");
-    }
-  }
-
-  void _startTimer() {
-    if (_timer != null) {
-      _timer!.cancel(); // Cancelar temporizador anterior si existe
-    }
-
-    _remainingTime = 15;
-
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_remainingTime > 0) {
-        _remainingTime--;
-        notifyListeners();
-      } else {
-        timer.cancel();
-        clearTripData();
-        isTimerRunning = false;
-        notifyListeners();
-      }
-    });
-  }
-
-  void stopTimer() {
-    _timer?.cancel();
-    isTimerRunning = false;
-    _remainingTime = 15; // Reinicia a 30 o al valor inicial que desees
-    notifyListeners();
-  }
-
-  void clearTripData() {
-    tripData = null;
-    notifyListeners();
-  } 
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }*/
 }

@@ -11,6 +11,7 @@ class DriverMapWidget extends StatefulWidget {
   final List<LatLng>? driverToOriginRoute;
   final void Function(LatLng)? onDriverConnected;
 
+
   const DriverMapWidget({super.key, required this.driverLocation, required this.route, this.driverToOriginRoute, this.onDriverConnected});
 
   @override
@@ -41,6 +42,7 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
   final _defaultLocation = const LatLng(4.709870566194833, -74.07554855445838);
 
   bool _hasCenteredOnDriver = false;
+  bool _isIconsLoaded = false;
 
   @override
   void initState() {
@@ -48,17 +50,20 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _loadCustomIcons();
-
-      /* if (widget.route.isNotEmpty) {
-        _drawRoute();
-      } */
     });
   }
 
   @override
   void didUpdateWidget(covariant DriverMapWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.driverLocation != null && widget.driverLocation != oldWidget.driverLocation) {
+
+    // Si la ubicación del conductor cambió
+    final driverChanged = widget.driverLocation != null && widget.driverLocation != oldWidget.driverLocation;
+
+    // Si la ruta cambió y ahora tiene datos
+    final routeChanged = widget.route.isNotEmpty && widget.route != oldWidget.route;
+
+    if (driverChanged) {
       _updateDriverMarker(widget.driverLocation!);
 
       if (!_hasCenteredOnDriver && _mapReady && googleMapController != null) {
@@ -66,37 +71,21 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
         googleMapController!.animateCamera(
           CameraUpdate.newLatLngZoom(widget.driverLocation!, _activeLocationZoom),
         );
-
-        // Notifica al padre si lo necesita
+        // Notifica al padre
         widget.onDriverConnected?.call(widget.driverLocation!);
-
-        if (widget.route != oldWidget.route && widget.route.isNotEmpty && _mapReady) {
-          _drawRoute();
-        }
       }
+    }
+    print("🔎 driverToOriginRoute tiene ${widget.driverToOriginRoute?.length ?? 0} puntos");
 
-      // Verificamos si la ubicación del conductor cambió
-      /*  if (widget.driverLocation != null && (oldWidget.driverLocation == null || widget.driverLocation != oldWidget.driverLocation)) {
-      log('Updating marker and camera position in didUpdateWidget');
+    final routeReady = widget.route.isNotEmpty;
+    final driverToOriginReady = widget.driverToOriginRoute != null && widget.driverToOriginRoute!.isNotEmpty;
 
-      // Asegúrate de que el controlador ya esté inicializado
-      if (_mapReady && mounted && googleMapController != null) {
-        _updateDriverMarker(widget.driverLocation!);
-         googleMapController?.animateCamera(
-          CameraUpdate.newLatLngZoom(widget.driverLocation!, 18),
-        ); 
-      } else {
-        log("⚠️ Intento de mover la cámara antes de que el mapa esté listo.");
-      }
-
-      if (_mapReady && mounted) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _drawRoute();
-          //  _simulateDriverMovement(widget.driverToOriginRoute ?? [], stepsPerSegment: 20, stepDurationMs: 150);
-        });
-      } */
+    if (_mapReady && (routeReady || driverToOriginReady)) {
+      print("📍 Datos completos. Trazando rutas...");
+      _drawRoute();
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -107,7 +96,7 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
           myLocationButtonEnabled: false,
           markers: _markers,
           polylines: _polylines,
-          onMapCreated: (GoogleMapController controller) {
+          onMapCreated: (GoogleMapController controller) async {
             googleMapController = controller;
             _controller.complete(controller);
             _mapReady = true;
@@ -117,16 +106,20 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
               _updateDriverMarker(widget.driverLocation!);
             }
 
-            Future.delayed(const Duration(milliseconds: 400), () {
-              print("🛤 Ruta tiene ${widget.route.length} puntos");
-              if (widget.driverLocation != null) {
-                _updateDriverMarker(widget.driverLocation!);
-              }
-
-              if (widget.route.isNotEmpty) {
-                _drawRoute();
-              }
+            await Future.doWhile(() async {
+              await Future.delayed(const Duration(milliseconds: 100));
+              return !_isIconsLoaded;
             });
+
+            print("🛤 Ruta tiene ${widget.route.length} puntos");
+
+            if (widget.driverLocation != null) {
+              _updateDriverMarker(widget.driverLocation!);
+            }
+
+            if (widget.route.isNotEmpty) {
+              _drawRoute();
+            }
           },
           initialCameraPosition: CameraPosition(
             target: widget.driverLocation ?? _defaultLocation,
@@ -136,11 +129,13 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
             _currentZoom = position.zoom;
           },
         ),
-
-        /*   if (!_mapReady)
-          const Center(
-            child: CircularProgressIndicator(),
-          ), */
+        if (!_mapReady)
+          Container(
+            color: Colors.black.withOpacity(0.3),
+            child: const Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            ),
+          ),
       ],
     );
   }
@@ -177,10 +172,17 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
 
   Future<void> _loadCustomIcons() async {
     try {
-      _driverIcon = await _getMarkerFromIcon(Icons.navigation, Colors.black, size: 100.0);
-      _originIcon = await _getMarkerFromIcon(Icons.circle, const Color(0xFF076461), size: 75.0);
-      _destinationIcon = await _getMarkerFromIcon(Icons.circle, Colors.red, size: 75.0);
+      _driverIcon = await _getMarkerFromIcon(
+        Icons.navigation, Colors.black, size: 70.0);
+
+      _originIcon = await _getMarkerFromIconOriginToDestination(
+        Icons.circle, Colors.green,
+        size: 70.0,
+      );
+      _destinationIcon = await _getMarkerFromIconOriginToDestination(Icons.circle,Colors.blueAccent, size: 70.0,);
       print("✅ Íconos cargados correctamente");
+
+      _isIconsLoaded = true;
 
       if (widget.driverLocation != null) {
         _updateDriverMarker(widget.driverLocation!);
@@ -196,40 +198,48 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
   }
 
   void _drawRoute() {
-    //print('Attempting to draw route. Map ready: $_mapReady, Route points: ${widget.route.length}');
-    print("🔍 Ejecutando _drawRoute() con ${widget.route.length} puntos");
+    if (!_mapReady) return;
 
-    if (widget.route.isEmpty || !_mapReady) return;
+    print("🛣 widget.route: ${widget.route.length} puntos");
+    print("🛣 driverToOriginRoute: ${widget.driverToOriginRoute?.length ?? 0} puntos");
 
-    _polylines.clear();
+    final newPolylines = <Polyline>{};
 
-    final Polyline routePolyline = Polyline(
-      polylineId: const PolylineId('route'),
-      color: Colors.green,
-      width: 7,
-      points: widget.route,
-      geodesic: true,
-      consumeTapEvents: true,
-    );
+    if (widget.route.isNotEmpty) {
+      newPolylines.add(Polyline(
+        polylineId: const PolylineId('route'),
+        color: Colors.green,
+        width: 7,
+        points: widget.route,
+        geodesic: true,
+      ));
+    }
 
-    final Polyline? driverToOriginPolyline = (widget.driverToOriginRoute != null && widget.driverToOriginRoute!.isNotEmpty)
-        ? Polyline(
-            polylineId: const PolylineId('driver_to_origin'),
-            color: Colors.orange,
-            width: 7,
-            points: widget.driverToOriginRoute!,
-            geodesic: true,
-            consumeTapEvents: false,
-          )
-        : null;
+    if (widget.driverToOriginRoute != null && widget.driverToOriginRoute!.isNotEmpty) {
+      newPolylines.add(Polyline(
+        polylineId: const PolylineId('driver_to_origin'),
+        color: Colors.orange,
+        width: 7,
+        points: widget.driverToOriginRoute!,
+        geodesic: true,
+      ));
+    }
 
-    final Set<Marker> newMarkers = {
-      // Origen
-      Marker(markerId: const MarkerId('origin'), position: widget.route.first, icon: _originIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen), anchor: const Offset(0.5, 0.5)),
+    final newMarkers = <Marker>{};
 
-      // Destino
-      Marker(markerId: const MarkerId('destination'), position: widget.route.last, icon: _destinationIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed), anchor: const Offset(0.5, 0.5)),
-    };
+    if (widget.route.isNotEmpty) {
+      newMarkers.add(Marker(
+        markerId: const MarkerId('origin'),
+        position: widget.route.first,
+        icon: _originIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+      ));
+
+      newMarkers.add(Marker(
+        markerId: const MarkerId('destination'),
+        position: widget.route.last,
+        icon: _destinationIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+      ));
+    }
 
     if (widget.driverLocation != null) {
       newMarkers.add(Marker(
@@ -240,22 +250,24 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
     }
 
     setState(() {
-      _polylines = {
-        routePolyline,
-        if (driverToOriginPolyline != null) driverToOriginPolyline,
-      };
+      _polylines = newPolylines;
       _markers = newMarkers;
     });
 
-    print('Route drawn successfully');
-
-    final allPoints = [...widget.route, ...?widget.driverToOriginRoute];
+    // Ajustar cámara si hay puntos
+    final allPoints = [
+      ...widget.route,
+      ...?widget.driverToOriginRoute,
+    ];
 
     if (allPoints.length > 1) {
       final bounds = _boundsFromLatLngList(allPoints);
-      googleMapController?.animateCamera(
-        CameraUpdate.newLatLngBounds(bounds, 100),
-      );
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        googleMapController?.animateCamera(
+          CameraUpdate.newLatLngBounds(bounds, 100),
+        );
+      });
     }
   }
 
@@ -278,7 +290,94 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
     );
   }
 
-  Future<BitmapDescriptor> _getMarkerFromIcon(IconData iconData, Color color, {double size = 80.0}) async {
+   Future<BitmapDescriptor> _getMarkerFromIconOriginToDestination(IconData iconData, Color color, {double size = 80.0}) async {
+    try {
+      final pictureRecorder = PictureRecorder();
+      final canvas = Canvas(pictureRecorder);
+      final textPainter = TextPainter(textDirection: TextDirection.ltr);
+
+      final textStyle = TextStyle(
+        fontSize: size * 0.8,
+        fontFamily: iconData.fontFamily,
+        color: color,
+      );
+
+      textPainter.text = TextSpan(text: String.fromCharCode(iconData.codePoint), style: textStyle);
+      textPainter.layout();
+      textPainter.paint(canvas, Offset(size * 0.2, size * 0.1));
+
+      final image = await pictureRecorder.endRecording().toImage(size.toInt(), size.toInt());
+      final byteData = await image.toByteData(format: ImageByteFormat.png);
+
+      if (byteData == null) throw Exception("No se pudo generar el ícono");
+      return BitmapDescriptor.fromBytes(byteData.buffer.asUint8List());
+    } catch (e) {
+      print("❌ Error generando ícono: $e");
+      return BitmapDescriptor.defaultMarker;
+    }
+  }
+
+  Future<BitmapDescriptor> _getMarkerFromIcon(
+    IconData iconData,
+    Color fillColor, {
+    double size = 80.0,
+    Color borderColor = Colors.white, // color del borde
+    double borderWidth = 6.0, // grosor del borde
+  }) async {
+    try {
+      final pictureRecorder = PictureRecorder();
+      final canvas = Canvas(pictureRecorder);
+      final iconSize = size;
+
+      final center = Offset(iconSize / 2, iconSize / 2);
+      final radius = iconSize / 2;
+
+      // 1. Dibuja el borde
+      final borderPaint = Paint()
+        ..color = borderColor
+        ..style = PaintingStyle.fill;
+
+      canvas.drawCircle(center, radius, borderPaint);
+
+      // 2. Dibuja el círculo interior (relleno principal)
+      final fillPaint = Paint()
+        ..color = fillColor
+        ..style = PaintingStyle.fill;
+
+      canvas.drawCircle(center, radius - borderWidth, fillPaint);
+
+      // 3. Dibuja el icono encima
+      final textPainter = TextPainter(textDirection: TextDirection.ltr);
+      final textStyle = TextStyle(
+        fontSize: iconSize * 0.8,
+        fontFamily: iconData.fontFamily,
+        package: iconData.fontPackage,
+        color: Colors.white, // color del ícono
+      );
+
+      textPainter.text = TextSpan(text: String.fromCharCode(iconData.codePoint), style: textStyle);
+      textPainter.layout();
+      final iconOffset = Offset(
+        center.dx - (textPainter.width / 2),
+        center.dy - (textPainter.height / 2),
+      );
+
+      textPainter.paint(canvas, iconOffset);
+
+      // 4. Convierte a imagen
+      final image = await pictureRecorder.endRecording().toImage(iconSize.toInt(), iconSize.toInt());
+      final byteData = await image.toByteData(format: ImageByteFormat.png);
+
+      if (byteData == null) throw Exception("No se pudo generar el ícono");
+      return BitmapDescriptor.fromBytes(byteData.buffer.asUint8List());
+    } catch (e) {
+      print("❌ Error generando ícono con borde: $e");
+      return BitmapDescriptor.defaultMarker;
+    }
+  }
+
+
+ /* Future<BitmapDescriptor> _getMarkerFromIcon(IconData iconData, Color color, {double size = 80.0}) async {
     try {
       final pictureRecorder = PictureRecorder();
       final canvas = Canvas(pictureRecorder);
@@ -303,7 +402,7 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
       print("❌ Fallo al crear ícono: $e");
       return BitmapDescriptor.defaultMarker; // Fallback explícito
     }
-  }
+  } */
 
   void _simulateDriverMovement(List<LatLng> routePoints, {int stepsPerSegment = 20, int stepDurationMs = 100}) {
     if (_isSimulating || routePoints.length < 2) return;
@@ -326,7 +425,18 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
       final interpolated = _interpolateLatLng(start, end, t);
       final bearing = _getBearing(start, end);
       _updateDriverMarker(interpolated, rotation: bearing);
-      googleMapController?.animateCamera(CameraUpdate.newLatLngZoom(interpolated, 17));
+      //  googleMapController?.animateCamera(CameraUpdate.newLatLngZoom(interpolated, 17,));
+
+      googleMapController!.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: interpolated,
+            zoom: 17,
+            tilt: 45.0, // Le da un efecto visual 3D (opcional)
+            bearing: 0.0, // Puedes poner aquí un ángulo si quieres rotar la vista
+          ),
+        ),
+      );
 
       step++;
       t = step / stepsPerSegment;
@@ -369,6 +479,15 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
     _currentZoom = 15;
     _updateDriverMarker(location);
 
-    googleMapController!.animateCamera(CameraUpdate.newLatLngZoom(location, _currentZoom));
+    googleMapController!.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: location,
+          zoom: _currentZoom,
+          tilt: 45.0,
+          bearing: 0.0,
+        ),
+      ),
+    );
   }
 }

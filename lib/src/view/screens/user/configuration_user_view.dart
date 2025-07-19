@@ -40,7 +40,6 @@ class _ConfigurationUserState extends State<ConfigurationUser> {
             title: "Mi perfil",
             icon: Icons.person,
             onTap: () {
-              // Acción al presionar esta opción
               Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileView()));
             },
           ),
