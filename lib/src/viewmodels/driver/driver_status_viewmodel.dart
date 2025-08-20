@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:holi/src/core/enums/connection_status.dart';
 import 'package:holi/src/core/gps_validator/gps_validator_service.dart';
 import 'package:holi/src/service/drivers/driver_status_service.dart';
-import 'package:holi/src/service/websocket/websocket_service.dart';
+import 'package:holi/src/service/websocket/websocket_driver_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart' as geo;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -12,7 +12,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 class DriverStatusViewmodel extends ChangeNotifier {
   ConnectionStatus? _connectionStatus;
   bool _isLoading = false;
-  WebSocketService? _webSocketService;
+  WebSocketDriverService? _webSocketService;
 
   Map<String, dynamic>? tripData;
   final int _remainingTime = 15;
@@ -56,7 +56,7 @@ class DriverStatusViewmodel extends ChangeNotifier {
 
       print("✅ Conductor conectado exitosamente.");
 
-      _webSocketService = WebSocketService(
+      _webSocketService = WebSocketDriverService(
           driverId: driverId.toString(),
           onMessage: (data) {
             print("🧾 Mensaje WebSocket recibido: $data");

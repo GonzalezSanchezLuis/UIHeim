@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 
 class AcceptMoveService {
   // final String baseUrl = "http://192.168.20.49:8080/api/v1";
-  final String baseUrl = "https://3e2dd06df8fb.ngrok-free.app/api/v1/move";
+  final String baseUrl = "https://71b689a01b6a.ngrok-free.app/api/v1/move";
 
   Future<bool> acceptMove(int moveId, int driverId) async {
     final url = Uri.parse('$baseUrl/accept/$moveId');
@@ -13,7 +13,11 @@ class AcceptMoveService {
     log("CUERPO  QUE SE ENVIA AL ACPTAR LA MUDANZA $body");
 
     try {
-      final response = await http.put(url, headers: {'Content-Type': 'application/json'}, body: jsonEncode(body));
+      final response = await http.put(
+        url, 
+        headers: {'Content-Type': 'application/json'}, 
+        body: jsonEncode(body)
+        );
 
       if (response.statusCode == 200) {
         return true;

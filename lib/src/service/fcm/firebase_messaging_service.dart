@@ -9,89 +9,90 @@ class FirebaseMessagingService {
   static final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
-  Future<void> initialize() async {}
-
-  // 🔔 Inicializa las notificaciones locales (importante llamarlo al inicio)
-  void initializeNotifications() {
-    const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('ic_launcher');
-
-    const InitializationSettings initializationSettings = InitializationSettings(android: initializationSettingsAndroid);
-
-    flutterLocalNotificationsPlugin.initialize(initializationSettings);
-
-    onDidReceiveNotificationResponse:
-    (NotificationResponse response) {
-      if (response.payload != null) {
-        final data = jsonDecode(response.payload!);
-        onNewTripData?.call(data);
-      }
-    };
-  }
-
-  // 🔔 Mostrar notificación usando flutter_local_notifications
-  void showNotification(RemoteMessage message) async {
-    const AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
-      'your_channel_id', // ID único del canal (asegúrate de que sea consistente)
-      'your_channel_name', // Nombre del canal visible
-      channelDescription: 'your_channel_description',
-      importance: Importance.max,
-      priority: Priority.high,
-      showWhen: true,
-      icon: 'ic_launcher',
-    );
-
-    const NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
-
-    await flutterLocalNotificationsPlugin.show(
-      0,
-      message.notification?.title ?? 'Título por defecto', // Título
-      message.notification?.body ?? 'Mensaje por defecto', // Mensaje
-      platformChannelSpecifics,
-      payload: jsonEncode(message.data), // Puedes usarlo para manejar clicks
-    );
-  }
-
-  // 🔕 Manejo de notificación en background
-  static Future<void> _backgroundHandler(RemoteMessage message) async {
+  // 🔔 Inicializa todo: notificaciones locales + listeners de FCM
+  Future<void> initialize() async {
     await Firebase.initializeApp();
-    print('🔕 Notificación en background');
-    print('Título: ${message.notification?.title}');
-    print('Mensaje: ${message.notification?.body}');
-
-    if (message.data.isNotEmpty) {
-      log('📦 Data payload: ${message.data}');
-      if (message.data.containsKey('message')) {
-        print('📨 Mensaje adicional: ${message.data['message']}');
-      }
-    } else {
-      log("paylod VACIO");
-    }
-  }
-
-  // 🔔 Inicialización general de FCM y listeners
-  static Future<void> init() async {
-    await Firebase.initializeApp();
-
+    initializeNotifications();
     FirebaseMessaging.onBackgroundMessage(_backgroundHandler);
-
-
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('🔔 Notificación en foreground');
       print('Título: ${message.notification?.title}');
       print('Mensaje: ${message.notification?.body}');
       print(message.data);
 
-      final data = message.data;
       if (onNewTripData != null) {
-        onNewTripData!(data);
+        onNewTripData!(message.data);
       }
 
-      FirebaseMessagingService service = FirebaseMessagingService();
-      service.showNotification(message);
+      showNotification(message);
     });
 
-    // 🔑 Obtener y mostrar el token FCM
     final token = await _firebaseMessaging.getToken();
     print('📱 Token FCM: $token');
+  }
+
+  // 🔔 Inicializa las notificaciones locales
+  void initializeNotifications() {
+    const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('ic_notification'); // asegúrate de tener este ícono en res/drawable
+
+    const InitializationSettings initializationSettings = InitializationSettings(android: initializationSettingsAndroid);
+
+    flutterLocalNotificationsPlugin.initialize(
+      initializationSettings,
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
+        if (response.payload != null) {
+          final data = jsonDecode(response.payload!);
+          onNewTripData?.call(data);
+        }
+      },
+    );
+
+    _createNotificationChannel();
+  }
+
+  // 🔔 Mostrar notificación local
+  void showNotification(RemoteMessage message) async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
+      'your_channel_id',
+      'your_channel_name',
+      channelDescription: 'your_channel_description',
+      importance: Importance.max,
+      priority: Priority.high,
+      playSound: true,
+      enableVibration: true,
+      showWhen: true,
+      icon: 'ic_notification', 
+    );
+
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      message.notification?.title ?? 'Título por defecto',
+      message.notification?.body ?? 'Mensaje por defecto',
+      platformChannelSpecifics,
+      payload: jsonEncode(message.data),
+    );
+  }
+
+  // 🔕 Notificación en background
+  static Future<void> _backgroundHandler(RemoteMessage message) async {
+    await Firebase.initializeApp();
+    print('🔕 Notificación en background');
+    print('Título: ${message.notification?.title}');
+    print('Mensaje: ${message.notification?.body}');
+    log('📦 Data payload: ${message.data}');
+  }
+
+  // 🔧 Crear canal de notificación
+  Future<void> _createNotificationChannel() async {
+    const AndroidNotificationChannel channel = AndroidNotificationChannel(
+      'your_channel_id',
+      'Viajes nuevos',
+      description: 'Canal para notificaciones de nuevos viajes',
+      importance: Importance.high,
+    );
+
+    await flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(channel);
   }
 }

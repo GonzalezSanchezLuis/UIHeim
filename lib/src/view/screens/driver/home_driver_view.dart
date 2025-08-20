@@ -9,11 +9,13 @@ import 'package:holi/src/core/enums/move_type.dart';
 import 'package:holi/src/core/extensions/move_type_extension.dart';
 import 'package:holi/src/core/gps_validator/gps_validator_service.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:holi/src/service/websocket/websocket_driver_service.dart';
 import 'package:holi/src/utils/format_price.dart';
 import 'package:holi/src/view/screens/driver/driver_view.dart';
 import 'package:holi/src/view/widget/button/button_card_home_widget.dart';
 import 'package:holi/src/view/widget/card/bottom_move_card.dart';
 import 'package:holi/src/view/widget/card/floating_move_card_wrapper.dart';
+import 'package:holi/src/view/widget/card/move_request_card.dart';
 import 'package:holi/src/view/widget/maps/driver_maps_widget.dart';
 import 'package:holi/src/viewmodels/auth/sesion_viewmodel.dart';
 import 'package:holi/src/viewmodels/driver/profile_driver_viewmodel.dart';
@@ -21,6 +23,7 @@ import 'package:holi/src/viewmodels/driver/route_driver_viewmodel.dart';
 import 'package:holi/src/viewmodels/driver/driver_location_viewmodel.dart';
 import 'package:holi/src/viewmodels/driver/driver_status_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/accept_move_viewmodel.dart';
+import 'package:holi/src/viewmodels/move/websocket/move_notification_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:decimal/decimal.dart';
@@ -45,6 +48,9 @@ class _HomeDriverState extends State<HomeDriverView> {
   ConnectionStatus? driverStatus;
   Map<String, dynamic>? _currentMoveData;
   bool _isMapReady = false;
+  late final WebSocketDriverService _socketService;
+  late final MoveNotificationViewmodel _moveNotificationViewModel;
+  Map<String, dynamic>? _incomingMoveData;
 
   @override
   void initState() {
@@ -59,11 +65,30 @@ class _HomeDriverState extends State<HomeDriverView> {
       final driverLocationViewModel = Provider.of<DriverLocationViewmodel>(context, listen: false);
       driverLocationViewModel.startLocationUpdates();
     });
+
+    _moveNotificationViewModel = MoveNotificationViewmodel();
+
+    final sessionVM = Provider.of<SessionViewModel>(context, listen: false);
+    final driverId = sessionVM.userId?.toString() ?? '0';
+
+    _socketService = WebSocketDriverService(
+      driverId: driverId,
+      onMessage: (data) {
+        debugPrint("🧲 Mensaje del backend recibido: $data");
+        _moveNotificationViewModel.addNotification(data);
+        setState(() {
+          _incomingMoveData = data['move']; 
+        });
+      },
+    );
+
+    _socketService.connect();
   }
 
   @override
   void dispose() {
     _locationSubscription?.cancel();
+    _socketService.disconnect();
     super.dispose();
   }
 
@@ -141,7 +166,8 @@ class _HomeDriverState extends State<HomeDriverView> {
                   right: 0,
                   child: Consumer2<RouteDriverViewmodel, DriverStatusViewmodel>(
                     builder: (context, directionsViewModel, driverViewModel, child) {
-                      final bool hasMoveData = directionsViewModel.moveData != null && directionsViewModel.moveData!.isNotEmpty && _currentMoveData == null;
+                     final bool hasMoveData = (_incomingMoveData != null || (directionsViewModel.moveData != null && directionsViewModel.moveData!.isNotEmpty)) && _currentMoveData == null;
+
                       return AnimatedContainer(
                         duration: const Duration(milliseconds: 300),
                         height: hasMoveData ? MediaQuery.of(context).size.height * 0.47 : MediaQuery.of(context).size.height * 0.13,
@@ -162,8 +188,27 @@ class _HomeDriverState extends State<HomeDriverView> {
                           padding: const EdgeInsets.all(16.0),
                           child: driverViewModel.connectionStatus == null
                               ? const Center(child: CircularProgressIndicator())
+                               : _incomingMoveData != null
+                                  ? MoveRequestCard(
+                                      moveData: _incomingMoveData!,
+                                      onMoveAccepted: (data) {
+                                        setState(() {
+                                          _currentMoveData = data; 
+                                          _incomingMoveData = null; 
+                                        });
+                                      },
+                                    )
                               : hasMoveData
-                                  ? _buildMoveDataCard(directionsViewModel.moveData!)
+                                  ? MoveRequestCard(
+                                      moveData: directionsViewModel.moveData!,
+                                      onMoveAccepted: (data) {
+                                        setState(() {
+                                          _currentMoveData = data;
+                                        });
+                                      },
+                                    )
+
+                                  //_buildMoveDataCard(directionsViewModel.moveData!)
                                   : Column(
                                       children: [
                                         const SizedBox(height: 10),
@@ -269,7 +314,7 @@ class _HomeDriverState extends State<HomeDriverView> {
     );
   }
 
-  Widget _buildMoveDataCard(Map<String, dynamic> moveData) {
+  /*Widget _buildMoveDataCard(Map<String, dynamic> moveData) {
     String? priceString = moveData['price'];
     double priceInPesos = (double.tryParse(priceString ?? '0') ?? 0) / 100;
 
@@ -513,5 +558,5 @@ class _HomeDriverState extends State<HomeDriverView> {
         ),
       ],
     );
-  }
-}
+  } */
+} 

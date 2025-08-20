@@ -144,18 +144,18 @@ class _BottomMoveCardState extends State<BottomMoveCard> {
                  case StatusOfTheMove.MOVE_COMPLETE:
                       return SlideAction(
                         onSubmit: () async {
-                          // ENVÍA AL BACKEND EL ESTADO MOVE_FINISHED (NO MOVE_COMPLETE)
+
                           await updateStausMoveViewmodel.changeStatus(
                             moveId: widget.moveId,
                             driverId: widget.driverId,
-                            status: StatusOfTheMove.MOVE_FINISHED,
+                            status: StatusOfTheMove.MOVE_COMPLETE,
                           );
 
-                          setState(() {
+                       /*   setState(() {
                             _statusOfTheMove = StatusOfTheMove.MOVE_FINISHED;
-                          });
+                          });*/
 
-                          // (Opcional) Mostrar confirmación al conductor
+
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text("✅ Mudanza finalizada correctamente")),
                           );

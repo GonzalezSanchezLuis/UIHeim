@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 
 class UpdateStatusMoveService {
   // final String _baseUrl = "http://192.168.20.49:8080/api/v1";
-  final String _baseUrl = "https://3e2dd06df8fb.ngrok-free.app/api/v1/move";
+  final String _baseUrl = "https://71b689a01b6a.ngrok-free.app/api/v1/move";
 
   Future<void> updateMoveStatus(MoveStatusUpdateModel data, StatusOfTheMove status) async {
     late String endpoint;
@@ -20,7 +20,7 @@ class UpdateStatusMoveService {
         break;
 
         case StatusOfTheMove.MOVE_COMPLETE:
-        endpoint = 'start';
+        endpoint = 'complete';
         break;
 
         default:
@@ -50,7 +50,7 @@ class UpdateStatusMoveService {
       throw Exception('Error al obtener el estado de la mudanza');
     }
 
-    return response.body.replaceAll('"', ''); // Si viene como "MOVING_STARTED"
+    return response.body.replaceAll('"', ''); 
   }
 
 }

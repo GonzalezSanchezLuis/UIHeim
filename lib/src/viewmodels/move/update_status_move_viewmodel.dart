@@ -22,7 +22,7 @@ class UpdateStatusMoveViewmodel extends ChangeNotifier {
 
   Future<StatusOfTheMove> getCurrentStatus(int moveId) async {
     final statusString = await _updateStatusMoveService.getStatus(moveId);
-    return StatusOfTheMove.values.firstWhere((e) => e.name == statusString);
+    return StatusOfTheMove.values.firstWhere((e) => e.name == statusString,orElse: () => throw Exception("Estado desconocido recibido: $statusString"));
   }
 
 }

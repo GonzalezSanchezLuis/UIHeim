@@ -5,18 +5,22 @@ import 'package:holi/src/core/enums/move_type.dart';
 import 'package:holi/src/core/extensions/move_type_extension.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/model/payment/payment_model.dart';
+import 'package:holi/src/service/websocket/websocket_finished_move_service.dart';
+import 'package:holi/src/service/websocket/websocket_user_service.dart';
 import 'package:holi/src/utils/format_price.dart';
 import 'package:holi/src/view/screens/move/calculate_price_view.dart';
 import 'package:holi/src/view/screens/move/history_move_view.dart';
 import 'package:holi/src/view/screens/move/select_payment_method_view.dart';
-import 'package:holi/src/view/screens/payment/payment_button_view.dart';
+import 'package:holi/src/view/screens/payment/payment_view.dart';
 import 'package:holi/src/view/screens/user/user_view.dart';
 import 'package:holi/src/view/widget/button/button_card_home_widget.dart';
 import 'package:holi/src/view/widget/card/driver_info_card.dart';
 import 'package:holi/src/view/widget/maps/user_maps_widget.dart';
 import 'package:holi/src/view/widget/navbar/custom_bottom_navbar.dart';
 import 'package:holi/src/view/widget/user/build_waiting_widget.dart';
+import 'package:holi/src/viewmodels/auth/sesion_viewmodel.dart';
 import 'package:holi/src/viewmodels/location/location_viewmodel.dart';
+import 'package:holi/src/viewmodels/move/websocket/move_notification_user_viewmodel.dart';
 import 'package:holi/src/viewmodels/user/get_driver_location_viewmodel.dart';
 import 'package:holi/src/viewmodels/user/route_user_viewmodel.dart';
 import 'package:provider/provider.dart';
@@ -33,20 +37,9 @@ class HomeUserView extends StatefulWidget {
   final double? destinationLng;
   final LatLng? origin;
   final LatLng? destination;
+  final Map<String, dynamic>? initialIncomingMoveData;
 
-  const HomeUserView({
-    super.key,
-    this.calculatedPrice,
-    this.distanceKm,
-    this.duration,
-    this.typeOfMove,
-    this.estimatedTime,
-    this.route,
-    this.destinationLat,
-    this.destinationLng,
-    this.origin,
-    this.destination,
-  });
+  const HomeUserView({super.key, this.calculatedPrice, this.distanceKm, this.duration, this.typeOfMove, this.estimatedTime, this.route, this.destinationLat, this.destinationLng, this.origin, this.destination, this.initialIncomingMoveData});
 
   @override
   _HomeUserState createState() => _HomeUserState();
@@ -57,6 +50,9 @@ class _HomeUserState extends State<HomeUserView> {
   String _selectedPaymentMethod = 'Nequi';
 
   final LocationViewModel locationViewModel = LocationViewModel();
+  late final MoveNotificationUserViewmodel _moveNotificationUserViewModel;
+  late final WebsocketUserService _websocketUserService;
+  late final WebsocketFinishedMoveService _websocketFinishedMoveService;
   int currentPageIndex = 0;
   bool showPriceModal = false;
   bool showHomeButtons = true;
@@ -64,6 +60,7 @@ class _HomeUserState extends State<HomeUserView> {
   LatLng? userCurrentLocation;
   int? userId;
   Map<String, dynamic>? _currentMoveData;
+  Map<String, dynamic>? _currentActiveMoveData;
 
   @override
   void initState() {
@@ -80,40 +77,79 @@ class _HomeUserState extends State<HomeUserView> {
         _fetchRoute();
       });
     }
+
+    if (widget.initialIncomingMoveData != null) {
+      _currentActiveMoveData = widget.initialIncomingMoveData;
+    }
+
+    _moveNotificationUserViewModel = MoveNotificationUserViewmodel();
+    final sessionVM = Provider.of<SessionViewModel>(context, listen: false);
+    final userId = sessionVM.userId?.toString() ?? '0';
+
+    _websocketUserService = WebsocketUserService(
+        userId: userId,
+        onMessage: (data) {
+          debugPrint("🧲 Mensaje del backend recibido: $data");
+          _moveNotificationUserViewModel.addNotification(data);
+          print("DATA DE DATA   $data");
+
+          if (data['move'] != null && data['move']['moveId'] != null) {
+            final int moveId = data['move']['moveId'];
+
+            if (_websocketFinishedMoveService == null) {
+              _websocketFinishedMoveService = WebsocketFinishedMoveService(
+                onMessage: (dataPay){
+                  debugPrint("💰 Mensaje de pago recibido: $dataPay");
+                    setState(() {
+                      // Por ejemplo, aquí podrías actualizar una variable de estado
+                      // para mostrar el modal de pago
+                      // _paymentData = dataPay;
+                    });
+                },
+                 moveId: moveId);
+                 _websocketFinishedMoveService.connect();
+
+            }
+          }
+
+          setState(() {
+            _currentActiveMoveData = data['move'];
+            print("🧲 Datos de _currentActiveMoveData : $_currentActiveMoveData");
+          });
+        });
+    _websocketUserService.connect();
+  }
+
+  @override
+  void dispose() {
+    _websocketUserService.disconnect();
+    _websocketFinishedMoveService.disconnect();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-   
+    final bool driverIsAssigned = _currentActiveMoveData != null;
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
         children: [
           IndexedStack(
             index: currentPageIndex,
-            children: [   
-           /*   PaymentButtonView(paymentModel: PaymentModel(
-                name: 'Luis',
-                description: 'Mudanza con conductor',
-                currency: "cop",
-                amount: '40000',
-                email: 'luisrbn10@outlook.es',               
-                invoice: 'INV123456',
-                method: 'NEQUI',
-              )
-              ), */    
+            children: [
+              //  const  PaymentView(),
               _buildHomePage(context),
               const CalculatePrice(),
               const HistoryMove(),
               const User(),
-              
             ],
           ),
-        
+
           Consumer<GetDriverLocationViewmodel>(
             builder: (context, driverVM, _) {
-              final moveData = driverVM.moveData;
-              if (currentPageIndex == 0 && moveData != null) {
+              final moveDataFromViewModel = driverVM.moveData;
+              print('_currentActiveMoveData (nuestra fuente única): $_currentActiveMoveData');
+              if (currentPageIndex == 0 && driverIsAssigned) {
                 return Positioned(
                   left: 0,
                   right: 0,
@@ -124,13 +160,16 @@ class _HomeUserState extends State<HomeUserView> {
                       decoration: BoxDecoration(color: AppTheme.primarycolor, borderRadius: BorderRadius.circular(30)),
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                       child: DriverInfoCard(
-                        plate: moveData['enrollVehicle'] ?? 'Sin placa',
-                        vehicleType: moveData['vehicleType'] ?? 'NPR',
-                        driverImageUrl: moveData['driverImageUrl'] ?? '',
-                        vehicleImageUrl: 'assets/images/vehicle.png',
-                        phone: moveData['driverPhone'] ?? '',
-                        nameDriver: moveData['driverName'] ?? '',
+                        enrollVehicle: _currentActiveMoveData!['enrollVehicle']?.toString() ?? '',
+                        driverImageUrl: _currentActiveMoveData!['driverImageUrl']?.toString() ?? '',
+                        vehicleImageUrl: 'assets/images/vehicle.png', // Esta es estática
+                        phone: _currentActiveMoveData!['driverPhone']?.toString() ?? '',
+                        nameDriver: _currentActiveMoveData!['driverName']?.toString() ?? '',
+                        vehicleType: _currentActiveMoveData!['vehicleType']?.toString() ?? '',
                       ),
+                      /*  child: DriverInfoCard(moveData: _incomingMoveData!,
+                        vehicleImageUrl: 'assets/images/vehicle.png',
+                      ), */
                     ),
                   ),
                 );
@@ -149,7 +188,7 @@ class _HomeUserState extends State<HomeUserView> {
                 final moveData = driverVM.moveData;
 
                 // Ocultar en estos estados (solo en la página de inicio)
-                if (currentPageIndex == 0 && (moveData != null || showPriceModal || isWaitingForDriver)) {
+                if (currentPageIndex == 0 && (driverIsAssigned || showPriceModal || isWaitingForDriver)) {
                   return const SizedBox.shrink();
                 }
 
@@ -172,6 +211,10 @@ class _HomeUserState extends State<HomeUserView> {
           ? Consumer<GetDriverLocationViewmodel>(
               builder: (context, driverVM, _) {
                 final moveData = driverVM.moveData;
+
+                if (driverIsAssigned) {
+                  return const SizedBox.shrink();
+                }
 
                 /* if (moveData != null) {
                   return ConstrainedBox(
@@ -247,15 +290,19 @@ class _HomeUserState extends State<HomeUserView> {
   }
 
   Widget _buildHomePage(BuildContext context) {
+    final bool driverIsAssigned = _currentActiveMoveData != null;
+
     final LatLng origin = (widget.route != null && widget.route!.isNotEmpty) ? widget.route!.first : const LatLng(3.3784759685695906, -72.95412998954771);
     final LatLng destination = (widget.route != null && widget.route!.isNotEmpty) ? widget.route!.last : const LatLng(3.3784759685695906, -72.95412998954771);
 
     return LayoutBuilder(
       builder: (context, constraints) {
         final routeVM = Provider.of<RouteUserViewmodel>(context, listen: false);
-        double containerHeight;
+        final double containerHeight;
 
-        if (showPriceModal) {
+        if (driverIsAssigned) {
+          containerHeight = 0;
+        } else if (showPriceModal) {
           containerHeight = constraints.maxHeight * 0.25;
         } else if (showHomeButtons) {
           containerHeight = constraints.maxHeight * 0.28;
@@ -281,7 +328,7 @@ class _HomeUserState extends State<HomeUserView> {
                 );
               }),
             ),
-            if (showPriceModal || isWaitingForDriver)
+            if ((showPriceModal || isWaitingForDriver) && !driverIsAssigned)
               Positioned(
                 bottom: 0,
                 left: 0,
@@ -439,9 +486,8 @@ class _HomeUserState extends State<HomeUserView> {
 
   Widget _buildDataMove() {
     print("🔢 Precio bruto recibido: ${widget.calculatedPrice}");
-   String? priceString = widget.calculatedPrice?.replaceAll(",", "");
+    String? priceString = widget.calculatedPrice?.replaceAll(",", "");
     Decimal correctedPrice = Decimal.tryParse(priceString ?? '0') ?? Decimal.zero;
-
 
     print("🔢 Precio real convertido: $correctedPrice");
 
@@ -453,7 +499,7 @@ class _HomeUserState extends State<HomeUserView> {
             children: [
               Expanded(
                 child: Text(
-                    formatPriceToHundreds(widget.calculatedPrice ?? '0'),
+                  formatPriceToHundreds(widget.calculatedPrice ?? '0'),
                   style: const TextStyle(
                     fontSize: 25,
                     fontWeight: FontWeight.bold,

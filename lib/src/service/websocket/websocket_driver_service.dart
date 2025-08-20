@@ -5,17 +5,17 @@ import 'package:stomp_dart_client/stomp_frame.dart';
 
 typedef MessageCallback = void Function(Map<String, dynamic> data);
 
-class WebSocketService {
+class WebSocketDriverService {
   late StompClient _client;
   final String driverId;
   final MessageCallback onMessage;
 
-  WebSocketService({required this.driverId, required this.onMessage});
+  WebSocketDriverService({required this.driverId, required this.onMessage});
 
   void connect() {
     _client = StompClient(
       config: StompConfig.SockJS(
-        url: "https://3e2dd06df8fb.ngrok-free.app/ws",
+        url: "https://71b689a01b6a.ngrok-free.app/ws",
         // url: 'http://192.168.20.49:8080/ws',
         onConnect: _onConnect,
         onWebSocketError: (error) => print('WebSocket error: $error'),
@@ -29,7 +29,7 @@ class WebSocketService {
 
   void _onConnect(StompFrame frame) {
     _client.subscribe(
-      destination: '/topic/driver/notify/$driverId',
+      destination: '/topic/driver/available',
       callback: (frame) {
         final data = frame.body;
         if (data != null) {

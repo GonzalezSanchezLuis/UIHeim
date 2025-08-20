@@ -18,6 +18,7 @@ import 'package:holi/src/viewmodels/move/accept_move_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/calculate_price_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/confirm_move_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/update_status_move_viewmodel.dart';
+import 'package:holi/src/viewmodels/move/websocket/move_notification_viewmodel.dart';
 import 'package:holi/src/viewmodels/payment/payment_viewmodel.dart';
 import 'package:holi/src/viewmodels/user/get_driver_location_viewmodel.dart';
 import 'package:holi/src/viewmodels/user/route_user_viewmodel.dart';
@@ -43,7 +44,7 @@ void main() async {
 
 
  
-  await FirebaseMessagingService.init();
+  await FirebaseMessagingService().initialize();
 
   if (kDebugMode) {
     debugPrint = (String? message, {int? wrapWidth}) {
@@ -137,6 +138,8 @@ class App extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => RouteUserViewmodel()),
         ChangeNotifierProvider(create: (_) => ProfileDriverViewModel()..fetchDriverData()),
         ChangeNotifierProvider(create: (context) => PaymentViewmodel()),
+        ChangeNotifierProvider(create: (context) => MoveNotificationViewmodel()),
+
 
       ],
       child: MaterialApp(
