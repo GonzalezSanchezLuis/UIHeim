@@ -118,7 +118,7 @@ class MoveRequestCard extends StatelessWidget {
 
           // Destino
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start, // Alinea el icono y el texto al inicio
+            crossAxisAlignment: CrossAxisAlignment.start, 
             children: [
               const Icon(Icons.circle, color: Colors.blueAccent),
               const SizedBox(width: 8),
@@ -156,7 +156,6 @@ class MoveRequestCard extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          // Usuario + Timer
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

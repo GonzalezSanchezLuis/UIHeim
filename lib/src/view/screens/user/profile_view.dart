@@ -233,71 +233,7 @@ class _ProfileViewState extends State<ProfileView> {
     );
   }
 
-  
-/*Widget _buildPasswordField(String label, String hintText, TextEditingController controller, {bool isRequired = false}) {
-    bool _obscurePassword = true;
-  return Card(
-    color: AppTheme.colorcards,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(10.0),
-    ),
-    elevation: 2,
-    margin: const EdgeInsets.symmetric(vertical: 8.0),
-    child: Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 2,
-            child: Text(
-              label,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-            ),
-          ),
-          Expanded(
-            flex: 3,
-            child: TextFormField(
-              controller: controller,
-              obscureText: _obscurePassword,
-              validator: isRequired
-                  ? (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Este campo es obligatorio';
-                      }
-                      return null;
-                    }
-                  : null,
-              decoration: InputDecoration(
-                hintText: hintText,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                focusedBorder: const OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.black87, width: 2.0),
-                ),
-                enabledBorder: const OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.black87, width: 2.0),
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12.0),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                    color: Colors.grey,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _obscurePassword = !_obscurePassword;
-                    });
-                  },
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-} */
+
   
 
 

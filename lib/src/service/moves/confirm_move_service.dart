@@ -20,7 +20,7 @@ class ConfirmMoveService {
       String? destinationAddressText,
       String? paymentMethod}) async {
     try {
-      final url = Uri.parse("https://71b689a01b6a.ngrok-free.app/api/v1/move/confirm");
+      final url = Uri.parse("https://c2dafcfb21f9.ngrok-free.app/api/v1/move/confirm");
       final cleanedPrice = calculatedPrice.replaceAll(',', '');
 
       final Map<String, dynamic> requestBody = {

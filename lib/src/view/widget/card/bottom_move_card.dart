@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/enums/status_of_the_move.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:holi/src/view/screens/driver/moving_summary_view.dart';
 import 'package:holi/src/viewmodels/move/update_status_move_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:slide_to_act/slide_to_act.dart';
@@ -46,8 +47,6 @@ class _BottomMoveCardState extends State<BottomMoveCard> {
       });
     }
   } */
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +94,7 @@ class _BottomMoveCardState extends State<BottomMoveCard> {
 
           const SizedBox(height: 20),
 
-         AnimatedCrossFade(
+          AnimatedCrossFade(
             duration: const Duration(milliseconds: 300),
             crossFadeState: _isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
             firstChild: const SizedBox.shrink(),
@@ -103,29 +102,25 @@ class _BottomMoveCardState extends State<BottomMoveCard> {
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Builder(
                 builder: (context) {
-                  if (!_isExpanded) return const SizedBox.shrink(); 
+                  if (!_isExpanded) return const SizedBox.shrink();
 
                   switch (_statusOfTheMove) {
                     case StatusOfTheMove.DRIVER_ARRIVED:
                       return SlideAction(
                         onSubmit: () async {
-                          await updateStausMoveViewmodel.changeStatus(
-                            moveId: widget.moveId,
-                            driverId: widget.driverId,
-                            status: StatusOfTheMove.DRIVER_ARRIVED
-                          );
+                          await updateStausMoveViewmodel.changeStatus(moveId: widget.moveId, driverId: widget.driverId, status: StatusOfTheMove.DRIVER_ARRIVED);
                           setState(() {
                             _statusOfTheMove = StatusOfTheMove.MOVING_STARTED;
                           });
                         },
-                        child:  Text(
+                        child: Text(
                           'Desliza para notificar que llegaste',
                           style: TextStyle(fontSize: 17, color: Colors.white, fontWeight: FontWeight.bold),
                         ),
                         outerColor: AppTheme.primarycolor,
                       );
 
-                   case StatusOfTheMove.MOVING_STARTED:
+                    case StatusOfTheMove.MOVING_STARTED:
                       return SlideAction(
                         onSubmit: () async {
                           await updateStausMoveViewmodel.changeStatus(
@@ -141,20 +136,21 @@ class _BottomMoveCardState extends State<BottomMoveCard> {
                         outerColor: AppTheme.confirmationscolor,
                       );
 
-                 case StatusOfTheMove.MOVE_COMPLETE:
+                    case StatusOfTheMove.MOVE_COMPLETE:
                       return SlideAction(
                         onSubmit: () async {
-
                           await updateStausMoveViewmodel.changeStatus(
                             moveId: widget.moveId,
                             driverId: widget.driverId,
                             status: StatusOfTheMove.MOVE_COMPLETE,
                           );
+                          Navigator.push(context,MaterialPageRoute(builder: (context) =>  MovingSummaryView(moveId: widget.moveId,)
+                            )
+                            );
 
-                       /*   setState(() {
+                          /*   setState(() {
                             _statusOfTheMove = StatusOfTheMove.MOVE_FINISHED;
                           });*/
-
 
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text("✅ Mudanza finalizada correctamente")),
@@ -163,7 +159,6 @@ class _BottomMoveCardState extends State<BottomMoveCard> {
                         text: 'Finalizar mudanza',
                         outerColor: AppTheme.warningcolor,
                       );
-
 
                     case StatusOfTheMove.MOVE_FINISHED:
                       return const Column(
@@ -182,11 +177,8 @@ class _BottomMoveCardState extends State<BottomMoveCard> {
               ),
             ),
           )
-
         ],
       ),
     );
   }
 }
-
-

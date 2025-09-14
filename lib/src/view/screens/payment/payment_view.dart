@@ -1,18 +1,17 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:holi/src/utils/format_price.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PaymentView extends StatelessWidget {
-  final String origin = "Calle 23 #45-12";
-  final String destination = "Carrera 7 #92-11";
-  final double distanceKm = 8.5;
-  final int durationMin = 17;
-  final double totalAmount = 15800;
-  final String paymentMethod = "Daviplata"; // Cambia a "Daviplata" para probar
-  final String paymentInfo = "Tel. ****9821";
+  final Map<String, dynamic> paymentData;
 
-  const PaymentView({super.key});
+  const PaymentView({super.key, required this.paymentData});
 
   Color _getPaymentColor() {
+    final String paymentMethod = paymentData['paymentMethod'].toLowerCase();
     if (paymentMethod.toLowerCase() == "nequi") {
       return const Color(0xFF7B1FA2); // Morado
     } else if (paymentMethod.toLowerCase() == "daviplata") {
@@ -23,6 +22,25 @@ class PaymentView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String paymentMethod = paymentData['paymentMethod'] ?? "N/A";
+
+    final String paymentURL = paymentData['paymentURL'] ?? "";
+    final String origin = paymentData['origin'] ?? "";
+    final String destination = paymentData['destination'] ?? "";
+    final String distanceKm = paymentData['distanceKm'] ?? "";
+    final String durationMin = paymentData['durationMin'] ?? "";
+
+    List<String> partsOrigin = origin.split(',');
+    String reducedOrigin = partsOrigin.take(2).join(',').trim();
+
+    List<String> partsDestination = destination.split(',');
+    String reducedDestination = partsDestination.take(2).join(',').trim();
+
+    final dynamic amount = paymentData['amount'];
+    final double priceInPesos = (amount is num ? amount.toDouble() : 0.0) / 100;
+
+    String formattedPrice = formatPriceToHundredsDriver(priceInPesos.toString());
+
     return Scaffold(
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
@@ -60,11 +78,11 @@ class PaymentView extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      Text("Origen: $origin", style: const TextStyle(fontSize: 16)),
-                      Text("Destino: $destination", style: const TextStyle(fontSize: 16)),
+                      Text("Origen: $reducedOrigin", style: const TextStyle(fontSize: 16)),
+                      Text("Destino: $reducedDestination", style: const TextStyle(fontSize: 16)),
                       const SizedBox(height: 8),
                       Text(
-                        "Distancia: ${distanceKm} km | Tiempo: ${durationMin} min",
+                        "Distancia: $distanceKm  | Tiempo: $durationMin ",
                         style: const TextStyle(fontSize: 15, color: Colors.grey),
                       ),
                       const Divider(height: 30),
@@ -73,7 +91,7 @@ class PaymentView extends StatelessWidget {
                         children: [
                           const Text("Total a pagar:", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                           Text(
-                            "\$${totalAmount.toStringAsFixed(0)} COP",
+                            "\$$formattedPrice",
                             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                         ],
@@ -85,12 +103,15 @@ class PaymentView extends StatelessWidget {
                           const Text("Método de pago:", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
                           Row(
                             children: [
-                              Icon(
-                                paymentMethod == "daviplata" ? Icons.account_balance_wallet : Icons.account_balance,
+                              Image.asset(
+                                paymentMethod.toLowerCase() == "daviplata" ? 'assets/images/daviplata.png' : 'assets/images/nequi.png',
+                                width: 50,
+                                height: 50,
                                 color: _getPaymentColor(),
                               ),
+
                               const SizedBox(width: 5),
-                              Text("$paymentMethod ($paymentInfo)"),
+                              // Text("$paymentMethod "),
                             ],
                           ),
                         ],
@@ -110,10 +131,21 @@ class PaymentView extends StatelessWidget {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Aquí iría la lógica para abrir el enlace de pago Wava")),
-                );
+              onPressed: () async {
+                try {
+                  final Uri uri = Uri.parse(paymentURL);
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(uri);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("No se pudo abrir el enlace de pago.")),
+                    );
+                  }
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Error al procesar el enlace de pago.")),
+                  );
+                }
               },
               icon: const Icon(Icons.payment, color: Colors.white),
               label: Text(

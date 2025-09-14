@@ -1,16 +1,12 @@
 import 'dart:async';
 import 'dart:developer';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:holi/src/core/enums/connection_status.dart';
-import 'package:holi/src/core/enums/move_type.dart';
-import 'package:holi/src/core/extensions/move_type_extension.dart';
 import 'package:holi/src/core/gps_validator/gps_validator_service.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/service/websocket/websocket_driver_service.dart';
-import 'package:holi/src/utils/format_price.dart';
 import 'package:holi/src/view/screens/driver/driver_view.dart';
 import 'package:holi/src/view/widget/button/button_card_home_widget.dart';
 import 'package:holi/src/view/widget/card/bottom_move_card.dart';
@@ -22,11 +18,9 @@ import 'package:holi/src/viewmodels/driver/profile_driver_viewmodel.dart';
 import 'package:holi/src/viewmodels/driver/route_driver_viewmodel.dart';
 import 'package:holi/src/viewmodels/driver/driver_location_viewmodel.dart';
 import 'package:holi/src/viewmodels/driver/driver_status_viewmodel.dart';
-import 'package:holi/src/viewmodels/move/accept_move_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/websocket/move_notification_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:decimal/decimal.dart';
 
 class HomeDriverView extends StatefulWidget {
   const HomeDriverView({super.key});
@@ -164,7 +158,7 @@ class _HomeDriverState extends State<HomeDriverView> {
                   bottom: 0,
                   left: 0,
                   right: 0,
-                  child: Consumer2<RouteDriverViewmodel, DriverStatusViewmodel>(
+                  child: SafeArea(child: Consumer2<RouteDriverViewmodel, DriverStatusViewmodel>(
                     builder: (context, directionsViewModel, driverViewModel, child) {
                      final bool hasMoveData = (_incomingMoveData != null || (directionsViewModel.moveData != null && directionsViewModel.moveData!.isNotEmpty)) && _currentMoveData == null;
 
@@ -218,7 +212,7 @@ class _HomeDriverState extends State<HomeDriverView> {
                         ),
                       );
                     },
-                  ),
+                  ),)
                 )
               : Positioned(
                   bottom: 0,
@@ -313,250 +307,4 @@ class _HomeDriverState extends State<HomeDriverView> {
       ],
     );
   }
-
-  /*Widget _buildMoveDataCard(Map<String, dynamic> moveData) {
-    String? priceString = moveData['price'];
-    double priceInPesos = (double.tryParse(priceString ?? '0') ?? 0) / 100;
-
-    String formattedPrice = formatPriceToHundredsDriver(priceInPesos.toString());
-
-    String originalAddress = moveData['origin'];
-    List<String> parts = originalAddress.split(',');
-    String reduced = parts.take(3).join(',').trim();
-
-    final typeOfMoveStr = moveData['typeOfMove'] ?? '';
-    final typeOfMove = MoveType.values.firstWhere((e) => e.value == typeOfMoveStr, orElse: () => MoveType.PEQUENA);
-
-    final displayName = typeOfMove.displayName;
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(
-                    Icons.monetization_on,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(width: 3),
-                  Expanded(
-                      child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Pago con ${moveData['paymentMethod']}',
-                        style: const TextStyle(color: Colors.white, fontSize: 18),
-                      ),
-                    ],
-                  )),
-                  Expanded(
-                    child: Text(
-                      formattedPrice,
-                      style: const TextStyle(color: Colors.white, fontSize: 23),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 8),
-              const Divider(color: Colors.grey, thickness: 2),
-              const SizedBox(height: 8),
-
-              // Origen
-              Row(
-                children: [
-                  Expanded(
-                      child: Column(
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Icon(Icons.circle, color: Colors.green),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '(Origen) ${moveData['distance']} (${moveData['estimatedTimeOfArrival']})',
-                                  style: const TextStyle(color: Colors.white, fontSize: 18),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  reduced,
-                                  style: const TextStyle(color: Colors.grey, fontSize: 16),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  )),
-                ],
-              ),
-
-              const SizedBox(height: 8),
-
-              // Destino
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(
-                    Icons.circle,
-                    color: Colors.blueAccent,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                      child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '(Destino) ${moveData['distanceToDestination']} (${moveData['timeToDestination']})',
-                        style: const TextStyle(color: Colors.white, fontSize: 18),
-                      ),
-                      Text(
-                        '${moveData['destination']}',
-                        style: const TextStyle(color: Colors.grey, fontSize: 16),
-                      ),
-                    ],
-                  ))
-                ],
-              ),
-
-              const SizedBox(
-                height: 8,
-              ),
-
-              // Tipo de mudanza
-              Row(
-                children: [
-                  const Icon(
-                    FontAwesomeIcons.truckFront,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Mudanza ${typeOfMove.displayName}',
-                      style: const TextStyle(color: Colors.white, fontSize: 18),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 35,
-                        height: 35,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.grey, width: 2), // <- Cambia el color del borde aquí
-                        ),
-                        child: CircleAvatar(
-                          backgroundColor: Colors.grey[300], // Fondo del círculo
-                          backgroundImage: (moveData['avatarProfile'] != null && moveData['avatarProfile'].toString().isNotEmpty) ? NetworkImage(moveData['avatarProfile']) as ImageProvider : null,
-                          child: (moveData['avatarProfile'] == null || moveData['avatarProfile'].toString().isEmpty) ? const Icon(Icons.person, size: 18, color: Colors.white) : null,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '${moveData['userName'] ?? "Usuario"}',
-                        style: const TextStyle(color: Colors.white, fontSize: 18),
-                      ),
-                    ],
-                  ),
-
-                  // Temporizador numérico dentro de un círculo
-                  Consumer<RouteDriverViewmodel>(
-                    builder: (context, viewModel, child) {
-                      int remainingTime = viewModel.remainingTime;
-
-                      Color borderColor;
-
-                      if (remainingTime > 10) {
-                        borderColor = Colors.green;
-                      } else if (remainingTime > 5) {
-                        borderColor = Colors.yellow;
-                      } else {
-                        borderColor = Colors.red;
-                      }
-
-                      return TweenAnimationBuilder<Color>(
-                          tween: Tween<Color>(
-                            begin: borderColor, // Color inicial
-                            end: borderColor, // Color final dinámico
-                          ),
-                          duration: const Duration(microseconds: 500),
-                          builder: (context, color, child) {
-                            return Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(shape: BoxShape.circle, color: AppTheme.primarycolor, border: Border.all(color: color ?? Colors.green, width: 4)),
-                              alignment: Alignment.center,
-                              child: Text(
-                                '$remainingTime',
-                                style: const TextStyle(color: Colors.white, fontSize: 20),
-                              ),
-                            );
-                          });
-                    },
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-
-              ElevatedButton(
-                onPressed: () async {
-                  final acceptMoveViewModel = Provider.of<AcceptMoveViewmodel>(context, listen: false);
-                  final viewModel = Provider.of<RouteDriverViewmodel>(context, listen: false);
-                  viewModel.stopTimer();
-                  final moveId = int.tryParse(moveData['moveId'].toString()) ?? 0;
-
-                  final result = await acceptMoveViewModel.acceptMove(moveId);
-
-                  if (result) {
-                    setState(() {
-                      _currentMoveData = moveData;
-                    });
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Error al aceptar el viaje')),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  minimumSize: Size(MediaQuery.of(context).size.width * 0.9, 60),
-                  backgroundColor: Colors.green,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: const Column(
-                  children: [
-                    Text('Aceptar viaje', style: TextStyle(color: Colors.white, fontSize: 25)),
-                    SizedBox(height: 8),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  } */
 } 

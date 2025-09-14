@@ -15,7 +15,7 @@ class WebSocketDriverService {
   void connect() {
     _client = StompClient(
       config: StompConfig.SockJS(
-        url: "https://71b689a01b6a.ngrok-free.app/ws",
+        url: "https://c2dafcfb21f9.ngrok-free.app/ws",
         // url: 'http://192.168.20.49:8080/ws',
         onConnect: _onConnect,
         onWebSocketError: (error) => print('WebSocket error: $error'),

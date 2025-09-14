@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/service/user/profile_user_service.dart';
+import 'package:holi/src/view/screens/driver/moving_summary_view.dart';
 import 'package:holi/src/view/screens/user/configuration_user_view.dart';
 import 'package:holi/src/view/screens/driver/join_driver_view.dart';
 import 'package:holi/src/view/widget/card/account_card_widget.dart';
@@ -115,7 +116,10 @@ class _UserState extends State<User> {
                 Icons.settings,
                 size: 30,
               ),
-              onTap: () => {Navigator.push(context, MaterialPageRoute(builder: (context) => const ConfigurationUser()))},
+              onTap: () => {
+                 Navigator.push(context, MaterialPageRoute(builder: (context) => const MovingSummaryView(origin: 'origin', destination: 'destination', distance: 'distance', duration: 'duration', paymentMethod: 'paymentMethod', amount: 45.00, paymentCompleted: true)))
+               // Navigator.push(context, MaterialPageRoute(builder: (context) => const ConfigurationUser()))
+                },
             ),
             AccountCard(
               title: "Otros",
@@ -126,7 +130,9 @@ class _UserState extends State<User> {
                 FontAwesomeIcons.truckFront,
                 size: 20,
               ),
-              onTap: () => {Navigator.push(context, MaterialPageRoute(builder: (context) => const JoinDriver()))},
+              onTap: () => {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const JoinDriver()))
+                },
             ),
           ],
         ),

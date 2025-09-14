@@ -109,6 +109,7 @@ flutter:
     - assets/images/vehicle.png
     - assets/images/location.png
     - assets/images/navigation.png
+    - assets/images/default_profile.png
     - assets/maps/maps_style.json
     - assets/animations/Animation_searching.json
     

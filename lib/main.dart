@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:holi/src/model/route/route_model.dart';
 import 'package:holi/src/service/auth/auth_service.dart';
 import 'package:holi/src/service/fcm/firebase_messaging_service.dart';
 import 'package:holi/src/service/moves/accept_move_service.dart';
@@ -17,6 +16,9 @@ import 'package:holi/src/viewmodels/location/location_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/accept_move_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/calculate_price_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/confirm_move_viewmodel.dart';
+import 'package:holi/src/viewmodels/move/history_moving_viewmodel.dart';
+import 'package:holi/src/viewmodels/move/moving_details_viewmodel.dart';
+import 'package:holi/src/viewmodels/move/moving_summary_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/update_status_move_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/websocket/move_notification_viewmodel.dart';
 import 'package:holi/src/viewmodels/payment/payment_viewmodel.dart';
@@ -27,24 +29,24 @@ import 'package:holi/src/view/screens/welcome/logo_view.dart';
 import 'package:holi/src/viewmodels/user/profile_user_viewmodel.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
-   WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
   final sessionVM = SessionViewModel();
   await sessionVM.loadSession();
-   
-   FlutterError.onError = (FlutterErrorDetails details) {
+
+  FlutterError.onError = (FlutterErrorDetails details) {
     print('❗️EXCEPCIÓN DE FLUTTER❗️');
     print('EXCEPCIÓN: ${details.exception}');
     print('STACKTRACE:\n${details.stack}');
     FlutterError.dumpErrorToConsole(details);
   };
 
-
- 
   await FirebaseMessagingService().initialize();
+  await initializeDateFormatting("es", null);
 
   if (kDebugMode) {
     debugPrint = (String? message, {int? wrapWidth}) {
@@ -71,19 +73,17 @@ void main() async {
           viewModel.updateMoveData(message.data);
           getDriverLocationViewmodel.setMoveData(message.data);
 
-          if (role =='DRIVER') {
-             Navigator.of(context).pushAndRemoveUntil(
+          if (role == 'DRIVER') {
+            Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(builder: (_) => const HomeDriverView()),
               (route) => false,
             );
-          }else{
-             Navigator.of(context).pushAndRemoveUntil(
+          } else {
+            Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(builder: (_) => const HomeUserView()),
               (route) => false,
             );
           }
-
-         
         } else {
           print('⚠️ Contexto no disponible aún');
         }
@@ -108,11 +108,7 @@ void main() async {
     });
   }
 
-  runApp(ChangeNotifierProvider.value(
-    value: sessionVM,
-    child:  App(navigatorKey: navigatorKey)
-    )
-   );
+  runApp(ChangeNotifierProvider.value(value: sessionVM, child: App(navigatorKey: navigatorKey)));
 }
 
 class App extends StatelessWidget {
@@ -132,15 +128,16 @@ class App extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => AcceptMoveViewmodel(AcceptMoveService())),
         ChangeNotifierProvider(create: (context) => GetDriverLocationViewmodel()),
         ChangeNotifierProvider(create: (context) => UpdateStatusMoveViewmodel()),
-        ChangeNotifierProvider( create: (context) =>AuthViewModel(AuthService())),
+        ChangeNotifierProvider(create: (context) => AuthViewModel(AuthService())),
         ChangeNotifierProvider(create: (context) => CalculatePriceViewmodel()),
         ChangeNotifierProvider(create: (context) => PasswordResetViewmodel()),
         ChangeNotifierProvider(create: (context) => RouteUserViewmodel()),
         ChangeNotifierProvider(create: (_) => ProfileDriverViewModel()..fetchDriverData()),
         ChangeNotifierProvider(create: (context) => PaymentViewmodel()),
         ChangeNotifierProvider(create: (context) => MoveNotificationViewmodel()),
-
-
+        ChangeNotifierProvider(create: (context) => MovingSummaryViewmodel()),
+        ChangeNotifierProvider(create: (context) => HistoryMovingViewmodel()),
+        ChangeNotifierProvider(create: (context) => MovingDetailsViewmodel()),
       ],
       child: MaterialApp(
         navigatorKey: navigatorKey,

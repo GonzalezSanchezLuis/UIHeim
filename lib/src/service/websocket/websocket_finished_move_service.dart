@@ -15,7 +15,7 @@ class WebsocketFinishedMoveService {
   void connect() {
     _client = StompClient(
         config: StompConfig.SockJS(
-      url: "https://71b689a01b6a.ngrok-free.app/ws",
+      url: "https://c2dafcfb21f9.ngrok-free.app/ws",
       onConnect: _onConnect,
       onWebSocketError: (error) => print('WebSocket error: $error'),
       onDisconnect: (_) => print("WebSocket disconnected"),
@@ -34,7 +34,7 @@ class WebsocketFinishedMoveService {
             onMessage.call(_parseJson(paymentInfo));
           }
         });
-    print("SOCKET CONECTADO EXITOSAMENTE");
+    print("SOCKET DE PAGO CONECTADO EXITOSAMENTE");
   }
 
   void disconnect() {

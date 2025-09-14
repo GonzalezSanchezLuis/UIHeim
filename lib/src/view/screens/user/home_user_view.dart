@@ -52,7 +52,7 @@ class _HomeUserState extends State<HomeUserView> {
   final LocationViewModel locationViewModel = LocationViewModel();
   late final MoveNotificationUserViewmodel _moveNotificationUserViewModel;
   late final WebsocketUserService _websocketUserService;
-  late final WebsocketFinishedMoveService _websocketFinishedMoveService;
+  WebsocketFinishedMoveService? _websocketFinishedMoveService;
   int currentPageIndex = 0;
   bool showPriceModal = false;
   bool showHomeButtons = true;
@@ -95,21 +95,7 @@ class _HomeUserState extends State<HomeUserView> {
 
           if (data['move'] != null && data['move']['moveId'] != null) {
             final int moveId = data['move']['moveId'];
-
-            if (_websocketFinishedMoveService == null) {
-              _websocketFinishedMoveService = WebsocketFinishedMoveService(
-                onMessage: (dataPay){
-                  debugPrint("💰 Mensaje de pago recibido: $dataPay");
-                    setState(() {
-                      // Por ejemplo, aquí podrías actualizar una variable de estado
-                      // para mostrar el modal de pago
-                      // _paymentData = dataPay;
-                    });
-                },
-                 moveId: moveId);
-                 _websocketFinishedMoveService.connect();
-
-            }
+            _handleMoveAssigned(moveId);
           }
 
           setState(() {
@@ -123,7 +109,7 @@ class _HomeUserState extends State<HomeUserView> {
   @override
   void dispose() {
     _websocketUserService.disconnect();
-    _websocketFinishedMoveService.disconnect();
+    _websocketFinishedMoveService?.disconnect();
     super.dispose();
   }
 
@@ -139,7 +125,7 @@ class _HomeUserState extends State<HomeUserView> {
             children: [
               //  const  PaymentView(),
               _buildHomePage(context),
-              const CalculatePrice(),
+            const CalculatePrice(),
               const HistoryMove(),
               const User(),
             ],
@@ -390,6 +376,24 @@ class _HomeUserState extends State<HomeUserView> {
         );
       },
     );
+  }
+
+  void _handleMoveAssigned(int moveId) {
+    if (_websocketFinishedMoveService == null) {
+      _websocketFinishedMoveService = WebsocketFinishedMoveService(
+          onMessage: (paymentData) {
+            debugPrint("💰 Mensaje de pago recibido: $paymentData");
+
+            Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentView(paymentData: paymentData)));
+            setState(() {
+              // Por ejemplo, aquí podrías actualizar una variable de estado
+              // para mostrar el modal de pago
+              // _paymentData = dataPay;
+            });
+          },
+          moveId: moveId);
+      _websocketFinishedMoveService?.connect();
+    }
   }
 
   void _updateModalState() {
