@@ -22,8 +22,11 @@ class MovingSummaryModel {
   });
 
   factory MovingSummaryModel.fromJson(Map<String, dynamic> json) {
+     final rawMoveId = json['moveId'];
+    final int moveId = (rawMoveId is int) ? rawMoveId : int.tryParse(rawMoveId.toString()) ?? 0;
+
     return MovingSummaryModel(
-      moveId: json['movingId'],
+      moveId: json['moveId'],
         origin: json['origin'] ?? '',
         destination: json['destination'] ?? '',
         distanceKm: json['distance'] ?? '',

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/model/move/moving_summary_model.dart';
-import 'package:holi/src/service/moves/moving%20_summary_service.dart';
+import 'package:holi/src/service/moves/moving_summary_service.dart';
 
 class MovingSummaryViewmodel extends ChangeNotifier {
   final MovingSummaryService _movingSummaryService = MovingSummaryService();

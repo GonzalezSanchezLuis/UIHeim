@@ -36,7 +36,7 @@ class _RegisterDriverState extends State<RegisterDriver> {
           style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,color: Colors.white,),
           onPressed: () => {Navigator.pop(context)},
         ),
       ),

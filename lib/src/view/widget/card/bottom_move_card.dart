@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/enums/status_of_the_move.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
-import 'package:holi/src/view/screens/driver/moving_summary_view.dart';
+import 'package:holi/src/view/screens/move/moving_summary_view.dart';
 import 'package:holi/src/viewmodels/move/update_status_move_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:slide_to_act/slide_to_act.dart';

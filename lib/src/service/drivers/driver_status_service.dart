@@ -12,7 +12,7 @@ class DriverStatusSerive {
  // final baseUrl = "http://192.168.20.49:8080/api/v1/drivers/status";
 
   Future<void> connectDriver(int driverId, LatLng position) async {
-    const String baseUrl = 'https://c2dafcfb21f9.ngrok-free.app/api/v1';
+    const String baseUrl = 'http://192.168.20.49:8080/api/v1';
     final url = Uri.parse('$baseUrl/drivers/connect/$driverId');
 
     try {
@@ -43,7 +43,7 @@ class DriverStatusSerive {
   }
 
   Future<void> disconnectDriver(int driverId) async {
-    const String baseUrl = 'https://c2dafcfb21f9.ngrok-free.app/api/v1/drivers';
+    const String baseUrl = 'http://192.168.20.49:8080/api/v1/drivers';
     final url = Uri.parse('$baseUrl/disconnected/$driverId');
 
     try {
@@ -72,7 +72,7 @@ class DriverStatusSerive {
   }
 
   Future<DriverStatusResponse?> loadDriverStatus(int driverId) async {
-  const String baseUrl = 'https://c2dafcfb21f9.ngrok-free.app/api/v1/drivers/get/status/';
+  const String baseUrl = 'http://192.168.20.49:8080/api/v1/drivers/get/status/';
     try {
       final url = Uri.parse('$baseUrl$driverId');
       final response = await http.get(url, headers: {"Content-Type": "application/json"});

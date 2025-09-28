@@ -4,7 +4,6 @@ import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/core/theme/fonts/style_fonts_welcome.dart';
 import 'package:holi/src/view/screens/auth/create_account_view.dart';
 import 'dart:async';
-
 import 'package:holi/src/view/screens/auth/login_view.dart';
 
 
@@ -47,7 +46,7 @@ class _IntroductionViewState extends State<IntroductionView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.primarycolor,
+      backgroundColor: Colors.black ,
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

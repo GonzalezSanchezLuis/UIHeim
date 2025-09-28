@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 
 class AcceptMoveService {
   // final String baseUrl = "http://192.168.20.49:8080/api/v1";
-  final String baseUrl = "https://c2dafcfb21f9.ngrok-free.app/api/v1/move";
+  final String baseUrl = "https://8f33320fa861.ngrok-free.app/api/v1/move";
 
   Future<bool> acceptMove(int moveId, int driverId) async {
     final url = Uri.parse('$baseUrl/accept/$moveId');

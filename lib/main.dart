@@ -5,9 +5,11 @@ import 'package:holi/src/service/fcm/firebase_messaging_service.dart';
 import 'package:holi/src/service/moves/accept_move_service.dart';
 import 'package:holi/src/view/screens/driver/home_driver_view.dart';
 import 'package:holi/src/view/screens/user/home_user_view.dart';
+import 'package:holi/src/view/screens/welcome/introducction_view.dart';
 import 'package:holi/src/viewmodels/auth/auth_viewmodel.dart';
 import 'package:holi/src/viewmodels/auth/password_reset_viewmodel.dart';
 import 'package:holi/src/viewmodels/auth/sesion_viewmodel.dart';
+import 'package:holi/src/viewmodels/driver/driver_data_viewmodel.dart';
 import 'package:holi/src/viewmodels/driver/profile_driver_viewmodel.dart';
 import 'package:holi/src/viewmodels/driver/route_driver_viewmodel.dart';
 import 'package:holi/src/viewmodels/driver/driver_location_viewmodel.dart';
@@ -25,7 +27,6 @@ import 'package:holi/src/viewmodels/payment/payment_viewmodel.dart';
 import 'package:holi/src/viewmodels/user/get_driver_location_viewmodel.dart';
 import 'package:holi/src/viewmodels/user/route_user_viewmodel.dart';
 import 'package:provider/provider.dart';
-import 'package:holi/src/view/screens/welcome/logo_view.dart';
 import 'package:holi/src/viewmodels/user/profile_user_viewmodel.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -111,6 +112,7 @@ void main() async {
   runApp(ChangeNotifierProvider.value(value: sessionVM, child: App(navigatorKey: navigatorKey)));
 }
 
+
 class App extends StatelessWidget {
   final GlobalKey<NavigatorState> navigatorKey;
   const App({super.key, required this.navigatorKey});
@@ -138,6 +140,7 @@ class App extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => MovingSummaryViewmodel()),
         ChangeNotifierProvider(create: (context) => HistoryMovingViewmodel()),
         ChangeNotifierProvider(create: (context) => MovingDetailsViewmodel()),
+        ChangeNotifierProvider(create: (context) => DriverDataViewmodel())
       ],
       child: MaterialApp(
         navigatorKey: navigatorKey,
@@ -147,8 +150,10 @@ class App extends StatelessWidget {
           ),
         ),
         debugShowCheckedModeBanner: false,
-        home: const WelcomeView(),
+      home: const IntroductionView(),
       ),
+      
     );
+    
   }
 }

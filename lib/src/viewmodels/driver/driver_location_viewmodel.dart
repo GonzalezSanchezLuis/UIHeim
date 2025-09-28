@@ -3,14 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:holi/src/model/driver/driver_location.dart';
 import 'package:holi/src/service/drivers/driver_location_service.dart';
+import 'package:holi/src/viewmodels/auth/sesion_viewmodel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DriverLocationViewmodel extends ChangeNotifier {
+  final SessionViewModel sessionViewModel = SessionViewModel();
   final DriverLocationService driverLocationService = DriverLocationService();
   StreamSubscription<Position>? locationSubscription;
-
+  Timer? _locationTimer;
   DriverLocation? _currentLocation;
-  
 
   DriverLocation? get currentLocation => _currentLocation;
 
@@ -22,7 +23,14 @@ class DriverLocationViewmodel extends ChangeNotifier {
       ),
     ).listen((Position position) async {
       _currentLocation = DriverLocation(position.latitude, position.longitude);
-      notifyListeners(); // Actualiza la vista
+      notifyListeners();
+      _sendLocationToServer();
+
+      _locationTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+        if (_currentLocation != null) {
+          _sendLocationToServer();
+        }
+      });
 
       // Enviar al servidor
       try {
@@ -42,7 +50,25 @@ class DriverLocationViewmodel extends ChangeNotifier {
     });
   }
 
+  void _sendLocationToServer() async {
+    if (_currentLocation == null) return;
+
+    try {
+      final driverId = sessionViewModel.userId;
+      if (driverId == null) {
+        print("USER ID NOT FOUND");
+        return;
+      }
+
+      await driverLocationService.sendLocation(_currentLocation!, driverId);
+      debugPrint('Ubicación enviada');
+    } catch (e) {
+      debugPrint('Error al enviar ubicación: $e');
+    }
+  }
+
   void stopLocationUpdates() {
     locationSubscription?.cancel();
+    _locationTimer?.cancel();
   }
 }

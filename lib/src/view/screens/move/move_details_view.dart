@@ -129,7 +129,6 @@ Widget _buildDivider() {
   return const Divider(color: Colors.grey, thickness: 1, height: 20);
 }
 
-// Función para crear una fila de datos
 Widget _buildRow(String label, String value, {bool isBold = false}) {
   return Padding(
     padding: const EdgeInsets.symmetric(vertical: 4.0),
@@ -146,34 +145,45 @@ Widget _buildRow(String label, String value, {bool isBold = false}) {
   );
 }
 
-Widget _buildRowIsApproved(String label, bool isApproved, {bool isBold = false}) {
-  final backgroundColor = isApproved ? Colors.green[100] : Colors.red[100];
-  final textColor = isApproved ? Colors.green[900]! : Colors.red[900]!;
-  final textValue = isApproved ? 'Aprobado' : 'Rechazado';
 
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 4.0),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: const TextStyle(fontSize: 16)),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Text(
-            textValue,
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-              color: textColor,
-            ),
+
+Widget _buildRowIsApproved(String label, bool isApproved) {
+  // Use a Row to align the label and the status badge.
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      Text(label, style: const TextStyle(fontSize: 16)),
+      // The status badge Container.
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: isApproved ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isApproved ? Colors.green : Colors.red,
           ),
         ),
-      ],
-    ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isApproved ? Icons.check_circle_outline : Icons.cancel_outlined,
+              color: isApproved ? Colors.green : Colors.red,
+              size: 18,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              isApproved ? 'Aprobado' : 'Rechazado',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: isApproved ? Colors.green : Colors.red,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ],
   );
 }
 

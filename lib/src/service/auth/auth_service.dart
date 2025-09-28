@@ -4,8 +4,8 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 
 class AuthService {
- //final String baseUrl = "http://192.168.20.49:8080/api/v1";
-final String baseUrl = "https://c2dafcfb21f9.ngrok-free.app/api/v1";
+ final String baseUrl = "http://192.168.20.49:8080/api/v1";
+ //final String baseUrl = "https://5a8b5535f46b.ngrok-free.app/api/v1";
 
   Future<Map<String, dynamic>?> registerUser({
     required String name,

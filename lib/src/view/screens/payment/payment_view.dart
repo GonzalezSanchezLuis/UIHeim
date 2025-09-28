@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/utils/format_price.dart';
@@ -45,7 +43,7 @@ class PaymentView extends StatelessWidget {
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
         title: const Text(
-          "Pago del viaje",
+          "Pago del cambio de domicilio",
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: Colors.black,
@@ -72,7 +70,7 @@ class PaymentView extends StatelessWidget {
                           Icon(Icons.check_circle, color: Colors.green, size: 28),
                           SizedBox(width: 8),
                           Text(
-                            "¡Viaje finalizado!",
+                            "¡Mudanza finalizada!",
                             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                           ),
                         ],
@@ -91,7 +89,7 @@ class PaymentView extends StatelessWidget {
                         children: [
                           const Text("Total a pagar:", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                           Text(
-                            "\$$formattedPrice",
+                            formattedPrice,
                             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                         ],

@@ -8,6 +8,7 @@ import 'package:holi/src/model/payment/payment_model.dart';
 import 'package:holi/src/service/websocket/websocket_finished_move_service.dart';
 import 'package:holi/src/service/websocket/websocket_user_service.dart';
 import 'package:holi/src/utils/format_price.dart';
+import 'package:holi/src/view/screens/driver/driver_data_view.dart';
 import 'package:holi/src/view/screens/move/calculate_price_view.dart';
 import 'package:holi/src/view/screens/move/history_move_view.dart';
 import 'package:holi/src/view/screens/move/select_payment_method_view.dart';
@@ -126,7 +127,7 @@ class _HomeUserState extends State<HomeUserView> {
               //  const  PaymentView(),
               _buildHomePage(context),
             const CalculatePrice(),
-              const HistoryMove(),
+             const HistoryMove(),
               const User(),
             ],
           ),
@@ -146,6 +147,7 @@ class _HomeUserState extends State<HomeUserView> {
                       decoration: BoxDecoration(color: AppTheme.primarycolor, borderRadius: BorderRadius.circular(30)),
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                       child: DriverInfoCard(
+                        driverId: _currentActiveMoveData!['driverId'],
                         enrollVehicle: _currentActiveMoveData!['enrollVehicle']?.toString() ?? '',
                         driverImageUrl: _currentActiveMoveData!['driverImageUrl']?.toString() ?? '',
                         vehicleImageUrl: 'assets/images/vehicle.png', // Esta es estática

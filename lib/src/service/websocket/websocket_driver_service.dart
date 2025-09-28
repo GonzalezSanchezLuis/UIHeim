@@ -15,7 +15,7 @@ class WebSocketDriverService {
   void connect() {
     _client = StompClient(
       config: StompConfig.SockJS(
-        url: "https://c2dafcfb21f9.ngrok-free.app/ws",
+        url: "https://8f33320fa861.ngrok-free.app/ws",
         // url: 'http://192.168.20.49:8080/ws',
         onConnect: _onConnect,
         onWebSocketError: (error) => print('WebSocket error: $error'),
@@ -47,4 +47,5 @@ class WebSocketDriverService {
   Map<String, dynamic> _parseJson(String body) {
     return body.isNotEmpty ? Map<String, dynamic>.from(jsonDecode(body)) : {};
   }
+
 }

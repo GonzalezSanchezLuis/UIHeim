@@ -113,7 +113,7 @@ class ConnectButton extends StatelessWidget {
       builder: (context, provider, _) {
         // Determina el color del botón
         final Color buttonBackgroundColor = provider.isLoading
-            ? AppTheme.confirmationscolor.withOpacity(0.6) // Color con opacidad cuando está cargando
+            ? AppTheme.confirmationscolor.withOpacity(0.6) 
             : AppTheme.confirmationscolor; // Color normal
 
         // Determina el contenido del botón (texto o indicador de carga)
@@ -131,7 +131,7 @@ class ConnectButton extends StatelessWidget {
                   ),
                   SizedBox(width: 16),
                   Text(
-                    "Conectando...", // Texto que aparece mientras carga
+                    "Conectando...", 
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 20,

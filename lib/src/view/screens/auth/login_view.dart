@@ -256,7 +256,7 @@ class _LoginState extends State<LoginView> {
 
       final success = await authViewModel.login(email, password);
 
-      setState(() => _isLoading = false);
+     // setState(() => _isLoading = false);
 
       if (success) {
         final prefs = await SharedPreferences.getInstance();
@@ -277,6 +277,7 @@ class _LoginState extends State<LoginView> {
           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeDriverView()));
         }
       } else {
+        setState(() => _isLoading = false);
         final error = authViewModel.errorMessage ?? "Algo salió mal";
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

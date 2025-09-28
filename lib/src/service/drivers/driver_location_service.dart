@@ -14,7 +14,7 @@ class DriverLocationService {
       return null;
     }
     
-    final response = await http.post(Uri.parse('https://83a6203644ae.ngrok-free.app/api/v1/drivers/location/$driverId'),
+    final response = await http.post(Uri.parse('http://192.168.20.49:8080/api/v1/drivers/location/$driverId'),
     
     headers: {'Content-Type' : 'application/json'}, 
     body: jsonEncode({

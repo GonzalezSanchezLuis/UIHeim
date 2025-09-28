@@ -237,15 +237,15 @@ class MoveRequestCard extends StatelessWidget {
               }
             },
             style: ElevatedButton.styleFrom(
-              minimumSize: Size(MediaQuery.of(context).size.width * 0.9, 50), // Ancho casi completo
-              backgroundColor: Colors.green, // Color de fondo verde
+              minimumSize: Size(MediaQuery.of(context).size.width * 0.9, 50), 
+              backgroundColor: Colors.green, 
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30), // Bordes redondeados
+                borderRadius: BorderRadius.circular(30), 
               ),
             ),
             child: const Text(
               'Aceptar viaje',
-              style: TextStyle(color: Colors.white, fontSize: 25), // Solo el texto, sin Column ni SizedBox extra
+              style: TextStyle(color: Colors.white, fontSize: 25), 
             ),
           ),
         ],

@@ -8,6 +8,7 @@ import 'package:holi/src/core/gps_validator/gps_validator_service.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/service/websocket/websocket_driver_service.dart';
 import 'package:holi/src/view/screens/driver/driver_view.dart';
+import 'package:holi/src/view/screens/driver/wallet_view.dart';
 import 'package:holi/src/view/widget/button/button_card_home_widget.dart';
 import 'package:holi/src/view/widget/card/bottom_move_card.dart';
 import 'package:holi/src/view/widget/card/floating_move_card_wrapper.dart';
@@ -119,27 +120,88 @@ class _HomeDriverState extends State<HomeDriverView> {
 
           // Botón de perfil con borde dinámico
           if (_currentMoveData == null)
-            Positioned(
+         Positioned(
               top: 50,
               left: 20,
-              child: GestureDetector(
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const Driver()),
-                ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AppTheme.primarycolor,
-                      width: 3,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppTheme.primarycolor,
+                  borderRadius: BorderRadius.circular(40), // forma de píldora
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 6,
+                      offset: const Offset(2, 2),
                     ),
-                  ),
-                  child: CircleAvatar(
-                    radius: 30,
-                    backgroundImage: profile.urlAvatarProfile != null && profile.urlAvatarProfile!.isNotEmpty ? NetworkImage(profile.urlAvatarProfile!) : null,
-                    child: profile.urlAvatarProfile == null || profile.urlAvatarProfile!.isEmpty ? const Icon(Icons.person, size: 40) : null,
-                  ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // --- Sección Avatar ---
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const Driver()),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppTheme.primarycolor,
+                            width: 3,
+                          ),
+                        ),
+                        child: CircleAvatar(
+                          radius: 28,
+                          backgroundImage: profile.urlAvatarProfile != null && profile.urlAvatarProfile!.isNotEmpty ? NetworkImage(profile.urlAvatarProfile!) : null,
+                          child: profile.urlAvatarProfile == null || profile.urlAvatarProfile!.isEmpty ? const Icon(Icons.person, size: 36) : null,
+                        ),
+                      ),
+                    ),
+
+                    // Separador visual (línea fina)
+                    Container(
+                      width: 1,
+                      height: 50,
+                      color: Colors.grey.withOpacity(0.3),
+                      margin: const EdgeInsets.symmetric(horizontal: 8),
+                    ),
+
+                    // --- Sección Saldo ---
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) =>  WalletView()),
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        child: Row(
+                          children: [
+                            Text(
+                              "COP \$ 12.00",
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Icon(
+                              Icons.arrow_forward_ios,
+                              size: 16,
+                              color: Colors.white,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -181,7 +243,7 @@ class _HomeDriverState extends State<HomeDriverView> {
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: driverViewModel.connectionStatus == null
-                              ? const Center(child: CircularProgressIndicator())
+                              ? const Center(child: CircularProgressIndicator(color: Colors.white,))
                                : _incomingMoveData != null
                                   ? MoveRequestCard(
                                       moveData: _incomingMoveData!,
@@ -212,33 +274,35 @@ class _HomeDriverState extends State<HomeDriverView> {
                         ),
                       );
                     },
-                  ),)
+                  ),
+                  )
                 )
               : Positioned(
                   bottom: 0,
                   left: 0,
                   right: 0,
-                  child: Consumer<SessionViewModel>(
-                    builder: (context, sessionVM, child) {
-                      debugPrint("🔥 sessionVM.isInitialized: ${sessionVM.isInitialized}");
-                      debugPrint("🔥 _currentMoveData: $_currentMoveData");
+                  child: SafeArea(child: Consumer<SessionViewModel>(
+                      builder: (context, sessionVM, child) {
+                        debugPrint("🔥 sessionVM.isInitialized: ${sessionVM.isInitialized}");
+                        debugPrint("🔥 _currentMoveData: $_currentMoveData");
 
-                      final rawMoveId = _currentMoveData?['moveId'];
-                      final moveId = rawMoveId is int ? rawMoveId : int.tryParse(rawMoveId?.toString() ?? '');
+                        final rawMoveId = _currentMoveData?['moveId'];
+                        final moveId = rawMoveId is int ? rawMoveId : int.tryParse(rawMoveId?.toString() ?? '');
 
-                      print("ID DE LA MUDANZA $moveId");
-                      final driverId = sessionVM.userId;
+                        print("ID DE LA MUDANZA $moveId");
+                        final driverId = sessionVM.userId;
 
-                      if (moveId == null || driverId == null) {
-                        return Text('Datos inválidos');
-                      }
+                        if (moveId == null || driverId == null) {
+                          return Text('Datos inválidos');
+                        }
 
-                      return BottomMoveCard(
-                        moveId: moveId,
-                        driverId: driverId,
-                      );
-                    },
-                  )),
+                        return BottomMoveCard(
+                          moveId: moveId,
+                          driverId: driverId,
+                        );
+                      },
+                    ),)  
+                  ),
         ],
       );
     });
