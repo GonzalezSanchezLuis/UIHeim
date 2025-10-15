@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:holi/src/viewmodels/driver/driver_data_viewmodel.dart';
 import 'package:provider/provider.dart';
 
@@ -72,7 +71,10 @@ class _DriverDataViewState extends State<DriverDataView> {
                       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
                       child: Column(
                         children: [
+                        // 🛠️ Implementación FINAL con Image.network
                           Container(
+                            width: 100, // Define un tamaño fijo para la estructura circular
+                            height: 100,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
@@ -80,10 +82,24 @@ class _DriverDataViewState extends State<DriverDataView> {
                                 width: 3,
                               ),
                             ),
-                            child: CircleAvatar(
-                              radius: 50,
-                              backgroundImage: CachedNetworkImageProvider(profile.urlAvatar),
-                              backgroundColor: Colors.grey.shade300,
+                            child: ClipOval(
+                              child: Image.network(
+                                profile.urlAvatar,
+                                fit: BoxFit.cover, // Asegura que la imagen llene el círculo
+
+                                // Manejo de carga (Placeholder básico)
+                                loadingBuilder: (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child; // Cuando termina de cargar, muestra el widget hijo
+                                  return Center(
+                                      child: CircularProgressIndicator(
+                                    value: loadingProgress.expectedTotalBytes != null ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes! : null, // Muestra el progreso
+                                    color: AppTheme.primarycolor,
+                                  ));
+                                },
+
+                                // Manejo de error (si la URL falla por alguna razón)
+                                errorBuilder: (context, error, stackTrace) => const Icon(Icons.person, size: 50, color: Colors.grey),
+                              ),
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -103,16 +119,16 @@ class _DriverDataViewState extends State<DriverDataView> {
                               color: Colors.amber.shade50,
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            child: Row(
+                            child: const Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.star, color: Colors.amber, size: 20),
-                                const SizedBox(width: 5),
+                                 Icon(Icons.star, color: Colors.amber, size: 20),
+                                 SizedBox(width: 5),
                               /*  Text(
                                  profile. rating.toStringAsFixed(1),
                                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.amber),
                                 ), */
-                                const SizedBox(width: 10),
+                                SizedBox(width: 10),
                               /*  Text(
                                   '($tripCount viajes)',
                                   style: const TextStyle(fontSize: 15, color: Colors.grey),

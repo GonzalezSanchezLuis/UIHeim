@@ -3,9 +3,10 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:holi/src/core/enums/move_type.dart';
 import 'package:http/http.dart' as http;
+import 'package:holi/config/app_config.dart';
 
 class CalculatePriceService {
-  final String _baseUrl = "http://192.168.20.49:8080/api/v1";
+  final String _baseUrl = apiBaseUrl;
 
   Future<Map<String, dynamic>> calculatedPrice({
     required MoveType? typeOfMove,

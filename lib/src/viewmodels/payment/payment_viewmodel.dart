@@ -8,7 +8,7 @@ class PaymentViewmodel extends ChangeNotifier {
   bool _isLoading = false;
   String? _checkoutUrl;
 
-   bool get isLoading => _isLoading;
+  bool get isLoading => _isLoading;
   String? get checkoutUrl => _checkoutUrl;
 
   Future<void> startPayment(PaymentModel paymentModel) async {
@@ -16,7 +16,7 @@ class PaymentViewmodel extends ChangeNotifier {
     notifyListeners();
 
     final url = await _paymentService.generatePaymentUrl(paymentModel);
-
+    print("URL DE PAGO $url");
     _checkoutUrl = url;
     _isLoading = false;
     notifyListeners();

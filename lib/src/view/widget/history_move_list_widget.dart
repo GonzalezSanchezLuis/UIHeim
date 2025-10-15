@@ -31,14 +31,6 @@ class HistoryMoveList extends StatelessWidget {
               context,
               MaterialPageRoute(
                 builder: (context) =>   MoveDetailsView(moveId: move.moveId,
-                  /*moveData: {
-                    'serviceCost': 70000.0,
-                    'subtotal': 70000.0,
-                    'totalAmount': 242.00,
-                    'paymentMethod': 'Transferencia bancaria',
-                    'vehicleType': 'NPR',
-                    'tripSize': 'Pequeño',
-                  },*/
                 ),
               ),
             );

@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:holi/config/app_config.dart';
 
 class MovingDetailsService {
-  String baseUrl = "http://192.168.20.49:8080/api/v1/move";
+  String baseUrl = "$apiBaseUrl/move";
 
   Future<Map<String, dynamic>> fetchMovingDetails(int moveId) async {
     final response = await http.get(Uri.parse('$baseUrl/$moveId/details'));

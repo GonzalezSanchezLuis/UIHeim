@@ -9,7 +9,7 @@ class AuthViewModel extends ChangeNotifier {
 
   AuthViewModel(this._authService);
 
-  Future<bool> login(String email, String password) async {
+  /*Future<bool> login(String email, String password) async {
     isLoading = true;
     errorMessage = null;
     notifyListeners();
@@ -34,12 +34,47 @@ class AuthViewModel extends ChangeNotifier {
     }
 
     if (role is String) {
-      await prefs.setString('role', role); // <-- AGREGA ESTO
+      await prefs.setString('role', role); 
     }
-
 
     notifyListeners();
     return true;
+  }*/
+
+  Future<void> login(String email, String password) async {
+    isLoading = true;
+    errorMessage = null;
+   notifyListeners();
+
+    try {
+      final response = await _authService.login(email, password);
+
+      if (response == null || response["error"] != null) {
+        errorMessage = response?['error'] ?? "Error desconocido";
+        throw Exception(errorMessage);
+      }
+
+      final prefs = await SharedPreferences.getInstance();
+      final userId = response!['userId'];
+      final role = response['role'];
+
+      if (userId is int) {
+        await prefs.setInt('userId', userId);
+      } else if (userId is String) {
+        await prefs.setInt('userId', int.tryParse(userId) ?? 0);
+      }
+
+      if (role is String) {
+        await prefs.setString('role', role);
+      }
+    } on Exception catch (e) {
+      errorMessage = e.toString().replaceAll('Exception: ', '');
+      throw e;
+    } 
+    finally {
+      isLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<bool> registerUser(String name, String email, String password) async {
@@ -50,7 +85,7 @@ class AuthViewModel extends ChangeNotifier {
     final result = await _authService.registerUser(name: name, email: email, password: password);
     isLoading = false;
 
-    if (result == null|| result["error"] != null) {
+    if (result == null || result["error"] != null) {
       errorMessage = result?["error"] ?? "ERROR DESCONOCIDO";
       notifyListeners();
       return false;
@@ -67,18 +102,16 @@ class AuthViewModel extends ChangeNotifier {
 
     await prefs.setString('role', result['role'].toString());
 
-
     notifyListeners();
     return true;
   }
 
-
-   Future<bool> registerDriver(int userId, licenseNumber, String vehicleType, String enrollVehicle) async {
+  Future<bool> registerDriver(int userId, licenseNumber, String vehicleType, String enrollVehicle) async {
     isLoading = true;
     errorMessage = null;
     notifyListeners();
 
-    final result = await _authService.registerDriver(userId: userId, licenseNumber:licenseNumber, vehicleType: vehicleType, enrollVehicle: enrollVehicle);
+    final result = await _authService.registerDriver(userId: userId, licenseNumber: licenseNumber, vehicleType: vehicleType, enrollVehicle: enrollVehicle);
     isLoading = false;
 
     if (result == null || result["error"] != null) {
@@ -90,10 +123,6 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
     return true;
   }
-
-
-
-
 
   Future<bool> logout() async {
     final success = await _authService.logout();

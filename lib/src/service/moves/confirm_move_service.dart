@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:holi/src/core/enums/move_type.dart';
 import 'package:http/http.dart' as http;
+import 'package:holi/config/app_config.dart';
 
 class ConfirmMoveService {
   Future<Map<String, dynamic>?> confirmMove(
@@ -20,7 +21,7 @@ class ConfirmMoveService {
       String? destinationAddressText,
       String? paymentMethod}) async {
     try {
-      final url = Uri.parse("https://8f33320fa861.ngrok-free.app/api/v1/move/confirm");
+      final url = Uri.parse("$apiBaseUrl/move/confirm");
       final cleanedPrice = calculatedPrice.replaceAll(',', '');
 
       final Map<String, dynamic> requestBody = {
@@ -39,8 +40,6 @@ class ConfirmMoveService {
         'paymentMethod': paymentMethod,
         "userId": userId
       };
-
-      // o getInt si es entero
 
       print("🚀 Enviando datos al servidor:");
       print(jsonEncode(requestBody));

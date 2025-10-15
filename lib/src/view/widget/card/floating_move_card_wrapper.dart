@@ -134,24 +134,6 @@ class _FloatingMoveCardWrapperState extends State<FloatingMoveCardWrapper> with 
             ),
 
             const SizedBox(height: 15),
-
-            // Botón para continuar
-            /*  ElevatedButton(
-              onPressed: () {
-                // Aquí puedes navegar a la siguiente pantalla o realizar otra acción
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primarycolor,
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              child: const  Text(
-                'Iniciar Navegación',
-                style: TextStyle(fontSize: 18),
-              ),
-            ), */
           ],
         ),
       ),

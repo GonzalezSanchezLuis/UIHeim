@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/service/user/profile_user_service.dart';
-import 'package:holi/src/view/screens/move/moving_summary_view.dart';
 import 'package:holi/src/view/screens/driver/join_driver_view.dart';
 import 'package:holi/src/view/screens/user/configuration_user_view.dart';
 import 'package:holi/src/view/widget/card/account_card_widget.dart';

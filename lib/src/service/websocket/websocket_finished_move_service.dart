@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_config.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
+import 'package:holi/config/app_config.dart';
 
 typedef MessageCallback = void Function(Map<String, dynamic> data);
 
@@ -14,8 +15,8 @@ class WebsocketFinishedMoveService {
 
   void connect() {
     _client = StompClient(
-        config: StompConfig.SockJS(
-      url: "https://8f33320fa861.ngrok-free.app/ws",
+      config: StompConfig.SockJS(
+      url: "$apiBaseUrl/ws",
       onConnect: _onConnect,
       onWebSocketError: (error) => print('WebSocket error: $error'),
       onDisconnect: (_) => print("WebSocket disconnected"),

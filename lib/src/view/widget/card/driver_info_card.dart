@@ -77,22 +77,6 @@ class DriverInfoCard extends StatelessWidget {
                       MaterialPageRoute(
                         builder: (_) =>  DriverDataView(driverId: driverId),
                       ),
-                      /*   MaterialPageRoute(
-                        builder: (_) => const DriverProfileView(
-                          name: 'Carlos Ramírez',
-                          phone: '+57 300 123 4567',
-                          imageAsset: 'assets/images/driver.jpg',
-                          rating: 4.8,
-                          tripCount: 120,
-                          securityChecks: [
-                            'Documento de identidad verificado',
-                            'Licencia de conducción vigente',
-                            'Vehículo asegurado',
-                            'Revisión técnico-mecánica al día',
-                          ],
-                        ),
-
-                      ), */
                     );
                   },
                   child: Row(

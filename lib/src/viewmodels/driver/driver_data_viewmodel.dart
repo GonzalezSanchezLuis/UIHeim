@@ -16,6 +16,7 @@ class DriverDataViewmodel extends ChangeNotifier {
 
     try {
       final Map<String, dynamic> rawData = await _driverDataService.fetchDriverData(driverId);
+      print("RAW $rawData");
       driverDataModel = DriverDataModel.fromJson(rawData);
     } catch (e) {
       errorMessage = e.toString();
@@ -24,5 +25,4 @@ class DriverDataViewmodel extends ChangeNotifier {
       notifyListeners();
     }
   }
-
 }

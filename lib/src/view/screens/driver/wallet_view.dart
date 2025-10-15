@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:holi/src/utils/format_price.dart';
+import 'package:holi/src/viewmodels/auth/sesion_viewmodel.dart';
+import 'package:holi/src/viewmodels/payment/wallet_viewmodel.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class WalletView extends StatefulWidget {
   WalletView({Key? key}) : super(key: key);
@@ -9,10 +14,26 @@ class WalletView extends StatefulWidget {
 }
 
 class _WalletViewState extends State<WalletView> {
-  // 🔹 Datos de ejemplo, luego los puedes traer desde tu backend / viewmodel
-  double saldoPendiente = 120000;
+  String _formatDate(DateTime? date) {
+    if (date == null) return "N/A";
+    return DateFormat('dd MMM yyyy').format(date);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    final sessionVM = Provider.of<SessionViewModel>(context, listen: false);
+    final String? driverIdAsString = sessionVM.userId?.toString();
+    final int driverId = int.tryParse(driverIdAsString ?? '0') ?? 0;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<WalletViewmodel>(context, listen: false).loadWallet(driverId);
+    });
+  }
+
+  /*double saldoPendiente = 120000;
   String ultimaTransaccion = "18 Sep 2025 - \$50,000";
-  String proximaFechaPago = "30 Sep 2025";
+  String proximaFechaPago = "30 Sep 2025";*/
 
   @override
   Widget build(BuildContext context) {
@@ -29,39 +50,61 @@ class _WalletViewState extends State<WalletView> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Saldo Pendiente Total
-            _buildInfoCard(
-              title: "Saldo a Cobrar",
-              value: "\$${saldoPendiente.toStringAsFixed(0)}",
-              icon: Icons.account_balance_wallet,
-              color: Colors.orange,
-            ),
-            const SizedBox(height: 16),
+      body: Consumer<WalletViewmodel>(builder: (context, viewModel, child) {
+        if (viewModel.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-            // Última Transacción
-            _buildInfoCard(
-              title: "Último pago recibido",
-              value: ultimaTransaccion,
-              icon: Icons.payments_outlined,
-              color: Colors.green,
-            ),
-            const SizedBox(height: 16),
+        if (viewModel.errorMessage != null) {
+          return Center(child: Text('Error: ${viewModel.errorMessage}'));
+        }
 
-            // Próxima Fecha de Pago
-            _buildInfoCard(
-              title: "Próxima Fecha de Pago",
-              value: proximaFechaPago,
-              icon: Icons.calendar_today_outlined,
-              color: Colors.blue,
+        if (viewModel.wallet != null) {
+          final wallets = viewModel.wallet;
+          final String lastPayment = _formatDate(wallets!.lastPaymentDate);
+          final String nextPayment = _formatDate(wallets.nextPaymentDate);
+          final price = wallets.currentEarnedBalance;
+          final priceString = price.toStringAsFixed(0);
+          final raw = formatPriceMovingDetails(priceString);
+
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Saldo Pendiente Total
+                _buildInfoCard(
+                  title: "Saldo a Cobrar",
+                  value: raw,
+                  icon: Icons.account_balance_wallet,
+                  color: Colors.orange,
+                ),
+                const SizedBox(height: 16),
+
+                // Última Transacción
+                _buildInfoCard(
+                  title: "Último pago recibido",
+                  value: lastPayment,
+                  icon: Icons.payments_outlined,
+                  color: Colors.green,
+                ),
+                const SizedBox(height: 16),
+
+                // Próxima Fecha de Pago
+                _buildInfoCard(
+                  title: "Próxima Fecha de Pago",
+                  value: nextPayment,
+                  icon: Icons.calendar_today_outlined,
+                  color: Colors.blue,
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          );
+        }
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      }),
     );
   }
 

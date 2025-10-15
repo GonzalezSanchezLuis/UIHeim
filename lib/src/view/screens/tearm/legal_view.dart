@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/view/screens/tearm/privacy_policy_view.dart';
-import 'package:holi/src/view/screens/tearm/tearm_and__condition_view.dart';
+import 'package:holi/src/view/screens/tearm/tearm_and_condition_view.dart';
 
 class Legal extends StatelessWidget {
   const Legal({super.key});

@@ -57,10 +57,7 @@ class _MovingSummaryViewState extends State<MovingSummaryView> {
           "Resumen del cambio de domicilio",
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
+    
         backgroundColor: Colors.black,
       ),
       body: Consumer<MovingSummaryViewmodel>(

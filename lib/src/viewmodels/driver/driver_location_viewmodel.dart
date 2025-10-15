@@ -32,7 +32,6 @@ class DriverLocationViewmodel extends ChangeNotifier {
         }
       });
 
-      // Enviar al servidor
       try {
         final prefs = await SharedPreferences.getInstance();
         final driverId = prefs.getInt('userId');

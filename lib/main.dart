@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:holi/config/app_config.dart';
 import 'package:holi/src/service/auth/auth_service.dart';
 import 'package:holi/src/service/fcm/firebase_messaging_service.dart';
 import 'package:holi/src/service/moves/accept_move_service.dart';
@@ -18,12 +19,13 @@ import 'package:holi/src/viewmodels/location/location_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/accept_move_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/calculate_price_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/confirm_move_viewmodel.dart';
-import 'package:holi/src/viewmodels/move/history_moving_viewmodel.dart';
+import 'package:holi/src/viewmodels/move/moving_history_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/moving_details_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/moving_summary_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/update_status_move_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/websocket/move_notification_viewmodel.dart';
 import 'package:holi/src/viewmodels/payment/payment_viewmodel.dart';
+import 'package:holi/src/viewmodels/payment/wallet_viewmodel.dart';
 import 'package:holi/src/viewmodels/user/get_driver_location_viewmodel.dart';
 import 'package:holi/src/viewmodels/user/route_user_viewmodel.dart';
 import 'package:provider/provider.dart';
@@ -31,11 +33,16 @@ import 'package:holi/src/viewmodels/user/profile_user_viewmodel.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:holi/config/development.dart' as development;
+import 'package:holi/config/production.dart' as production;
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  const String env = String.fromEnvironment('FLUTTER_ENV', defaultValue: 'DEVELOPMENT');
+  configureApp(env);
+
   final sessionVM = SessionViewModel();
   await sessionVM.loadSession();
 
@@ -112,7 +119,6 @@ void main() async {
   runApp(ChangeNotifierProvider.value(value: sessionVM, child: App(navigatorKey: navigatorKey)));
 }
 
-
 class App extends StatelessWidget {
   final GlobalKey<NavigatorState> navigatorKey;
   const App({super.key, required this.navigatorKey});
@@ -138,9 +144,10 @@ class App extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => PaymentViewmodel()),
         ChangeNotifierProvider(create: (context) => MoveNotificationViewmodel()),
         ChangeNotifierProvider(create: (context) => MovingSummaryViewmodel()),
-        ChangeNotifierProvider(create: (context) => HistoryMovingViewmodel()),
+        ChangeNotifierProvider(create: (context) => MovingHistoryViewmodel()),
         ChangeNotifierProvider(create: (context) => MovingDetailsViewmodel()),
-        ChangeNotifierProvider(create: (context) => DriverDataViewmodel())
+        ChangeNotifierProvider(create: (context) => DriverDataViewmodel()),
+        ChangeNotifierProvider(create: (context) => WalletViewmodel())
       ],
       child: MaterialApp(
         navigatorKey: navigatorKey,
@@ -150,10 +157,8 @@ class App extends StatelessWidget {
           ),
         ),
         debugShowCheckedModeBanner: false,
-      home: const IntroductionView(),
+        home: const IntroductionView(),
       ),
-      
     );
-    
   }
 }

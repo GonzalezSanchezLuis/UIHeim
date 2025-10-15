@@ -321,8 +321,8 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
     IconData iconData,
     Color fillColor, {
     double size = 80.0,
-    Color borderColor = Colors.white, // color del borde
-    double borderWidth = 6.0, // grosor del borde
+    Color borderColor = Colors.white, 
+    double borderWidth = 6.0, 
   }) async {
     try {
       final pictureRecorder = PictureRecorder();
@@ -352,7 +352,7 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
         fontSize: iconSize * 0.8,
         fontFamily: iconData.fontFamily,
         package: iconData.fontPackage,
-        color: Colors.white, // color del ícono
+        color: Colors.white,
       );
 
       textPainter.text = TextSpan(text: String.fromCharCode(iconData.codePoint), style: textStyle);
@@ -376,33 +376,6 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
     }
   }
 
-
- /* Future<BitmapDescriptor> _getMarkerFromIcon(IconData iconData, Color color, {double size = 80.0}) async {
-    try {
-      final pictureRecorder = PictureRecorder();
-      final canvas = Canvas(pictureRecorder);
-      final textPainter = TextPainter(textDirection: TextDirection.ltr);
-
-      final textStyle = TextStyle(
-        fontSize: size * 0.8,
-        fontFamily: iconData.fontFamily,
-        color: color,
-      );
-
-      textPainter.text = TextSpan(text: String.fromCharCode(iconData.codePoint), style: textStyle);
-      textPainter.layout();
-      textPainter.paint(canvas, Offset(size * 0.2, size * 0.1)); // Mejor centrado
-
-      final image = await pictureRecorder.endRecording().toImage(size.toInt(), size.toInt());
-      final byteData = await image.toByteData(format: ImageByteFormat.png);
-
-      if (byteData == null) throw Exception("No se pudo generar el ícono");
-      return BitmapDescriptor.fromBytes(byteData.buffer.asUint8List());
-    } catch (e) {
-      print("❌ Fallo al crear ícono: $e");
-      return BitmapDescriptor.defaultMarker; // Fallback explícito
-    }
-  } */
 
   void _simulateDriverMovement(List<LatLng> routePoints, {int stepsPerSegment = 20, int stepDurationMs = 100}) {
     if (_isSimulating || routePoints.length < 2) return;
@@ -432,8 +405,8 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
           CameraPosition(
             target: interpolated,
             zoom: 17,
-            tilt: 45.0, // Le da un efecto visual 3D (opcional)
-            bearing: 0.0, // Puedes poner aquí un ángulo si quieres rotar la vista
+            tilt: 45.0, 
+            bearing: 0.0,
           ),
         ),
       );

@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:holi/config/app_config.dart';
 
 class DriverProfileService {
   final StreamController<Map<String, String>> _driverDataController = StreamController();
@@ -26,7 +27,7 @@ class DriverProfileService {
 
       // Construir la solicitud
       final response = await http.get(
-        Uri.parse('http://192.168.20.49:8080/api/v1/drivers/driver/$driverId'), 
+        Uri.parse('$apiBaseUrl/drivers/driver/$driverId'), 
         headers: {
           'Content-Type':'application/json', 
           });
@@ -54,7 +55,7 @@ class DriverProfileService {
     String urlAvatarProfile,
   ) async {
     try {
-      const String apiUrl = 'http://192.168.20.49:8080/api/v1/users/update/';
+       String apiUrl = '$apiBaseUrl/users/update/';
 
       final prefs = await SharedPreferences.getInstance();
       final driverId = prefs.getInt('userId');
@@ -123,7 +124,7 @@ class DriverProfileService {
 
       // Construir la solicitud
       final response = await http.delete(
-        Uri.parse('http://192.168.20.49:8080/api/v1/drivers/delete/$driverId'),
+        Uri.parse('$apiBaseUrl/drivers/delete/$driverId'),
         headers: {
           'Content-Type': 'application/json',
         },

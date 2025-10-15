@@ -47,10 +47,6 @@ class PaymentView extends StatelessWidget {
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: Colors.black,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
         elevation: 0,
       ),
       body: Column(
@@ -132,6 +128,7 @@ class PaymentView extends StatelessWidget {
               onPressed: () async {
                 try {
                   final Uri uri = Uri.parse(paymentURL);
+                  print("URL DE PAGO $uri");
                   if (await canLaunchUrl(uri)) {
                     await launchUrl(uri);
                   } else {

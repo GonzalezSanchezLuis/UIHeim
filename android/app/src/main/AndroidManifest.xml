@@ -19,7 +19,7 @@
         android:label="holi"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
-        <!--  android:icon="@drawable/ic_notificacion">-->
+        <!--  android:icon="@mipmap/ic_launcher">-->
 
         <meta-data android:name="com.google.android.geo.API_KEY" 
             android:value="AIzaSyDB04XLcypB4xsGaRqNPjAGmf1xTegz0Rg"/>

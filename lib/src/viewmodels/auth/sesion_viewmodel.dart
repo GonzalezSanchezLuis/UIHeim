@@ -8,7 +8,6 @@ class SessionViewModel extends ChangeNotifier {
   bool _isInitialized = false;
   bool get isInitialized => _isInitialized;
 
-  /// Carga la sesión desde SharedPreferences (solo una vez al iniciar)
   Future<void> loadSession() async {
     final prefs = await SharedPreferences.getInstance();
     userId = prefs.getInt('userId');

@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:holi/config/app_config.dart';
 
 class ProfileUserService {
   final StreamController<Map<String, String>> _userDataController = StreamController();
   Stream<Map<String, String>> get userDataStream => _userDataController.stream;
 
-  // Emite los nuevos datos de usuario a través del Stream
   void updateUserData(Map<String, String> userData) {
     _userDataController.sink.add(userData);
   }
@@ -23,18 +23,14 @@ class ProfileUserService {
         return null;
       }
 
-      // Construir la solicitud
       final response = await http.get(
-       // Uri.parse('https://4cf6-2800-484-3981-2300-c3f7-9add-4145-51a4.ngrok-free.app/api/v1/users/user/$userId'),
-        Uri.parse('http://192.168.20.49:8080/api/v1/users/user/$userId'),
+        Uri.parse('$apiBaseUrl/users/user/$userId'),
         headers: {
           'Content-Type': 'application/json',
         },
       );
-
-      // Manejar la respuesta del servidor
       if (response.statusCode == 200) {
-        print(response.body); // Devuelve los datos del usuario
+        print(response.body); 
         return jsonDecode(response.body);
       } else {
         print("Error al obtener los datos del usuario: ${response.body}");
@@ -48,7 +44,7 @@ class ProfileUserService {
 
   Future<Map<String, dynamic>?> updateDataUser(String urlAvatarProfile, String fullName, String document, String email, String phone, String? password) async {
     try {
-      const String apiUrl = 'http://192.168.20.49:8080/api/v1/users/update/';
+       String apiUrl = '$apiBaseUrl/users/update/';
 
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getInt('userId');
@@ -84,9 +80,7 @@ class ProfileUserService {
         body: jsonEncode(data),
       );
 
-      // Manejar la respuesta
       if (response.statusCode == 200) {
-        // Si la respuesta es exitosa, actualizar datos en SharedPreferences
         final Map<String, dynamic> updatedUser = jsonDecode(response.body);
         await prefs.setString('urlAvatarProfile', updatedUser['urlAvatarProfile']);
         await prefs.setString('fullName', updatedUser['fullName']);
@@ -101,7 +95,6 @@ class ProfileUserService {
         debugPrint("Datos actualizados exitosamente.");
         return {'status': 'success', 'data': updatedUser};
       } else {
-        // Si hay un error con la respuesta del servidor
         debugPrint("Error al actualizar los datos: ${response.body}");
         return {'status': 'error', 'message': 'Error al actualizar los datos'};
       }
@@ -121,9 +114,8 @@ class ProfileUserService {
         return;
       }
 
-      // Construir la solicitud
       final response = await http.delete(
-        Uri.parse('http://192.168.20.49:8080/api/v1/users/delete/$userId'),
+        Uri.parse('$apiBaseUrl/users/delete/$userId'),
         headers: {
           'Content-Type': 'application/json',
         },

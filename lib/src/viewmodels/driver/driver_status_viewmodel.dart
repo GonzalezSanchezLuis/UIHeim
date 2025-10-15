@@ -57,7 +57,7 @@ class DriverStatusViewmodel extends ChangeNotifier {
       print("✅ Conductor conectado exitosamente.");
 
       _webSocketService = WebSocketDriverService(
-          driverId: driverId.toString(),
+          driverId: driverId,
           onMessage: (data) {
             print("🧾 Mensaje WebSocket recibido: $data");
             // Puedes notificar listeners o actualizar el estado aquí

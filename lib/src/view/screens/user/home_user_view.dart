@@ -127,7 +127,7 @@ class _HomeUserState extends State<HomeUserView> {
               //  const  PaymentView(),
               _buildHomePage(context),
             const CalculatePrice(),
-             const HistoryMove(),
+             const HistoryMoveView(),
               const User(),
             ],
           ),
@@ -203,31 +203,6 @@ class _HomeUserState extends State<HomeUserView> {
                 if (driverIsAssigned) {
                   return const SizedBox.shrink();
                 }
-
-                /* if (moveData != null) {
-                  return ConstrainedBox(
-                    constraints: const BoxConstraints(maxHeight: 120),
-                    child: Container(
-                      decoration: const BoxDecoration(
-                       color: Colors.black,
-                        borderRadius: BorderRadius.only(
-                          topRight: Radius.circular(20),
-                          topLeft: Radius.circular(20),
-                        ),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      child: DriverInfoCard(
-                        plate: moveData['enrollVehicle'] ?? 'Sin placa',
-                        vehicleType: moveData['vehicleType'] ?? "NPR",
-                        driverImageUrl: 'assets/images/driver.jpg',
-                        vehicleImageUrl: 'assets/images/npr.png',
-                        phone: moveData['driverPhone'] ?? '',
-                        nameDriver: moveData['driverName'] ?? '',
-                      ),
-                    ),
-                  );
-                } */
-
                 if (showPriceModal) {
                   return Padding(
                     padding: const EdgeInsets.all(16.0),
@@ -345,23 +320,6 @@ class _HomeUserState extends State<HomeUserView> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const SizedBox(height: 20),
-
-                          // ✅ Oculta la card si hay moveData
-                          /* if (showHomeButtons && moveData == null) ...[
-                          const Center(
-                            child: Text(
-                              "¡Listo, quiero mudarme!",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20.0,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          const ButtonCalculatePrice(),
-                        ], */
-
                           if (showPriceModal) ...[
                             _buildDataMove(),
                           ],

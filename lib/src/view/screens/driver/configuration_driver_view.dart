@@ -6,7 +6,7 @@ import 'package:holi/src/view/screens/auth/login_view.dart';
 import 'package:holi/src/view/screens/driver/vehicle_information.dart';
 import 'package:holi/src/view/screens/tearm/legal_view.dart';
 import 'package:holi/src/view/screens/driver/profile_view.dart';
-import 'package:holi/src/view/screens/tearm/tearm_and__condition_view.dart';
+import 'package:holi/src/view/screens/tearm/tearm_and_condition_view.dart';
 
 
 class ConfigurationDriver extends StatefulWidget {

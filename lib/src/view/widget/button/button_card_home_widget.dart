@@ -114,9 +114,8 @@ class ConnectButton extends StatelessWidget {
         // Determina el color del botón
         final Color buttonBackgroundColor = provider.isLoading
             ? AppTheme.confirmationscolor.withOpacity(0.6) 
-            : AppTheme.confirmationscolor; // Color normal
+            : AppTheme.confirmationscolor; 
 
-        // Determina el contenido del botón (texto o indicador de carga)
         final Widget buttonChild = provider.isLoading
             ? const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -156,8 +155,8 @@ class ConnectButton extends StatelessWidget {
             }
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: buttonBackgroundColor, // Usa el color determinado
-            minimumSize: Size(MediaQuery.of(context).size.width * 0.9, 60),
+            backgroundColor: buttonBackgroundColor,
+            minimumSize: Size(MediaQuery.of(context).size.width * 0.7, 60),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(30),
             ),
@@ -197,8 +196,8 @@ class DisconnectButton extends StatelessWidget {
             }
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: buttonBackgroundColor, // Usamos el color determinado
-            minimumSize: Size(MediaQuery.of(context).size.width * 0.9, 60),
+            backgroundColor: buttonBackgroundColor, 
+            minimumSize: Size(MediaQuery.of(context).size.width * 0.7, 60),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(30),
             ),

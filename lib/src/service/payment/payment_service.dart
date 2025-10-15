@@ -1,10 +1,11 @@
 import 'package:holi/src/model/payment/payment_model.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:holi/config/app_config.dart';
+
 class PaymentService {
     Future<String?> generatePaymentUrl(PaymentModel request) async {
-    //final url = Uri.parse('http://192.168.20.49:8080/api/v1/payments/generate');
-    final url = Uri.parse('https://6a6c5b4b2ba5.ngrok-free.app/api/v1/payments/generate');
+    final url = Uri.parse('$apiBaseUrl/generate');
 
     try {
       final response = await http.post(

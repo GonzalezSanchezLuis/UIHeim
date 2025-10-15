@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:holi/config/app_config.dart';
 
 class MovingSummaryService {
-  String baseUrl = "https://8f33320fa861.ngrok-free.app/api/v1/move";
+  String baseUrl = "$apiBaseUrl/move";
 
   Future<Map<String, dynamic>> fetchMovingSummary(int moveId) async {
     final response = await http.get(Uri.parse('$baseUrl/$moveId/summary'));

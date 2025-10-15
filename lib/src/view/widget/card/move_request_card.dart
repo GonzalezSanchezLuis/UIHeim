@@ -81,18 +81,18 @@ class MoveRequestCard extends StatelessWidget {
                 child: Text(
                   formattedPrice,
                   style: const TextStyle(color: Colors.white, fontSize: 23),
-                  textAlign: TextAlign.right, // Alineación a la derecha como en el diseño
+                  textAlign: TextAlign.right, 
                 ),
               ),
             ],
           ),
           const SizedBox(height: 8),
-          const Divider(color: Colors.grey, thickness: 1), // Grosor de la línea más fino
+          const Divider(color: Colors.grey, thickness: 1), 
           const SizedBox(height: 8),
 
           // Origen
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start, // Alinea el icono y el texto al inicio
+            crossAxisAlignment: CrossAxisAlignment.start, 
             children: [
               const Icon(Icons.circle, color: Colors.green),
               const SizedBox(width: 8),
@@ -141,8 +141,6 @@ class MoveRequestCard extends StatelessWidget {
           ),
 
           const SizedBox(height: 8),
-
-          // Tipo de mudanza
           Row(
             children: [
               const Icon(FontAwesomeIcons.truckFront, color: Colors.white, size: 18),
@@ -195,8 +193,8 @@ class MoveRequestCard extends StatelessWidget {
 
                   return TweenAnimationBuilder<Color>(
                       tween: Tween<Color>(
-                        begin: borderColor, // Color inicial
-                        end: borderColor, // Color final dinámico
+                        begin: borderColor, 
+                        end: borderColor, 
                       ),
                       duration: const Duration(microseconds: 500),
                       builder: (context, color, child) {

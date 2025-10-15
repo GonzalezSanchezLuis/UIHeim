@@ -34,19 +34,6 @@ class _BottomMoveCardState extends State<BottomMoveCard> {
     });
   }
 
-  /*@override
-  void initState() {
-    super.initState();
-
-    // Simular que se expande cuando se acepta el viaje
-    if (_statusOfTheMove == StatusOfTheMove.DRIVER_ARRIVED) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        setState(() {
-          _isExpanded = true;
-        });
-      });
-    }
-  } */
 
   @override
   Widget build(BuildContext context) {

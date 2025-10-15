@@ -2,11 +2,9 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:holi/config/app_config.dart';
 
 class AuthService {
- final String baseUrl = "http://192.168.20.49:8080/api/v1";
- //final String baseUrl = "https://5a8b5535f46b.ngrok-free.app/api/v1";
-
   Future<Map<String, dynamic>?> registerUser({
     required String name,
     required String email,
@@ -35,7 +33,7 @@ class AuthService {
 
   Future<Map<String, dynamic>?> _register(String endpoint, Map<String, dynamic> body) async {
     try {
-      final url = Uri.parse("$baseUrl$endpoint");
+      final url = Uri.parse("$apiBaseUrl$endpoint");
       log("URL QUE SE ENVIA AL SERVIDOR $url");
 
       log("📦 Datos enviados al servidor: ${jsonEncode(body)}");
@@ -62,7 +60,7 @@ class AuthService {
 
   Future<Map<String, dynamic>?> login(String email, String password) async {
     try {
-      final url = Uri.parse("$baseUrl/auth/auth");
+      final url = Uri.parse("$apiBaseUrl/auth/auth");
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
@@ -71,24 +69,36 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(utf8.decode(response.bodyBytes));
-         log("DATA $data");
-        return {
+        log("DATA $data");
+        return data;
+        /*  return {
           'userId': data['userId'],
           'role': data['role'],
-        };
+        };*/
+      } else if (response.statusCode == 400 || response.statusCode == 401 || response.statusCode == 503) {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final responseBody = jsonDecode(decodedBody);
+        final String errorMessage = responseBody['message'];
+
+        throw Exception(errorMessage);
       } else {
         final data = jsonDecode(utf8.decode(response.bodyBytes));
-        return {'error': data['message'] ?? "Error desconocido"};
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final responseBody = jsonDecode(decodedBody);
+        throw Exception(responseBody['message'] ?? "Error desconocido con código ${response.statusCode}");
+
+        //return {'error': data['message'] ?? "Error desconocido"};
       }
-    } catch (e) {
-      return {'error': "Error de conexión: $e"};
+    } on Exception catch (e) {
+      throw Exception(e.toString());
+      // return {'error': "Error de conexión: $e"};
     }
   }
 
   Future<bool> logout() async {
     try {
       final response = await http.post(
-        Uri.parse("$baseUrl/auth/logout"),
+        Uri.parse("$apiBaseUrl/auth/logout"),
         headers: {'Content-Type': 'application/json'},
       );
 

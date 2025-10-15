@@ -5,15 +5,12 @@ import 'package:holi/src/core/enums/connection_status.dart';
 import 'package:holi/src/model/driver/driver_status_response_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:holi/config/app_config.dart';
 
 class DriverStatusSerive {
   ConnectionStatus _currentStatus = ConnectionStatus.DISCONNECTED;
-
- // final baseUrl = "http://192.168.20.49:8080/api/v1/drivers/status";
-
   Future<void> connectDriver(int driverId, LatLng position) async {
-    const String baseUrl = 'http://192.168.20.49:8080/api/v1';
-    final url = Uri.parse('$baseUrl/drivers/connect/$driverId');
+    final url = Uri.parse('$apiBaseUrl/drivers/connect/$driverId');
 
     try {
       print("📡 Enviando ubicación: DriverID: $driverId, Lat: ${position.latitude}, Lng: ${position.longitude}");
@@ -43,8 +40,7 @@ class DriverStatusSerive {
   }
 
   Future<void> disconnectDriver(int driverId) async {
-    const String baseUrl = 'http://192.168.20.49:8080/api/v1/drivers';
-    final url = Uri.parse('$baseUrl/disconnected/$driverId');
+    final url = Uri.parse('$apiBaseUrl/disconnected/$driverId');
 
     try {
       print("🔌 Desconectando conductor: DriverID: $driverId");
@@ -72,9 +68,8 @@ class DriverStatusSerive {
   }
 
   Future<DriverStatusResponse?> loadDriverStatus(int driverId) async {
-  const String baseUrl = 'http://192.168.20.49:8080/api/v1/drivers/get/status/';
     try {
-      final url = Uri.parse('$baseUrl$driverId');
+      final url = Uri.parse('$apiBaseUrl/drivers/$driverId/get/status');
       final response = await http.get(url, headers: {"Content-Type": "application/json"});
 
       log("STATUS CODE: ${response.statusCode}");

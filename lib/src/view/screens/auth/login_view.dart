@@ -65,7 +65,7 @@ class _LoginState extends State<LoginView> {
                             decoration: const InputDecoration(
                               labelText: "Ingresa tu correo electrónico",
                               border: OutlineInputBorder(),
-                              enabledBorder:  OutlineInputBorder(
+                              enabledBorder: OutlineInputBorder(
                                 borderSide: BorderSide(color: Colors.black87, width: 2.0),
                               ),
                               focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 2.0)),
@@ -130,7 +130,7 @@ class _LoginState extends State<LoginView> {
                           ),
                         ),
                         const SizedBox(width: 10),
-                       GestureDetector(
+                        GestureDetector(
                           onTap: () {
                             String email = '';
                             showModalBottomSheet(
@@ -180,7 +180,6 @@ class _LoginState extends State<LoginView> {
                                       const SizedBox(height: 20),
                                       Row(
                                         children: [
-                                         
                                           const SizedBox(width: 10),
                                           Expanded(
                                             child: ElevatedButton(
@@ -189,7 +188,7 @@ class _LoginState extends State<LoginView> {
                                                   : () async {
                                                       await passwordVM.resetPassword(email);
                                                     },
-                                                 style: TextButton.styleFrom(
+                                              style: TextButton.styleFrom(
                                                 backgroundColor: AppTheme.greenColors,
                                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
                                                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
@@ -219,7 +218,6 @@ class _LoginState extends State<LoginView> {
                             ),
                           ),
                         ),
-
                       ],
                     ),
                   ),
@@ -231,7 +229,7 @@ class _LoginState extends State<LoginView> {
             ])));
   }
 
-  void _handleLogin() async {
+  /* void _handleLogin() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
@@ -290,6 +288,123 @@ class _LoginState extends State<LoginView> {
           ),
         );
       }
+    }
+  }*/
+
+ /* void _handleLogin() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Por favor, ingresa tu correo y contraseña",
+            style: TextStyle(fontWeight: FontWeight.w600),
+          ),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    await Future.microtask(() {});
+    await Future.delayed(const Duration(milliseconds: 300));
+    final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
+
+    try {
+      await authViewModel.login(email, password);
+
+      // 3. Lógica de ÉXITO (Se ejecuta si NO se lanzó una excepción)
+      final prefs = await SharedPreferences.getInstance();
+      final role = prefs.getString('role');
+
+      log("ROL OBTENIDO: $role");
+
+      if (role == "USER") {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeUserView()));
+      } else if (role == "DRIVER") {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeDriverView()));
+      }
+    } catch (e) {
+      final error = authViewModel.errorMessage ?? "Error de conexión. Inténtalo de nuevo.";
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            error,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }*/
+
+void _handleLogin() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (!_formKey.currentState!.validate()) return;
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Por favor, ingresa tu correo y contraseña",
+            style: TextStyle(fontWeight: FontWeight.w600),
+          ),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
+
+    try {
+      // 🚫 No mostramos loader todavía
+      final response = await authViewModel.login(email, password);
+
+      // ✅ Si llega aquí significa que el login fue exitoso
+      if (mounted) setState(() => _isLoading = true);
+
+      final prefs = await SharedPreferences.getInstance();
+      final role = prefs.getString('role');
+
+      log("ROL OBTENIDO: $role");
+
+      if (role == "USER") {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeUserView()));
+      } else if (role == "DRIVER") {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeDriverView()));
+      }
+    } catch (e) {
+      // ❌ Error → mostramos mensaje, sin loader
+      final error = authViewModel.errorMessage ?? "Correo o contraseña incorrectos.";
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            error,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      // 🔄 Cuando se complete la navegación o error
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 

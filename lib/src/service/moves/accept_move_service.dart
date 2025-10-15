@@ -2,13 +2,12 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:holi/src/model/move/accept_move_model.dart';
 import 'package:http/http.dart' as http;
+import 'package:holi/config/app_config.dart';
 
 class AcceptMoveService {
-  // final String baseUrl = "http://192.168.20.49:8080/api/v1";
-  final String baseUrl = "https://8f33320fa861.ngrok-free.app/api/v1/move";
 
   Future<bool> acceptMove(int moveId, int driverId) async {
-    final url = Uri.parse('$baseUrl/accept/$moveId');
+    final url = Uri.parse('$apiBaseUrl/accept/$moveId');
     final body = AcceptMoveModel(driverId: driverId).toJson();
     log("CUERPO  QUE SE ENVIA AL ACPTAR LA MUDANZA $body");
 

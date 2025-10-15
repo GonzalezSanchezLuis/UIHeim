@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'package:holi/src/core/enums/status_of_the_move.dart';
 import 'package:holi/src/model/move/move_status_update_model.dart';
 import 'package:http/http.dart' as http;
+import 'package:holi/config/app_config.dart';
 
 class UpdateStatusMoveService {
-  // final String _baseUrl = "http://192.168.20.49:8080/api/v1";
-  final String _baseUrl = "https://8f33320fa861.ngrok-free.app/api/v1/move";
+  final String _baseUrl = "$apiBaseUrl/move";
 
   Future<void> updateMoveStatus(MoveStatusUpdateModel data, StatusOfTheMove status) async {
     late String endpoint;
