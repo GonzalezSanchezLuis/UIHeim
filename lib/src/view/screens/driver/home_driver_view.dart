@@ -6,8 +6,10 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:holi/src/core/enums/connection_status.dart';
 import 'package:holi/src/core/gps_validator/gps_validator_service.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:holi/src/service/auth/auth_service.dart';
 import 'package:holi/src/service/websocket/websocket_driver_service.dart';
 import 'package:holi/src/utils/format_price.dart';
+import 'package:holi/src/view/screens/auth/login_view.dart';
 import 'package:holi/src/view/screens/driver/driver_view.dart';
 import 'package:holi/src/view/screens/driver/wallet_view.dart';
 import 'package:holi/src/view/screens/move/history_move_view.dart';
@@ -49,6 +51,7 @@ class _HomeDriverState extends State<HomeDriverView> {
   late final WebSocketDriverService _socketService;
   late final MoveNotificationViewmodel _moveNotificationViewModel;
   Map<String, dynamic>? _incomingMoveData;
+  final AuthService _authService = AuthService();
 
   @override
   void initState() {
@@ -80,8 +83,11 @@ class _HomeDriverState extends State<HomeDriverView> {
       onMessage: (data) {
         debugPrint("🧲 Mensaje del backend recibido: $data");
         _moveNotificationViewModel.addNotification(data);
+
         setState(() {
           _incomingMoveData = data['move'];
+          print("INCOMINGDATA $_incomingMoveData");
+          // _incomingMoveData = data;
         });
       },
     );
@@ -117,140 +123,142 @@ class _HomeDriverState extends State<HomeDriverView> {
   Widget _buildHomeScreen() {
     return Consumer<ProfileDriverViewModel>(builder: (context, profileViewModel, _) {
       final profile = profileViewModel.profile;
-      return Stack(
-        children: [
-          Consumer<RouteDriverViewmodel>(builder: (context, directionsViewmodel, _) {
-            return DriverMapWidget(
-              driverLocation: _currentDriverLocation,
-              route: directionsViewmodel.route,
-              driverToOriginRoute: directionsViewmodel.driverToOriginRoute,
-            );
-          }),
-          if (_currentMoveData == null)
-            Positioned(
-              top: 50,
-              left: 20,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppTheme.primarycolor,
-                  borderRadius: BorderRadius.circular(40),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 6,
-                      offset: const Offset(2, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const Driver()),
-                        );
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: AppTheme.primarycolor,
-                            width: 3,
-                          ),
-                        ),
-                        child: CircleAvatar(
-                          radius: 28,
-                          backgroundImage: profile.urlAvatarProfile != null && profile.urlAvatarProfile!.isNotEmpty ? NetworkImage(profile.urlAvatarProfile!) : null,
-                          child: profile.urlAvatarProfile == null || profile.urlAvatarProfile!.isEmpty ? const Icon(Icons.person, size: 36) : null,
-                        ),
+
+      return Consumer<RouteDriverViewmodel>(builder: (context, directionsViewModel, _) {
+        final bool isMoveDataPresent = _currentMoveData != null || _incomingMoveData != null || (directionsViewModel.moveData != null && directionsViewModel.moveData!.isNotEmpty);
+
+        return Stack(
+          children: [
+            Consumer<RouteDriverViewmodel>(builder: (context, directionsViewmodel, _) {
+              return DriverMapWidget(
+                driverLocation: _currentDriverLocation,
+                route: directionsViewmodel.route,
+                driverToOriginRoute: directionsViewmodel.driverToOriginRoute,
+              );
+            }),
+            if (!isMoveDataPresent)
+              Positioned(
+                top: 50,
+                left: 20,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppTheme.primarycolor,
+                    borderRadius: BorderRadius.circular(40),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 6,
+                        offset: const Offset(2, 2),
                       ),
-                    ),
-                    Container(
-                      width: 1,
-                      height: 50,
-                      color: Colors.grey.withOpacity(0.3),
-                      margin: const EdgeInsets.symmetric(horizontal: 8),
-                    ),
-                    Consumer<WalletViewmodel>(builder: (context, walletViewModel, _) {
-                      if (walletViewModel.isLoading) {
-                        return const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          child: SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
-                        );
-                      }
-
-                      final double balance = walletViewModel.wallet?.currentEarnedBalance ?? 0.00;
-                      final String formattedBalance = balance.toStringAsFixed(2);
-                      final String raw = formatPriceMovingDetails(formattedBalance);
-
-                      return SizedBox(
-                        width: 150,
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => WalletView()),
-                            );
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                    child: FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    raw,
-                                    style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                )),
-                                const SizedBox(width: 6),
-                                const Icon(
-                                  Icons.arrow_forward_ios,
-                                  size: 16,
-                                  color: Colors.white,
-                                ),
-                              ],
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const Driver()),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppTheme.primarycolor,
+                              width: 3,
                             ),
                           ),
+                          child: CircleAvatar(
+                            radius: 28,
+                            backgroundImage: profile.urlAvatarProfile != null && profile.urlAvatarProfile!.isNotEmpty ? NetworkImage(profile.urlAvatarProfile!) : null,
+                            child: profile.urlAvatarProfile == null || profile.urlAvatarProfile!.isEmpty ? const Icon(Icons.person, size: 36) : null,
+                          ),
                         ),
-                      );
-                    }),
-                  ],
+                      ),
+                      Container(
+                        width: 1,
+                        height: 50,
+                        color: Colors.grey.withOpacity(0.3),
+                        margin: const EdgeInsets.symmetric(horizontal: 8),
+                      ),
+                      Consumer<WalletViewmodel>(builder: (context, walletViewModel, _) {
+                        if (walletViewModel.isLoading) {
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            child: SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
+                          );
+                        }
+
+                        final double balance = walletViewModel.wallet?.currentEarnedBalance ?? 0.00;
+                        final String formattedBalance = balance.toStringAsFixed(2);
+                        final String raw = formatPriceMovingDetails(formattedBalance);
+
+                        return SizedBox(
+                          width: 150,
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => WalletView()),
+                              );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                      child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      raw,
+                                      style: const TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  )),
+                                  const SizedBox(width: 6),
+                                  const Icon(
+                                    Icons.arrow_forward_ios,
+                                    size: 16,
+                                    color: Colors.white,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
                 ),
               ),
-            ),
 
-          if (_currentMoveData != null)
-            Positioned(
-              top: 40,
-              left: 5,
-              right: 5,
-              child: FloatingMoveCardWrapper(moveData: _currentMoveData!),
-            ),
+            if (_currentMoveData != null)
+              Positioned(
+                top: 40,
+                left: 5,
+                right: 5,
+                child: FloatingMoveCardWrapper(moveData: _currentMoveData!),
+              ),
 
-          // Tarjeta inferior con botones
-          _currentMoveData == null
-              ? Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: SafeArea(
+            // Tarjeta inferior con botones
+            _currentMoveData == null
+                ? Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
                     child: Consumer2<RouteDriverViewmodel, DriverStatusViewmodel>(
                       builder: (context, directionsViewModel, driverViewModel, child) {
                         final bool hasMoveData = (_incomingMoveData != null || (directionsViewModel.moveData != null && directionsViewModel.moveData!.isNotEmpty)) && _currentMoveData == null;
-
                         return AnimatedContainer(
                           duration: const Duration(milliseconds: 300),
-                          height: hasMoveData ? MediaQuery.of(context).size.height * 0.47 : MediaQuery.of(context).size.height * 0.13,
+                          height: hasMoveData ? MediaQuery.of(context).size.height * 0.47 : MediaQuery.of(context).size.height * 0.16,
                           decoration: BoxDecoration(
                             color: Colors.black,
                             borderRadius: const BorderRadius.only(
@@ -277,8 +285,10 @@ class _HomeDriverState extends State<HomeDriverView> {
                                         onMoveAccepted: (data) {
                                           setState(() {
                                             _currentMoveData = data;
+                                            print("DATA DE INCOMINGDATA $data");
                                             _incomingMoveData = null;
                                           });
+                                          print("🔥 _currentMoveData actualizado: $_currentMoveData");
                                         },
                                       )
                                     : hasMoveData
@@ -290,8 +300,6 @@ class _HomeDriverState extends State<HomeDriverView> {
                                               });
                                             },
                                           )
-
-                                        //_buildMoveDataCard(directionsViewModel.moveData!)
                                         : Column(
                                             children: [
                                               const SizedBox(height: 10),
@@ -310,36 +318,37 @@ class _HomeDriverState extends State<HomeDriverView> {
                         );
                       },
                     ),
-                  ))
-              : Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: SafeArea(
-                    child: Consumer<SessionViewModel>(
-                      builder: (context, sessionVM, child) {
-                        debugPrint("🔥 sessionVM.isInitialized: ${sessionVM.isInitialized}");
-                        debugPrint("🔥 _currentMoveData: $_currentMoveData");
+                  )
+                : Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: SafeArea(
+                      child: Consumer<SessionViewModel>(
+                        builder: (context, sessionVM, child) {
+                          debugPrint("🔥 sessionVM.isInitialized: ${sessionVM.isInitialized}");
+                          debugPrint("🔥 _currentMoveData: $_currentMoveData");
 
-                        final rawMoveId = _currentMoveData?['moveId'];
-                        final moveId = rawMoveId is int ? rawMoveId : int.tryParse(rawMoveId?.toString() ?? '');
+                          final rawMoveId = _currentMoveData?['moveId'];
+                          final moveId = rawMoveId is int ? rawMoveId : int.tryParse(rawMoveId?.toString() ?? '');
 
-                        print("ID DE LA MUDANZA $moveId");
-                        final driverId = sessionVM.userId;
+                          print("ID DE LA MUDANZA $moveId");
+                          final driverId = sessionVM.userId;
 
-                        if (moveId == null || driverId == null) {
-                          return Text('Datos inválidos');
-                        }
+                          if (moveId == null || driverId == null) {
+                            return Text('Datos inválidos');
+                          }
 
-                        return BottomMoveCard(
-                          moveId: moveId,
-                          driverId: driverId,
-                        );
-                      },
-                    ),
-                  )),
-        ],
-      );
+                          return BottomMoveCard(
+                            moveId: moveId,
+                            driverId: driverId,
+                          );
+                        },
+                      ),
+                    )),
+          ],
+        );
+      });
     });
   }
 
@@ -422,7 +431,11 @@ class _HomeDriverState extends State<HomeDriverView> {
         ],
       ),
       child: IconButton(
-        icon: const Icon(Icons.keyboard_arrow_up_rounded, color: Colors.black,size: 30,),
+        icon: const Icon(
+          Icons.keyboard_arrow_up_rounded,
+          color: Colors.black,
+          size: 30,
+        ),
         onPressed: () {
           _showMoveHistoryModal();
         },
@@ -464,37 +477,15 @@ class _HomeDriverState extends State<HomeDriverView> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const SizedBox(height: 16),
-
                     OutlinedButton(
                       onPressed: () {
                         Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const HistoryMoveView(), // Usa la nueva vista aquí
-                            ),
-                          );
-  
-                      },
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.black, // Color del texto y borde
-                        side: const BorderSide(color: Colors.black, width: 1.5), 
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text(
-                        'Historial de mudanzas',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                      ),
-                    ),
-
-                    const SizedBox(height: 12),
-                /*    OutlinedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const HistoryMoveView(),
+                          ),
+                        );
                       },
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.black,
@@ -505,10 +496,39 @@ class _HomeDriverState extends State<HomeDriverView> {
                         ),
                       ),
                       child: const Text(
-                        'Detalle de Mudanzas',
+                        'Historial de mudanzas',
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                       ),
-                    ),*/
+                    ),
+                    const SizedBox(height: 12),
+                    OutlinedButton(
+                      onPressed: () async {
+                        final isLoggedOut = await _authService.logout();
+                        if (mounted) {
+                          Navigator.pop(context);
+
+                          if (isLoggedOut) {
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(builder: (context) => const LoginView()),
+                              (route) => false,
+                            );
+                          }
+                        }
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.black,
+                        side: const BorderSide(color: Colors.red, width: 1.5),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        'Cerrar sesion',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -518,5 +538,4 @@ class _HomeDriverState extends State<HomeDriverView> {
       },
     );
   }
-
 }

@@ -71,7 +71,7 @@ class _BottomMoveCardState extends State<BottomMoveCard> {
                   'Rumbo al punto de encuentro',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 22,
+                    fontSize: 19,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

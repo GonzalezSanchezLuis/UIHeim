@@ -14,9 +14,8 @@
         android:name="com.example.holi.permission.C2D_MESSAGE"
         android:protectionLevel="signature" />
     <uses-permission android:name="com.example.holi.permission.C2D_MESSAGE" />
-
     <application
-        android:label="holi"
+        android:label="Heim"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <!--  android:icon="@mipmap/ic_launcher">-->

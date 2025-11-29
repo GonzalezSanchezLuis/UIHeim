@@ -10,7 +10,7 @@ import 'package:holi/config/app_config.dart';
 class DriverStatusSerive {
   ConnectionStatus _currentStatus = ConnectionStatus.DISCONNECTED;
   Future<void> connectDriver(int driverId, LatLng position) async {
-    final url = Uri.parse('$apiBaseUrl/drivers/connect/$driverId');
+    final url = Uri.parse('$apiBaseUrl/drivers/$driverId/connect');
 
     try {
       print("📡 Enviando ubicación: DriverID: $driverId, Lat: ${position.latitude}, Lng: ${position.longitude}");
@@ -40,7 +40,7 @@ class DriverStatusSerive {
   }
 
   Future<void> disconnectDriver(int driverId) async {
-    final url = Uri.parse('$apiBaseUrl/disconnected/$driverId');
+    final url = Uri.parse('$apiBaseUrl/drivers/$driverId/disconnected');
 
     try {
       print("🔌 Desconectando conductor: DriverID: $driverId");

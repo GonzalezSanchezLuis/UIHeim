@@ -46,7 +46,7 @@ class RouteDriverViewmodel extends ChangeNotifier {
          ]);
 
         moveData = {'origin': origin, 'destination': destination, ...data};
-       //_startTimer();
+       _startTimer();
         isTimerRunning = true;
          notifyListeners();
    

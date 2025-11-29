@@ -166,7 +166,6 @@ class _HomeUserState extends State<HomeUserView> {
             },
           ),
 
-          // BottomNavBar flotante para todas las pantallas
           Positioned(
             left: 16,
             right: 16,
@@ -174,8 +173,6 @@ class _HomeUserState extends State<HomeUserView> {
             child: Consumer<GetDriverLocationViewmodel>(
               builder: (context, driverVM, _) {
                 final moveData = driverVM.moveData;
-
-                // Ocultar en estos estados (solo en la página de inicio)
                 if (currentPageIndex == 0 && (driverIsAssigned || showPriceModal || isWaitingForDriver)) {
                   return const SizedBox.shrink();
                 }
@@ -194,7 +191,6 @@ class _HomeUserState extends State<HomeUserView> {
         ],
       ),
 
-      // BottomBar para estados especiales (solo en página de inicio)
       bottomNavigationBar: currentPageIndex == 0
           ? Consumer<GetDriverLocationViewmodel>(
               builder: (context, driverVM, _) {

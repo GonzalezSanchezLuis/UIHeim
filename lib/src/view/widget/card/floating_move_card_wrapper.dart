@@ -62,13 +62,13 @@ class _FloatingMoveCardWrapperState extends State<FloatingMoveCardWrapper> with 
           children: [
             const Row(
               children: [
-                Icon(Icons.check_circle, color: Colors.green, size: 30),
+                Icon(Icons.check_circle, color: Colors.green, size: 25),
                 SizedBox(width: 10),
                 Text(
                   'Aceptado',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 22,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -92,7 +92,7 @@ class _FloatingMoveCardWrapperState extends State<FloatingMoveCardWrapper> with 
                     'Vamos por ${moveData['userName'] ?? 'Usuario'}',
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 20,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -110,7 +110,7 @@ class _FloatingMoveCardWrapperState extends State<FloatingMoveCardWrapper> with 
                 Expanded(
                   child: Text(
                     reduced,
-                    style: const TextStyle(color: Colors.white, fontSize: 19),
+                    style: const TextStyle(color: Colors.white, fontSize: 18),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -126,7 +126,7 @@ class _FloatingMoveCardWrapperState extends State<FloatingMoveCardWrapper> with 
                 Expanded(
                   child: Text(
                     reducedDestination,
-                    style: const TextStyle(color: Colors.white, fontSize: 19),
+                    style: const TextStyle(color: Colors.white, fontSize: 18),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),

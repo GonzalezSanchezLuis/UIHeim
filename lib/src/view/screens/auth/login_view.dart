@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:holi/src/viewmodels/auth/auth_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
@@ -23,10 +22,9 @@ class _LoginState extends State<LoginView> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  // final AuthService _authService = AuthService();
 
   bool _isPasswordVisible = false;
-  bool _isLoading = false; // Estado de carga
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -223,134 +221,11 @@ class _LoginState extends State<LoginView> {
                   ),
                 ),
               ],
-
-              // Indicador de carga (pantalla negra con loading)
               if (_isLoading) const Center(child: CircularProgressIndicator(color: Colors.white)),
             ])));
   }
 
-  /* void _handleLogin() async {
-    final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
-
-    if (_formKey.currentState!.validate()) {
-      if (email.isEmpty || password.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              "Por favor, ingresa tu correo y contraseña",
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
-
-      setState(() => _isLoading = true);
-
-      final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
-
-      final success = await authViewModel.login(email, password);
-
-     // setState(() => _isLoading = false);
-
-      if (success) {
-        final prefs = await SharedPreferences.getInstance();
-        final role = prefs.getString('role');
-        final userId = prefs.getInt('userId');
-
-      
-        /* if (userId != null && role != null) {
-          final fcmViewModel = FcmViewModel();
-          await fcmViewModel.initFcm(userId, role);
-        } */
-       log("ROL OBTENIDO: $role");
-
-
-        if (role == "USER") {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeUserView()));
-        } else if (role == "DRIVER") {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeDriverView()));
-        }
-      } else {
-        setState(() => _isLoading = false);
-        final error = authViewModel.errorMessage ?? "Algo salió mal";
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              error,
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }*/
-
- /* void _handleLogin() async {
-    final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            "Por favor, ingresa tu correo y contraseña",
-            style: TextStyle(fontWeight: FontWeight.w600),
-          ),
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    setState(() => _isLoading = true);
-    await Future.microtask(() {});
-    await Future.delayed(const Duration(milliseconds: 300));
-    final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
-
-    try {
-      await authViewModel.login(email, password);
-
-      // 3. Lógica de ÉXITO (Se ejecuta si NO se lanzó una excepción)
-      final prefs = await SharedPreferences.getInstance();
-      final role = prefs.getString('role');
-
-      log("ROL OBTENIDO: $role");
-
-      if (role == "USER") {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeUserView()));
-      } else if (role == "DRIVER") {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeDriverView()));
-      }
-    } catch (e) {
-      final error = authViewModel.errorMessage ?? "Error de conexión. Inténtalo de nuevo.";
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            error,
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }*/
-
-void _handleLogin() async {
+  void _handleLogin() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
@@ -373,13 +248,13 @@ void _handleLogin() async {
     final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
 
     try {
-      // 🚫 No mostramos loader todavía
+       if (mounted) setState(() => _isLoading = true);
       final response = await authViewModel.login(email, password);
 
-      // ✅ Si llega aquí significa que el login fue exitoso
-      if (mounted) setState(() => _isLoading = true);
+     // if (mounted) setState(() => _isLoading = true);
 
       final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('intro_view', true);
       final role = prefs.getString('role');
 
       log("ROL OBTENIDO: $role");
@@ -390,7 +265,7 @@ void _handleLogin() async {
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeDriverView()));
       }
     } catch (e) {
-      // ❌ Error → mostramos mensaje, sin loader
+      if (mounted) setState(() => _isLoading = false);
       final error = authViewModel.errorMessage ?? "Correo o contraseña incorrectos.";
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -402,10 +277,10 @@ void _handleLogin() async {
           backgroundColor: Colors.red,
         ),
       );
-    } finally {
-      // 🔄 Cuando se complete la navegación o error
+    } 
+   /* finally {
       if (mounted) setState(() => _isLoading = false);
-    }
+    }*/
   }
 
   @override

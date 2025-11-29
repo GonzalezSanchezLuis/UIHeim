@@ -1,3 +1,4 @@
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:holi/config/app_config.dart';
@@ -6,7 +7,7 @@ import 'package:holi/src/service/fcm/firebase_messaging_service.dart';
 import 'package:holi/src/service/moves/accept_move_service.dart';
 import 'package:holi/src/view/screens/driver/home_driver_view.dart';
 import 'package:holi/src/view/screens/user/home_user_view.dart';
-import 'package:holi/src/view/screens/welcome/introducction_view.dart';
+import 'package:holi/src/view/screens/welcome/wrapper_view.dart';
 import 'package:holi/src/viewmodels/auth/auth_viewmodel.dart';
 import 'package:holi/src/viewmodels/auth/password_reset_viewmodel.dart';
 import 'package:holi/src/viewmodels/auth/sesion_viewmodel.dart';
@@ -36,10 +37,14 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:holi/config/development.dart' as development;
 import 'package:holi/config/production.dart' as production;
 
+
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+
+ 
   const String env = String.fromEnvironment('FLUTTER_ENV', defaultValue: 'DEVELOPMENT');
   configureApp(env);
 
@@ -120,6 +125,7 @@ void main() async {
 }
 
 class App extends StatelessWidget {
+
   final GlobalKey<NavigatorState> navigatorKey;
   const App({super.key, required this.navigatorKey});
 
@@ -157,7 +163,8 @@ class App extends StatelessWidget {
           ),
         ),
         debugShowCheckedModeBanner: false,
-        home: const IntroductionView(),
+       // home: const WrapperView(),
+       home: const WrapperView()
       ),
     );
   }

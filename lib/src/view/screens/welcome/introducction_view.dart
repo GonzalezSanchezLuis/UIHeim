@@ -68,16 +68,15 @@ class _IntroductionViewState extends State<IntroductionView> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.only(bottom: 200.0), // Mueve los botones hacia arriba
+            padding: const EdgeInsets.only(bottom: 200.0),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Espacio igual entre los botones
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly, 
               children: [
                 SizedBox(
                   width: 200,
                   height: 50,
                   child: ElevatedButton(
                     onPressed: () {
-                      // Acción para el botón de Iniciar sesión
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const LoginView()),

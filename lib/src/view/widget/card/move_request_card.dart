@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:holi/src/core/enums/move_type.dart';
 import 'package:holi/src/core/extensions/move_type_extension.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:holi/src/core/theme/fonts/style_fonts_move.dart';
 import 'package:holi/src/utils/format_price.dart';
 import 'package:holi/src/viewmodels/driver/route_driver_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/accept_move_viewmodel.dart';
@@ -18,7 +19,7 @@ class MoveRequestCard extends StatelessWidget {
     required this.onMoveAccepted,
   });
 
-    String getOriginInfo() {
+  String getOriginInfo() {
     final distance = moveData['distance'];
     final eta = moveData['estimatedTimeOfArrival'];
     if (distance != null && eta != null) {
@@ -43,7 +44,8 @@ class MoveRequestCard extends StatelessWidget {
     final dynamic priceRaw = moveData['price'];
     final double priceInPesos = priceRaw != null ? (priceRaw is double ? priceRaw : double.tryParse(priceRaw.toString()) ?? 0) / 100 : 0;
 
-    final String formattedPrice = formatPriceToHundredsDriver(priceInPesos.toString()); 
+    final String formattedPrice = formatPriceToHundredsDriver(priceInPesos.toString());
+    final String userName = moveData['userName']?.toString() ?? '';
 
     final String originalAddress = moveData['origin'] ?? '';
     final List<String> parts = originalAddress.split(',');
@@ -64,7 +66,6 @@ class MoveRequestCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Pago y Precio
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -77,22 +78,21 @@ class MoveRequestCard extends StatelessWidget {
                 ),
               ),
               Expanded(
-               
                 child: Text(
                   formattedPrice,
                   style: const TextStyle(color: Colors.white, fontSize: 23),
-                  textAlign: TextAlign.right, 
+                  textAlign: TextAlign.right,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 8),
-          const Divider(color: Colors.grey, thickness: 1), 
+          const Divider(color: Colors.grey, thickness: 1),
           const SizedBox(height: 8),
 
           // Origen
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start, 
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Icon(Icons.circle, color: Colors.green),
               const SizedBox(width: 8),
@@ -102,11 +102,11 @@ class MoveRequestCard extends StatelessWidget {
                   children: [
                     Text(
                       'Origen ${moveData['distance'] ?? "Cargando..."} ${moveData['estimatedTimeOfArrival'] ?? "..."}',
-                      style: const TextStyle(color: Colors.white, fontSize: 16), 
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
                     ),
-                    const SizedBox(height: 4), 
+                    const SizedBox(height: 4),
                     Text(
-                      reducedOriginAddress, 
+                      reducedOriginAddress,
                       style: const TextStyle(color: Colors.grey, fontSize: 16),
                     ),
                   ],
@@ -116,9 +116,8 @@ class MoveRequestCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
 
-          // Destino
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start, 
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Icon(Icons.circle, color: Colors.blueAccent),
               const SizedBox(width: 8),
@@ -128,7 +127,7 @@ class MoveRequestCard extends StatelessWidget {
                   children: [
                     Text(
                       'Destino ${moveData['distanceToDestination'] ?? "Cargando..."} ${moveData['timeToDestination'] ?? "..."}',
-                      style: const TextStyle(color: Colors.white, fontSize: 16), // Ajustado a 16
+                      style: StyleFontsMove.paragraphStyleMove,
                     ),
                     Text(
                       '${moveData['destination']}',
@@ -147,36 +146,35 @@ class MoveRequestCard extends StatelessWidget {
               const SizedBox(width: 10),
               Text(
                 'Mudanza ${typeOfMove.displayName}',
-                style: const TextStyle(color: Colors.white, fontSize: 18),
+                style: StyleFontsMove.paragraphStyleMove,
               ),
             ],
           ),
-
-          const SizedBox(height: 16),
-
+          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Avatar + Nombre
               Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Container(
-                    width: 35,
-                    height: 35,
+                    width: 25,
+                    height: 25,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: AppTheme.primarycolor, width: 4),
+                      border: Border.all(color: AppTheme.primarycolor, width: 2),
                     ),
                     child: CircleAvatar(
+                      radius: 18,
                       backgroundColor: Colors.grey[300],
                       backgroundImage: (moveData['avatarProfile'] != null && moveData['avatarProfile'].toString().isNotEmpty) ? NetworkImage(moveData['avatarProfile']) : null,
-                      child: (moveData['avatarProfile'] == null || moveData['avatarProfile'].toString().isEmpty) ? const Icon(Icons.person, size: 18, color: Colors.white) : null,
+                      child: (moveData['avatarProfile'] == null || moveData['avatarProfile'].toString().isEmpty) ? const Icon(Icons.person, size: 20, color: Colors.black) : null,
                     ),
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    '${moveData['userName'] ?? "Usuario"}',
-                    style: const TextStyle(color: Colors.white, fontSize: 18),
+                    userName.isEmpty ? "Usuario" : userName,
+                    style: StyleFontsMove.paragraphStyleMove,
                   ),
                 ],
               ),
@@ -184,6 +182,7 @@ class MoveRequestCard extends StatelessWidget {
               // Temporizador
               Consumer<RouteDriverViewmodel>(
                 builder: (context, viewModel, child) {
+                  print(viewModel);
                   final int remainingTime = viewModel.remainingTime;
                   final Color borderColor = remainingTime > 10
                       ? Colors.green
@@ -193,15 +192,15 @@ class MoveRequestCard extends StatelessWidget {
 
                   return TweenAnimationBuilder<Color>(
                       tween: Tween<Color>(
-                        begin: borderColor, 
-                        end: borderColor, 
+                        begin: borderColor,
+                        end: borderColor,
                       ),
                       duration: const Duration(microseconds: 500),
                       builder: (context, color, child) {
                         return Container(
                           width: 40,
                           height: 40,
-                          decoration: BoxDecoration(shape: BoxShape.circle, color: AppTheme.primarycolor, border: Border.all(color: color ?? Colors.green, width: 4)), // Asegurar el borde y grosor
+                          decoration: BoxDecoration(shape: BoxShape.circle, color: AppTheme.primarycolor, border: Border.all(color: color ?? Colors.green, width: 4)),
                           alignment: Alignment.center,
                           child: Text(
                             '$remainingTime',
@@ -215,8 +214,6 @@ class MoveRequestCard extends StatelessWidget {
           ),
 
           const SizedBox(height: 16),
-
-          // Botón Aceptar
           ElevatedButton(
             onPressed: () async {
               final acceptMoveViewModel = Provider.of<AcceptMoveViewmodel>(context, listen: false);
@@ -224,26 +221,27 @@ class MoveRequestCard extends StatelessWidget {
               routeVM.stopTimer();
 
               final moveId = int.tryParse(moveData['moveId'].toString()) ?? 0;
+              print("ID DE LA MUDANZA $moveId");
               final result = await acceptMoveViewModel.acceptMove(moveId);
 
               if (result) {
                 onMoveAccepted(moveData);
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Error al aceptar el viaje')),
+                  const SnackBar(content: Text('Error al aceptar la mudanza')),
                 );
               }
             },
             style: ElevatedButton.styleFrom(
-              minimumSize: Size(MediaQuery.of(context).size.width * 0.9, 50), 
-              backgroundColor: Colors.green, 
+              minimumSize: Size(MediaQuery.of(context).size.width * 0.9, 50),
+              backgroundColor: Colors.green,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30), 
+                borderRadius: BorderRadius.circular(30),
               ),
             ),
             child: const Text(
-              'Aceptar viaje',
-              style: TextStyle(color: Colors.white, fontSize: 25), 
+              'Aceptar mudanza',
+              style: TextStyle(color: Colors.white, fontSize: 25),
             ),
           ),
         ],

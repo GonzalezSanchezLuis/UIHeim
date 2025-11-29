@@ -1,5 +1,5 @@
 name: holi
-description: "Holi App de cambio de domicilio "
+description: "Heim App de cambio de domicilio "
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -61,11 +61,8 @@ dependencies:
   stomp_dart_client: ^0.4.4
   cached_network_image: ^3.4.1
   flutter_launcher_icons: ^0.13.1
-
-  
-
-  
-
+  flutter_native_splash: ^2.4.4
+  flutter_web_auth: ^0.6.0
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -102,7 +99,7 @@ flutter:
   assets:
     - assets/images/intro1.svg
     - assets/images/intro2.svg
-    - assets/images/logo.png
+    - assets/images/logo_foreground.png
     - assets/images/profile.jpg
     - assets/images/background-driver.svg
     - assets/images/passion.jpg
@@ -120,41 +117,29 @@ flutter:
     - assets/maps/maps_style.json
     - assets/animations/Animation_searching.json
 
+ 
+    
+
+flutter_native_splash:
+  color: "#000000"
+  image: assets/images/splash.png
+  android: true
+  ios: true
+  android_gravity: center
+  android_12:
+   color: "#000000"
+   image: assets/images/splash.png
+
 flutter_launcher_icons:
   android: true
   ios: true
+  adaptive_icon_background: "#000000"  # Fondo negro
+  adaptive_icon_foreground: "assets/images/logo_foreground.png"
   image_path: "assets/images/ic_launcher.png"
-  adaptive_icon_background: "#000000"
-  adaptive_icon_foreground: "assets/images/ic_launcher.png"
-    
+  remove_alpha_ios: true
 
 
 
 
 
-
-  # An image asset can refer to one or more resolution-specific "variants", see
-  # https://flutter.dev/to/resolution-aware-images
-
-  # For details regarding adding assets from package dependencies, see
-  # https://flutter.dev/to/asset-from-package
-
-  # To add custom fonts to your application, add a fonts section here,
-  # in this "flutter" section. Each entry in this list should have a
-  # "family" key with the font family name, and a "fonts" key with a
-  # list giving the asset and other descriptors for the font. For
-  # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
-  #
-  # For details regarding fonts from package dependencies,
-  # see https://flutter.dev/to/font-from-package
+  

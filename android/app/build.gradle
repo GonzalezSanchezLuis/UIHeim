@@ -14,6 +14,7 @@ android {
     compileSdkVersion 35 
     ndkVersion "25.2.9519653" 
     namespace = "com.example.holi"
+    namespace = "com.example.holi.uni_links"
     //compileSdk = flutter.compileSdkVersion
     //ndkVersion = flutter.ndkVersion
 

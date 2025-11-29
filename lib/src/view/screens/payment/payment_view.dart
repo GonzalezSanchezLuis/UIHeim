@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/utils/format_price.dart';
+import 'package:holi/src/view/screens/user/home_user_view.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class PaymentView extends StatelessWidget {
@@ -11,16 +13,17 @@ class PaymentView extends StatelessWidget {
   Color _getPaymentColor() {
     final String paymentMethod = paymentData['paymentMethod'].toLowerCase();
     if (paymentMethod.toLowerCase() == "nequi") {
-      return const Color(0xFF7B1FA2); // Morado
+      return const Color(0xFF7B1FA2);
     } else if (paymentMethod.toLowerCase() == "daviplata") {
-      return const Color(0xFFE53935); // Rojo
+      return const Color(0xFFE53935);
     }
-    return Colors.orange; // Color por defecto
+    return Colors.orange;
   }
 
   @override
   Widget build(BuildContext context) {
     final String paymentMethod = paymentData['paymentMethod'] ?? "N/A";
+    print("datos de pago que devuelve WAVA $paymentData");
 
     final String paymentURL = paymentData['paymentURL'] ?? "";
     final String origin = paymentData['origin'] ?? "";
@@ -140,7 +143,34 @@ class PaymentView extends StatelessWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("Error al procesar el enlace de pago.")),
                   );
-                }
+                } 
+             /* try {
+                  final result = await FlutterWebAuth.authenticate(
+                    url: paymentURL,
+                    callbackUrlScheme: "myapp", // debe coincidir con el scheme que configuraste
+                  );
+
+                  print("URL final después del pago: $result");
+
+                  // Si la URL indica pago exitoso, navega al Home
+                  if (result.contains("pago-exitoso")) {
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (_) => const HomeUserView()),
+                      (route) => false,
+                    );
+                  } else {
+                    // Manejar error o estado de pago cancelado
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Pago no completado.")),
+                    );
+                  }
+                } catch (e) {
+                  // Error al abrir la URL o al recibir la redirección
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Error al procesar el pago.")),
+                  );
+                  print("Error en FlutterWebAuth: $e");
+                }*/
               },
               icon: const Icon(Icons.payment, color: Colors.white),
               label: Text(

@@ -80,7 +80,7 @@ class _ConfigurationDriverState extends State<ConfigurationDriver> {
             },
           ),
 
-          _buildSettingOption(
+         /* _buildSettingOption(
             title: "Cerrar sesión",
             icon: Icons.logout,
             onTap: () async {
@@ -97,7 +97,7 @@ class _ConfigurationDriverState extends State<ConfigurationDriver> {
                 );
               }
             },
-          ),
+          ),*/
         ],
       ),
     );

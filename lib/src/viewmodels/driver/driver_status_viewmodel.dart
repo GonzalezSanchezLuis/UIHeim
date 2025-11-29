@@ -130,6 +130,6 @@ class DriverStatusViewmodel extends ChangeNotifier {
 
   void setStatus(ConnectionStatus status) {
     _connectionStatus = status;
-    notifyListeners(); // Actualiza la UI
+    notifyListeners(); 
   }
 }

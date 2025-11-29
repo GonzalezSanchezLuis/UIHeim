@@ -24,18 +24,19 @@ class _CreateAccountState extends State<CreateAccount> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final AuthService _authService = AuthService();
 
+  bool _isPasswordVisible = false;
+  bool _isLoading = false;
+
   // Variables de desplazamiento
   final double _emailYOffset = 100;
   final double _passwordYOffset = 180;
 
-  bool _isPasswordVisible = false;
-  bool _isLoading = false; // Estado de carga
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+       backgroundColor: _isLoading ? Colors.black : AppTheme.colorbackgroundview,
       appBar: AppBar(
-        backgroundColor: AppTheme.colorbackgroundview,
+        backgroundColor: _isLoading ? Colors.black : AppTheme.colorbackgroundview,
         title: const Text(
           "Atras",
           style: TextStyle(fontWeight: FontWeight.bold),
@@ -45,11 +46,10 @@ class _CreateAccountState extends State<CreateAccount> {
           onPressed: () => {Navigator.pop(context)},
         ),
       ),
-      backgroundColor: AppTheme.colorbackgroundview,
+     // backgroundColor: AppTheme.colorbackgroundview,
       body: Padding(
         padding: const EdgeInsets.only(top: 180.0, left: 15.0, right: 15.0),
         child: Stack(
-          // Usamos Stack para manejar la posición absoluta
           children: [
             const Positioned(
               top: 35,
@@ -62,7 +62,6 @@ class _CreateAccountState extends State<CreateAccount> {
                 ),
               ),
             ),
-            // Formulario para gestionar los inputs de manera optimizada
             Positioned(
               top: _emailYOffset,
               left: 10,
@@ -78,6 +77,9 @@ class _CreateAccountState extends State<CreateAccount> {
                       decoration: const InputDecoration(
                           labelText: "Ingresa tu nombre completo",
                           border: OutlineInputBorder(),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.black87, width: 2.0),
+                          ),
                           focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 2.0)),
                           floatingLabelStyle: TextStyle(
                             color: Colors.black,
@@ -86,14 +88,13 @@ class _CreateAccountState extends State<CreateAccount> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Campo de correo
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       decoration: const InputDecoration(
                           labelText: "Ingresa tu email",
                           border: OutlineInputBorder(),
-                          enabledBorder:  OutlineInputBorder(
+                          enabledBorder: OutlineInputBorder(
                             borderSide: BorderSide(color: Colors.black87, width: 2.0),
                           ),
                           focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 2.0)),
@@ -107,26 +108,43 @@ class _CreateAccountState extends State<CreateAccount> {
                     TextFormField(
                       controller: _passwordController,
                       obscureText: !_isPasswordVisible,
-                      decoration: const InputDecoration(
+                      decoration:  InputDecoration(
                           labelText: "Ingresa tu contraseña",
-                          border: OutlineInputBorder(),
-                          enabledBorder:  OutlineInputBorder(
+                          border: const OutlineInputBorder(),
+                          enabledBorder: const OutlineInputBorder(
                             borderSide: BorderSide(color: Colors.black87, width: 2.0),
                           ),
-                          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 2.0)),
-                          floatingLabelStyle: TextStyle(
+                          focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 2.0)),
+                          floatingLabelStyle: const TextStyle(
                             color: Colors.black,
                             fontWeight: FontWeight.bold,
-                          )),
+                          ),
+                          suffixIcon: IconButton(icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off),
+                          onPressed: (){
+                            setState(() {
+                              _isPasswordVisible = !_isPasswordVisible;
+                            });
+                            
+                          },
+                          )
+                          ),
                     ),
                     const SizedBox(height: 20),
-                    // Botón de login
                     ButtonAuth(formKey: _formKey, onPressed: _handleCreateAccount),
                   ],
+                  
                 ),
               ),
             ),
+             if (_isLoading) 
+             Positioned.fill(child: Container(
+                  color: Colors.black,
+                 child:  const   Center(child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3)),
+             ))
+             
+             
           ],
+          
         ),
       ),
     );
@@ -151,33 +169,46 @@ class _CreateAccountState extends State<CreateAccount> {
         );
         return;
       }
-
-      setState(() => _isLoading = true);
-
+      if (mounted) setState(() => _isLoading = true);
       final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
 
-      final success = await authViewModel.registerUser(name, email, password);
+      try {
+        final success = await authViewModel.registerUser(name, email, password);
+        if (success) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('intro_view', true);
+          final role = prefs.getString('role');
+          final userId = prefs.getInt('userId');
 
-      setState(() => _isLoading = false);
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeUserView()));
 
-      if (success) {
-        final prefs = await SharedPreferences.getInstance();
-        final role = prefs.getString('role');
-        final userId = prefs.getInt('userId');
+          if (userId != null && role != null) {
+            final fcmViewModel = FcmViewModel();
+            await fcmViewModel.initFcm(userId, role);
+          }
+        } else {
+          if (mounted) setState(() => _isLoading = false);
 
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeUserView()));
-
-        if (userId != null && role != null) {
-          final fcmViewModel = FcmViewModel();
-          await fcmViewModel.initFcm(userId, role);
+          final error = authViewModel.errorMessage ?? "Algo salió mal";
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                error,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: Colors.red,
+            ),
+          );
         }
-      }else{
-        final error = authViewModel.errorMessage ?? "Algo salió mal";
+      } catch (e) {
+        if (mounted) setState(() => _isLoading = false);
+
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text(
-              error,
-              style: const TextStyle(fontWeight: FontWeight.w600),
+              "Error de conexión. Inténtalo de nuevo.",
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
             behavior: SnackBarBehavior.floating,
             backgroundColor: Colors.red,

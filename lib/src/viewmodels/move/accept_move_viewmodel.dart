@@ -14,14 +14,12 @@ class AcceptMoveViewmodel extends ChangeNotifier {
   String? get error => _error;
   int? _driverId;
 
-
-
   Future<bool> acceptMove(int moveId) async {
-
-      final prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     _driverId = prefs.getInt('userId');
+    print("DRIVER ID $_driverId");
 
-      if (_driverId == null) {
+    if (_driverId == null) {
       print('Error: driverId no disponible');
       return false;
     }
