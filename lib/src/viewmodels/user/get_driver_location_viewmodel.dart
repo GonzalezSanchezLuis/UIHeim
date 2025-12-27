@@ -11,9 +11,10 @@ class GetDriverLocationViewmodel extends ChangeNotifier {
 
   void setMoveData(Map<String, dynamic> data) {
     //  final dataMove = data;
-    
-    final lat = data['driverLat'] is String ? double.tryParse(data['driverLat']) : (data['driverLat'] as double?);
-    final lng = data['driverLng'] is String ? double.tryParse(data['driverLng']) : (data['driverLng'] as double?);
+    final Map<String, dynamic> source = data.containsKey('move') ? data['move'] : data;
+
+    final lat = source['driverLat'] is String ? double.tryParse(data['driverLat']) : (data['driverLat'] as double?);
+    final lng = source['driverLng'] is String ? double.tryParse(data['driverLng']) : (data['driverLng'] as double?);
 
     if (lat != null && lng != null) {
       _driverLocation = LatLng(lat, lng);

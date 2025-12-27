@@ -5,7 +5,7 @@ class DriverDataService {
 
   Future<Map<String, dynamic>> fetchDriverData(int driverId) async {
     try {
-      final response = await http.get(Uri.parse('$apiBaseUrl/$driverId/profile'));
+      final response = await http.get(Uri.parse('$apiBaseUrl/driver/$driverId/infromation'));
 
       if (response.statusCode == 200) {
         final dynamic decodedBody = jsonDecode(response.body);
@@ -19,9 +19,7 @@ class DriverDataService {
         throw Exception('Error al cargar datos del conductor: ${response.statusCode}');
       }
     } catch (e) {
-      // Log the error for debugging
       print("ERROR: Fallo al obtener los datos del conductor. $e");
-      // Re-throw the exception so the ViewModel can handle it
       rethrow;
     }
   }

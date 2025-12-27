@@ -157,9 +157,9 @@ class _MovingSummaryViewState extends State<MovingSummaryView> {
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                                  decoration: BoxDecoration(
-                                  color: Colors.orange.withOpacity(0.1), // Fondo muy sutil
+                                  color: Colors.orange.withOpacity(0.1), 
                                   borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: Colors.orange), // Borde de color
+                                  border: Border.all(color: Colors.orange), 
                                 ),
                                 child : Row(
                                   children: [

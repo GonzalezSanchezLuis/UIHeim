@@ -1,4 +1,4 @@
-package com.example.holi
+package com.heim.app
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -23,37 +23,34 @@ class RouteDriverViewmodel extends ChangeNotifier {
 
   Future<void> updateMoveData(Map<String, dynamic> data) async {
     print("Datos recibidos - Conductor----: ${data['driverLat']},${data['driverLng']}");
+    final driverLatString = data['driverLat']?.toString();
+    final driverLngString = data['driverLng']?.toString();
+
+    final double? driverLat = double.tryParse(driverLatString ?? '');
+    final double? driverLng = double.tryParse(driverLngString ?? '');
+
     print("Origen----: ${data['originLat']},${data['originLng']}");
     print("Destino---: ${data['destinationLat']},${data['destinationLng']}");
 
     try {
-      if (data['driverLat'] != null && data['driverLng'] != null) {
-         _driverLocation = LatLng(
-          ToDouble(data['driverLat']),
-          ToDouble(data['driverLng']),
-        );
+      if (driverLat != null && driverLng != null) {
+        _driverLocation = LatLng(driverLat, driverLng);
       }
 
       if (data['originLat'] != null && data['originLng'] != null && data['destinationLat'] != null && data['destinationLng'] != null) {
-
         final origin = LatLng(ToDouble(data['originLat']), ToDouble(data['originLng']));
         final destination = LatLng(ToDouble(data['destinationLat']), ToDouble(data['destinationLng']));
 
-         await Future.wait([
-          _fetchRealRoute(origin, destination),
-          if(_driverLocation != null)
-          _fetchDriverRoute(_driverLocation!, origin)
-         ]);
-
         moveData = {'origin': origin, 'destination': destination, ...data};
-       _startTimer();
+        _startTimer();
         isTimerRunning = true;
-         notifyListeners();
-   
+        notifyListeners();
+
+        await Future.wait([_fetchRealRoute(origin, destination), if (_driverLocation != null) _fetchDriverRoute(_driverLocation!, origin)]);
+        notifyListeners();
       } else {
         print("Datos de viaje incompletos");
       }
-     
     } catch (e) {
       print('Error al actualizar datos del viaje: $e');
     }
@@ -72,9 +69,10 @@ class RouteDriverViewmodel extends ChangeNotifier {
         notifyListeners();
       } else {
         timer.cancel();
-        clearMoveData();
+        // clearMoveData();
+        handleMoveCancelled();
         isTimerRunning = false;
-        notifyListeners();
+        // notifyListeners();
       }
     });
   }
@@ -82,13 +80,38 @@ class RouteDriverViewmodel extends ChangeNotifier {
   void stopTimer() {
     _timer?.cancel();
     isTimerRunning = false;
-   _remainingTime = 15;
+    _remainingTime = 15;
     notifyListeners();
   }
 
-  void clearMoveData() {
+  /*void clearMoveData() {
+    moveData = null;
+    _route = [];
+   _driverToOriginRoute = [];
+    notifyListeners();
+  } */
+
+  void handleIncomingMove(Map<String, dynamic> data) {
+    updateMoveData(data);
+  }
+
+  void stopTimerAndRemoveRequest() {
+    stopTimer();
     moveData = null;
     notifyListeners();
+  }
+
+  void handleMoveCancelled() {
+    moveData = null;
+    _route = [];
+    _driverToOriginRoute = [];
+    stopTimer();
+    notifyListeners();
+  }
+
+
+  void handleMoveFinished() {
+    handleMoveCancelled();
   }
 
   Future<void> _fetchRealRoute(LatLng origin, LatLng destination) async {
@@ -124,7 +147,7 @@ class RouteDriverViewmodel extends ChangeNotifier {
 
   Future<void> _fetchDriverRoute(LatLng driver, LatLng origin) async {
     print('Solicitando ruta conductor -> origen: ${driver.latitude},${driver.longitude} -> ${origin.latitude},${origin.longitude}');
-    
+
     try {
       PolylinePoints polylinePoints = PolylinePoints();
 

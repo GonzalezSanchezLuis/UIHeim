@@ -1,78 +1,89 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.holi">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <!-- Permisos para FCM -->
+
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" /> <!-- Para Android 13+ -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+
     <permission
         android:name="com.example.holi.permission.C2D_MESSAGE"
         android:protectionLevel="signature" />
     <uses-permission android:name="com.example.holi.permission.C2D_MESSAGE" />
+
+    <!-- 🔍 MOVER QUERIES DENTRO DEL MANIFEST -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <category android:name="android.intent.category.BROWSABLE"/>
+            <data android:scheme="https"/>
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <category android:name="android.intent.category.BROWSABLE"/>
+            <data android:scheme="http"/>
+        </intent>
+        <package android:name="com.whatsapp" />
+    </queries>
+
     <application
         android:label="Heim"
-        android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
-        <!--  android:icon="@mipmap/ic_launcher">-->
 
-        <meta-data android:name="com.google.android.geo.API_KEY" 
+        <meta-data android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDB04XLcypB4xsGaRqNPjAGmf1xTegz0Rg"/>
-        
-        <!-- Configuración Firebase Notifications -->
+
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="high_importance_channel" />
-    
 
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:launchMode="singleTop"
+            android:launchMode="singleTask"
             android:taskAffinity=""
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize">
-            
+
             <meta-data
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme" />
-                
+
+            <!-- Launcher -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-            
-            <!-- Intent Filter para notificaciones -->
+
+            <!-- FCM -->
             <intent-filter>
                 <action android:name="FLUTTER_NOTIFICATION_CLICK" />
                 <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+            <!-- Deep Link FINAL -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+
+                <!-- Debería abrir tu app para heim://pay?... -->
+                <data
+                    android:scheme="heim" android:host="pay" />
             </intent-filter>
         </activity>
 
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
     </application>
 
-      <queries>
-            <intent>
-                <action android:name="android.intent.action.VIEW"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="https"/>
-            </intent>
-     </queries>
-
-    <queries>
-        <package android:name="com.whatsapp" />
-        <intent>
-            <action android:name="android.intent.action.PROCESS_TEXT"/>
-            <data android:mimeType="text/plain"/>
-        </intent>
-    </queries>
 </manifest>

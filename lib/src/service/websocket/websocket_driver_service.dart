@@ -29,7 +29,7 @@ class WebSocketDriverService {
 
   void _onConnect(StompFrame frame) {
     _client.subscribe(
-      destination: '/topic/driver/available',
+      destination: '/topic/driver/available/$driverId',
       callback: (frame) {
         final data = frame.body;
         if (data != null) {
@@ -37,7 +37,7 @@ class WebSocketDriverService {
         }
       },
     );
-    print("SOCKET CONECTADO EXITOSAMENTE");
+    print("SOCKET CONDUCTOR CONECTADO EXITOSAMENTE");
   }
 
   void disconnect() {

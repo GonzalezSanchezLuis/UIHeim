@@ -5,6 +5,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:holi/src/model/fcm/fcm_token_request_model.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:holi/config/app_config.dart';
 
 class FcmViewModel extends ChangeNotifier {
   bool isLoading = false;
@@ -74,7 +75,7 @@ class FcmViewModel extends ChangeNotifier {
   }
 
   Future<void> sendTokenToBackend(FcmTokenRequestModel request) async {
-    final url = Uri.parse('https://54d7-2800-484-3981-2300-c37a-2c50-fa4a-d396.ngrok-free.app/api/v1/fcm/register');
+    final url = Uri.parse('$apiBaseUrl/fcm/register');
 
     try {
       final jsonBody = jsonEncode(request.toJson());

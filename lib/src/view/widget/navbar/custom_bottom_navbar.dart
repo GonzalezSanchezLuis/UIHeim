@@ -33,7 +33,7 @@ class CustomBottomNavBar extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _buildItem(icon: Icons.home_filled, label: 'Inicio', index: 0),
-              _buildItem(icon: FontAwesomeIcons.truckFront, label: 'Mudarme', index: 1),
+              _buildItem(icon: Icons.local_shipping_outlined, label: 'Mudarme', index: 1),
               _buildItem(icon: Icons.history_toggle_off_rounded, label: 'Historial', index: 2),
               _buildItem(icon: Icons.supervised_user_circle, label: 'Perfil', index: 3),
             ],

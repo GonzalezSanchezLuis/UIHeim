@@ -196,10 +196,9 @@ Widget buildRequirementsSection() {
           ),
         ],
       ),
-      const SizedBox(
-        height: 30.0,
-      ),
+      const SizedBox(height: 15.0,),
       const ButtonRegisterDriver(),
+       const SizedBox( height: 40.0,),
     ],
   );
 }

@@ -29,7 +29,7 @@ class _ConfigurationUserState extends State<ConfigurationUser> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white),
           onPressed: () {
-            Navigator.pop(context); // Vuelve a la pantalla anterior
+            Navigator.pop(context); 
           },
         ),
       ),

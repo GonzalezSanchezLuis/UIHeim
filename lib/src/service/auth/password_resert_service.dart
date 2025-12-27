@@ -1,28 +1,27 @@
 import 'dart:convert';
+import 'package:holi/config/app_config.dart';
 import 'package:holi/src/model/auth/password_resert_model.dart';
 import 'package:http/http.dart' as http;
 
 class PasswordResertService {
-  Future<void> sendResetEmail(String email) async {
-    const  baseUrl = 'http://192.168.20.49:8080/api/v1/auth';
-    PasswordResertModel passwordResertModel = PasswordResertModel(email:email);
+  Future<Map<String, dynamic>> sendResetEmail(String email) async {
+    final baseUrl = '$apiBaseUrl/auth/forgot-password';
+    PasswordResertModel passwordResertModel = PasswordResertModel(email: email);
     try {
-      final url = Uri.parse('$baseUrl/forgot-password');
+      final url = Uri.parse(baseUrl);
       final response = await http.post(
-      url,
+        url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(passwordResertModel.toJson()),
       );
-
+      final data = json.decode(response.body);
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        print("✅ Estado del conductor desde la BD: $data");
-
+        return data;
       } else {
-        print("⚠️ Error al obtener el estado del conductor: ${response.body}");
+        throw data['error'] ?? 'Error desconociado';
       }
     } catch (e) {
-      print("❌ Error al cambiar la contraseña: $e");
+      throw Exception('No se pudo conectar con el servidor');
     }
   }
 }

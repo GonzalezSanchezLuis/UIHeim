@@ -53,7 +53,7 @@ class Legal extends StatelessWidget {
                       ),
                     ),
                     GestureDetector(
-                      onTap: () => {Navigator.push(context, MaterialPageRoute(builder: (context) => const PrivacyPolicy()))},
+                      onTap: () => {Navigator.push(context, MaterialPageRoute(builder: (context) => const PrivacyPolicyView()))},
                       child: const Text("Politicas de Privacidad",
                           style: TextStyle(fontSize: 18, fontWeight: FontWeight.normal, color: Colors.black54, decoration: TextDecoration.underline)),
                     ) // Separación entre textos

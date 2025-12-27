@@ -20,7 +20,7 @@ class _FloatingMoveCardWrapperState extends State<FloatingMoveCardWrapper> with 
     Future.delayed(const Duration(milliseconds: 100), () {
       setState(() {
         _opacity = 1.0;
-        _offset = Offset.zero; // se mueve a su lugar
+        _offset = Offset.zero; 
       });
     });
   }
@@ -77,7 +77,6 @@ class _FloatingMoveCardWrapperState extends State<FloatingMoveCardWrapper> with 
 
             const SizedBox(height: 15),
 
-            // Información resumida del viaje
             Row(
               children: [
                 CircleAvatar(
@@ -89,7 +88,7 @@ class _FloatingMoveCardWrapperState extends State<FloatingMoveCardWrapper> with 
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Vamos por ${moveData['userName'] ?? 'Usuario'}',
+                    'Vamos por ${moveData['fullName'] ?? 'Usuario'}',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 18,

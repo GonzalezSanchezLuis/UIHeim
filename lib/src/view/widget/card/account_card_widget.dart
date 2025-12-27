@@ -44,8 +44,8 @@ class AccountCard extends StatelessWidget {
                       const SizedBox(width: 16.0),
                       Expanded(
                           child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start, // Alinea textos a la izquierda
-                        mainAxisAlignment: MainAxisAlignment.center, // Centra verticalmente
+                        crossAxisAlignment: CrossAxisAlignment.start, 
+                        mainAxisAlignment: MainAxisAlignment.center, 
                         children: [
                           const SizedBox(
                             height: 10,

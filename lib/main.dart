@@ -5,6 +5,7 @@ import 'package:holi/config/app_config.dart';
 import 'package:holi/src/service/auth/auth_service.dart';
 import 'package:holi/src/service/fcm/firebase_messaging_service.dart';
 import 'package:holi/src/service/moves/accept_move_service.dart';
+import 'package:holi/src/service/moves/update_status_move_service.dart';
 import 'package:holi/src/view/screens/driver/home_driver_view.dart';
 import 'package:holi/src/view/screens/user/home_user_view.dart';
 import 'package:holi/src/view/screens/welcome/wrapper_view.dart';
@@ -20,11 +21,13 @@ import 'package:holi/src/viewmodels/location/location_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/accept_move_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/calculate_price_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/confirm_move_viewmodel.dart';
+import 'package:holi/src/viewmodels/move/finish_move_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/moving_history_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/moving_details_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/moving_summary_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/update_status_move_viewmodel.dart';
-import 'package:holi/src/viewmodels/move/websocket/move_notification_viewmodel.dart';
+import 'package:holi/src/viewmodels/move/websocket/move_notification_driver_viewmodel.dart';
+import 'package:holi/src/viewmodels/payment/payment_driver_account_viewmodel.dart';
 import 'package:holi/src/viewmodels/payment/payment_viewmodel.dart';
 import 'package:holi/src/viewmodels/payment/wallet_viewmodel.dart';
 import 'package:holi/src/viewmodels/user/get_driver_location_viewmodel.dart';
@@ -106,7 +109,6 @@ void main() async {
 
   RemoteMessage? initialMessage = await FirebaseMessaging.instance.getInitialMessage();
   if (initialMessage != null && initialMessage.data.isNotEmpty) {
-    // Espera a que la app esté completamente inicializada
     Future.delayed(Duration.zero, () {
       final context = navigatorKey.currentContext;
       if (context != null && context.mounted) {
@@ -133,11 +135,12 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        Provider<UpdateStatusMoveService>(create: (context) => UpdateStatusMoveService()),       
         ChangeNotifierProvider(create: (context) => ProfileUserViewModel()),
         ChangeNotifierProvider(create: (context) => LocationViewModel()),
         ChangeNotifierProvider(create: (context) => ConfirmMoveViewModel()),
         ChangeNotifierProvider(create: (context) => DriverStatusViewmodel()),
-        ChangeNotifierProvider(create: (context) => RouteDriverViewmodel()),
+       // ChangeNotifierProvider(create: (context) => RouteDriverViewmodel()),
         ChangeNotifierProvider(create: (context) => DriverLocationViewmodel()),
         ChangeNotifierProvider(create: (context) => AcceptMoveViewmodel(AcceptMoveService())),
         ChangeNotifierProvider(create: (context) => GetDriverLocationViewmodel()),
@@ -148,12 +151,33 @@ class App extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => RouteUserViewmodel()),
         ChangeNotifierProvider(create: (_) => ProfileDriverViewModel()..fetchDriverData()),
         ChangeNotifierProvider(create: (context) => PaymentViewmodel()),
-        ChangeNotifierProvider(create: (context) => MoveNotificationViewmodel()),
+      //  ChangeNotifierProvider(create: (context) => MoveNotificationDriverViewmodel()),
         ChangeNotifierProvider(create: (context) => MovingSummaryViewmodel()),
         ChangeNotifierProvider(create: (context) => MovingHistoryViewmodel()),
         ChangeNotifierProvider(create: (context) => MovingDetailsViewmodel()),
         ChangeNotifierProvider(create: (context) => DriverDataViewmodel()),
-        ChangeNotifierProvider(create: (context) => WalletViewmodel())
+        ChangeNotifierProvider(create: (context) => WalletViewmodel()),
+        ChangeNotifierProvider(create: (context) => MoveNotificationDriverViewmodel()), 
+        ChangeNotifierProvider(create: (context) => PaymentDriverAccountViewmodel()), 
+        ChangeNotifierProxyProvider<MoveNotificationDriverViewmodel, RouteDriverViewmodel>(
+
+          create: (context) => RouteDriverViewmodel(), 
+        
+          update: (context, notificationVM, routeDriverVM) {
+            
+            if (notificationVM.latestMoveData != null) {
+              routeDriverVM!.handleIncomingMove(notificationVM.latestMoveData!);
+              notificationVM.clearLatestMoveData(); 
+            }
+            
+            return routeDriverVM!;
+          },
+        ),
+        ChangeNotifierProvider(
+            create: (context) => FinishMoveViewmodel(
+                  Provider.of<UpdateStatusMoveService>(context, listen: false),
+                  Provider.of<RouteDriverViewmodel>(context, listen: false),
+                )),
       ],
       child: MaterialApp(
         navigatorKey: navigatorKey,

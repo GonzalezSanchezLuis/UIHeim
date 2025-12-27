@@ -56,7 +56,8 @@ class _UserMapWidgetState extends State<UserMapWidget> {
     if (widget.driverLocation != null && widget.driverLocation != oldWidget.driverLocation && _mapReady) {
       print("📍 [didUpdateWidget] Nueva ubicación del conductor: ${widget.driverLocation}");
       _updateDriverMarker(widget.driverLocation!);
-      _moveCameraToDriver(widget.driverLocation!);
+      //_moveCameraToDriver(widget.driverLocation!);
+      _drawRoute();
     }
   }
 
@@ -85,11 +86,13 @@ class _UserMapWidgetState extends State<UserMapWidget> {
             }
             if (widget.route.isNotEmpty) {
               _drawRoute();
+            } else {
+              _moveCameraToDriver(widget.driverLocation!);
             }
           },
           initialCameraPosition: CameraPosition(
             target: widget.route.isNotEmpty ? widget.origin : _defaultLocation,
-            zoom: widget.route.isNotEmpty ? 14 : 5.5,
+            zoom: widget.route.isNotEmpty ? 12 : 5.5,
           ),
         ),
         Positioned(
@@ -126,14 +129,27 @@ class _UserMapWidgetState extends State<UserMapWidget> {
   }
 
   Future<void> _loadCustomIcons() async {
-    _originIcon = await _getMarkerFromIcon(Icons.circle, AppTheme.greenColors, size: 30, );
-    _destinationIcon = await _getMarkerFromIcon(Icons.circle, Colors.blueAccent, size: 30,);
+    _originIcon = await _getMarkerFromIcon(
+      Icons.circle,
+      AppTheme.greenColors,
+      size: 30,
+    );
+    _destinationIcon = await _getMarkerFromIcon(
+      Icons.circle,
+      Colors.blueAccent,
+      size: 30,
+    );
     _driverIcon = await _getMarkerFromIconDriver(Icons.navigation, Colors.black, size: 50.0);
 
-     if (_mapReady && widget.driverLocation != null) {
+    if (_mapReady && widget.driverLocation != null) {
       print("🛠 Desde _loadCustomIcons: Agregando marcador del conductor");
       _updateDriverMarker(widget.driverLocation!);
       _moveCameraToDriver(widget.driverLocation!);
+    }
+    if (mounted) {
+      setState(() {
+        _drawRoute();
+      });
     }
   }
 
@@ -143,11 +159,20 @@ class _UserMapWidgetState extends State<UserMapWidget> {
       return;
     }
 
-    Future.delayed(const Duration(microseconds: 300), () {
+    /*Future.delayed(const Duration(microseconds: 300), () {
       _centerMap(widget.route);
-    });
+    });*/
 
-    final Set<Marker> newMarkers = {
+    List<LatLng> pointsToInclude = List.from(widget.route);
+    pointsToInclude.add(widget.origin);
+    pointsToInclude.add(widget.destination);
+
+    if (widget.driverLocation != null) {
+      pointsToInclude.add(widget.driverLocation!);
+      print("🎬 Incluyendo conductor en el encuadre: ${widget.driverLocation}");
+    }
+
+    final Set<Marker> updatedMarkers = {
       Marker(markerId: const MarkerId('origin'), position: widget.origin, icon: _originIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen), anchor: const Offset(0.5, 0.5)),
       Marker(
         markerId: const MarkerId('destination'),
@@ -157,13 +182,11 @@ class _UserMapWidgetState extends State<UserMapWidget> {
       ),
     };
 
-    if (widget.driverLocation != null) {
-      newMarkers.add(
-        Marker(
-          markerId: const MarkerId('driver'),
-          position: widget.driverLocation!,
-          icon: _driverIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-        ),
+    if (widget.driverLocation != null && _driverIcon != null) {
+      updatedMarkers.add(
+        Marker(markerId: const MarkerId('driver'), position: widget.driverLocation!, icon: _driverIcon!
+            // icon: _driverIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+            ),
       );
     }
 
@@ -185,11 +208,11 @@ class _UserMapWidgetState extends State<UserMapWidget> {
 
     setState(() {
       _polylines.clear();
-      _markers = newMarkers;
+      _markers = updatedMarkers;
       _polylines = {routePolyline};
     });
 
-    _centerMap(widget.route);
+    _centerMap(pointsToInclude);
   }
 
   Future<void> _centerMap(List<LatLng> points) async {
@@ -207,19 +230,37 @@ class _UserMapWidgetState extends State<UserMapWidget> {
       final bounds = _calculateBounds(points);
 
       await _mapController!.animateCamera(
-        CameraUpdate.newLatLngBounds(bounds, 100),
+        CameraUpdate.newLatLngBounds(bounds, 185),
       );
     } catch (e) {
       print("🎯 Error centrando mapa: $e");
-      // Fallback: centrar en el primer punto con zoom adecuado
+
       if (points.isNotEmpty && _mapController != null) {
         await _mapController!.animateCamera(
-          CameraUpdate.newLatLngZoom(points.first, 15),
+          CameraUpdate.newLatLngZoom(points.first, 13),
         );
       }
     }
   }
 
+  /*LatLngBounds _calculateBounds(List<LatLng> points) {
+    double minLat = points.first.latitude;
+    double maxLat = points.first.latitude;
+    double minLng = points.first.longitude;
+    double maxLng = points.first.longitude;
+
+    for (var point in points) {
+      if (point.latitude < minLat) minLat = point.latitude;
+      if (point.latitude > maxLat) maxLat = point.latitude;
+      if (point.longitude < minLng) minLng = point.longitude;
+      if (point.longitude > maxLng) maxLng = point.longitude;
+    }
+
+    return LatLngBounds(
+      southwest: LatLng(minLat, minLng),
+      northeast: LatLng(maxLat, maxLng),
+    );
+  }*/
   LatLngBounds _calculateBounds(List<LatLng> points) {
     double minLat = points.first.latitude;
     double maxLat = points.first.latitude;
@@ -240,15 +281,12 @@ class _UserMapWidgetState extends State<UserMapWidget> {
   }
 
   void _updateDriverMarker(LatLng location) {
+    if (_driverIcon == null) return;
     print("🚗 [updateDriverMarker] Actualizando marcador a: $location");
     print("🧩 ¿Driver icon está listo? ${_driverIcon != null}");
     print("🎯 Total de marcadores antes: ${_markers.length}");
 
-    final marker = Marker(
-      markerId: const MarkerId("driver"),
-      position: location,
-      icon: _driverIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
-    );
+    final marker = Marker(markerId: const MarkerId("driver"), position: location, icon: _driverIcon!, zIndex: 2);
 
     setState(() {
       _markers.removeWhere((m) => m.markerId.value == "driver");
@@ -256,11 +294,11 @@ class _UserMapWidgetState extends State<UserMapWidget> {
     });
   }
 
-   Future<BitmapDescriptor> _getMarkerFromIconDriver(
+  Future<BitmapDescriptor> _getMarkerFromIconDriver(
     IconData iconData,
     Color fillColor, {
     double size = 80.0,
-    Color borderColor = Colors.white, 
+    Color borderColor = Colors.white,
     double borderWidth = 6.0,
   }) async {
     try {
@@ -271,27 +309,23 @@ class _UserMapWidgetState extends State<UserMapWidget> {
       final center = Offset(iconSize / 2, iconSize / 2);
       final radius = iconSize / 2;
 
-      // 1. Dibuja el borde
       final borderPaint = Paint()
         ..color = borderColor
         ..style = PaintingStyle.fill;
 
       canvas.drawCircle(center, radius, borderPaint);
 
-      // 2. Dibuja el círculo interior (relleno principal)
       final fillPaint = Paint()
         ..color = fillColor
         ..style = PaintingStyle.fill;
 
       canvas.drawCircle(center, radius - borderWidth, fillPaint);
-
-      // 3. Dibuja el icono encima
       final textPainter = TextPainter(textDirection: TextDirection.ltr);
       final textStyle = TextStyle(
         fontSize: iconSize * 0.8,
         fontFamily: iconData.fontFamily,
         package: iconData.fontPackage,
-        color: Colors.white, // color del ícono
+        color: Colors.white,
       );
 
       textPainter.text = TextSpan(text: String.fromCharCode(iconData.codePoint), style: textStyle);
@@ -303,7 +337,6 @@ class _UserMapWidgetState extends State<UserMapWidget> {
 
       textPainter.paint(canvas, iconOffset);
 
-      // 4. Convierte a imagen
       final image = await pictureRecorder.endRecording().toImage(iconSize.toInt(), iconSize.toInt());
       final byteData = await image.toByteData(format: ImageByteFormat.png);
 
@@ -315,9 +348,7 @@ class _UserMapWidgetState extends State<UserMapWidget> {
     }
   }
 
-
-
- Future<BitmapDescriptor> _getMarkerFromIcon(IconData iconData, Color color, {double size = 80.0}) async {
+  Future<BitmapDescriptor> _getMarkerFromIcon(IconData iconData, Color color, {double size = 80.0}) async {
     try {
       final pictureRecorder = PictureRecorder();
       final canvas = Canvas(pictureRecorder);
@@ -342,7 +373,7 @@ class _UserMapWidgetState extends State<UserMapWidget> {
       print("❌ Error generando ícono: $e");
       return BitmapDescriptor.defaultMarker;
     }
-  } 
+  }
 
   Future<void> _moveCameraToDriver(LatLng driverPosition) async {
     try {

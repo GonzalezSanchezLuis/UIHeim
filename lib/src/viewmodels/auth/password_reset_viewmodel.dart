@@ -18,17 +18,17 @@ class PasswordResetViewmodel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _passwordResertService.sendResetEmail(email);
-      _successMessage = "Se ha enviado un correo de recuperación.";
+      final response = await _passwordResertService.sendResetEmail(email);
+      _successMessage = response['message'] ?? "Proceso iniciado correctamente";
     } catch (e) {
-      _errorMessage = "Error al enviar el correo de recuperación.";
+      _errorMessage = e.toString().contains("error") ? e.toString() : 'Error de conexión con el servidor';
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-   void clearMessages() {
+  void clearMessages() {
     _errorMessage = null;
     _successMessage = null;
     notifyListeners();

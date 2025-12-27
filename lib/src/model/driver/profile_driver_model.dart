@@ -5,7 +5,7 @@ class ProfileDriverModel {
   String? email;
   String? password;
   String? urlAvatarProfile;
-
+  bool? active;
   String? licenseNumber;
   String? vehicleType;
   String? enrollVehicle;
@@ -17,7 +17,8 @@ class ProfileDriverModel {
     this.email,
     this.password,
     this.urlAvatarProfile,
-     this.licenseNumber,
+    this.active,
+    this.licenseNumber,
     this.vehicleType,
     this.enrollVehicle,
   });
@@ -29,6 +30,7 @@ class ProfileDriverModel {
       phone: map['phone'],
       email: map['email'],
       urlAvatarProfile: map['urlAvatarProfile'],
+      active: map['active'],
       licenseNumber: map['licenseNumber'],
       vehicleType: map['vehicleType'],
       enrollVehicle: map['enrollVehicle'],
@@ -42,7 +44,8 @@ class ProfileDriverModel {
       'email': email,
       'password': password,
       'urlAvatarProfile': urlAvatarProfile,
-       'licenseNumber': licenseNumber,
+      'active': active,
+      'licenseNumber': licenseNumber,
       'vehicleType': vehicleType,
       'enrollVehicle': enrollVehicle,
     };
@@ -56,6 +59,7 @@ class ProfileDriverModel {
     String? email,
     String? password,
     String? urlAvatarProfile,
+    bool? active,
     String? licenseNumber,
     String? vehicleType,
     String? enrollVehicle,
@@ -67,7 +71,8 @@ class ProfileDriverModel {
       email: email ?? this.email,
       password: password ?? this.password,
       urlAvatarProfile: urlAvatarProfile ?? this.urlAvatarProfile,
-       licenseNumber: licenseNumber ?? this.licenseNumber,
+      active: active ?? this.active,
+      licenseNumber: licenseNumber ?? this.licenseNumber,
       vehicleType: vehicleType ?? this.vehicleType,
       enrollVehicle: enrollVehicle ?? this.enrollVehicle,
     );

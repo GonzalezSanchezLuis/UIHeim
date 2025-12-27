@@ -45,7 +45,8 @@ class MoveRequestCard extends StatelessWidget {
     final double priceInPesos = priceRaw != null ? (priceRaw is double ? priceRaw : double.tryParse(priceRaw.toString()) ?? 0) / 100 : 0;
 
     final String formattedPrice = formatPriceToHundredsDriver(priceInPesos.toString());
-    final String userName = moveData['userName']?.toString() ?? '';
+    final String userName = moveData['fullName']?.toString() ?? '';
+    print("USERNAME DESDE MOVEDATA $userName");
 
     final String originalAddress = moveData['origin'] ?? '';
     final List<String> parts = originalAddress.split(',');
@@ -89,8 +90,6 @@ class MoveRequestCard extends StatelessWidget {
           const SizedBox(height: 8),
           const Divider(color: Colors.grey, thickness: 1),
           const SizedBox(height: 8),
-
-          // Origen
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -142,7 +141,7 @@ class MoveRequestCard extends StatelessWidget {
           const SizedBox(height: 8),
           Row(
             children: [
-              const Icon(FontAwesomeIcons.truckFront, color: Colors.white, size: 18),
+              const Icon(Icons.local_shipping_outlined, color: Colors.white, size: 18),
               const SizedBox(width: 10),
               Text(
                 'Mudanza ${typeOfMove.displayName}',
@@ -178,8 +177,6 @@ class MoveRequestCard extends StatelessWidget {
                   ),
                 ],
               ),
-
-              // Temporizador
               Consumer<RouteDriverViewmodel>(
                 builder: (context, viewModel, child) {
                   print(viewModel);
@@ -218,13 +215,16 @@ class MoveRequestCard extends StatelessWidget {
             onPressed: () async {
               final acceptMoveViewModel = Provider.of<AcceptMoveViewmodel>(context, listen: false);
               final routeVM = Provider.of<RouteDriverViewmodel>(context, listen: false);
-              routeVM.stopTimer();
+
+             // routeVM.stopTimer();
 
               final moveId = int.tryParse(moveData['moveId'].toString()) ?? 0;
               print("ID DE LA MUDANZA $moveId");
+
               final result = await acceptMoveViewModel.acceptMove(moveId);
 
               if (result) {
+                routeVM.stopTimer();
                 onMoveAccepted(moveData);
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -234,7 +234,7 @@ class MoveRequestCard extends StatelessWidget {
             },
             style: ElevatedButton.styleFrom(
               minimumSize: Size(MediaQuery.of(context).size.width * 0.9, 50),
-              backgroundColor: Colors.green,
+              backgroundColor: AppTheme.confirmationscolor,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30),
               ),

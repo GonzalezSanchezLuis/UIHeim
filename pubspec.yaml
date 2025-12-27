@@ -55,14 +55,14 @@ dependencies:
   decimal: ^3.2.1
   slide_to_act: ^2.0.1
   lottie: ^3.0.0
-  webview_flutter: ^4.2.2 
   another_flushbar: ^1.10.29
   font_awesome_flutter: ^10.7.0
   stomp_dart_client: ^0.4.4
   cached_network_image: ^3.4.1
   flutter_launcher_icons: ^0.13.1
   flutter_native_splash: ^2.4.4
-  flutter_web_auth: ^0.6.0
+  webview_flutter: ^4.13.0
+  flutter_web_auth_2: ^4.1.0
 
 
   # The following adds the Cupertino Icons font to your application.

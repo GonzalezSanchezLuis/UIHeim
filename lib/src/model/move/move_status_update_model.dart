@@ -1,7 +1,7 @@
 class MoveStatusUpdateModel {
   final int moveId;
   final int driverId;
-  final DateTime timestamp;
+ final DateTime timestamp;
 
   MoveStatusUpdateModel({
     required this.moveId,

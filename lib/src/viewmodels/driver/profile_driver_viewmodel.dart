@@ -13,6 +13,7 @@ class ProfileDriverViewModel with ChangeNotifier {
 
   ProfileDriverModel get profile => _profile;
   bool get isLoading => _isLoading;
+  bool get isDriverActive => _profile.active ?? false;
 
   Future<void> fetchDriverData() async {
     _isLoading = true;
@@ -22,22 +23,26 @@ class ProfileDriverViewModel with ChangeNotifier {
     if (data != null) {
       _profile = ProfileDriverModel.fromMap(data);
     }
+    if (data != null) {
+      print("ESTADO ACTIVO EN MODELO: ${_profile.active}");
+    }
 
     _isLoading = false;
     notifyListeners();
   }
 
   void onImageSelected(File? imageFile) {
-    _selectedImage = imageFile; 
+    _selectedImage = imageFile;
     notifyListeners();
   }
 
-  Future<void> updateProfile(
-      {required String fullName,
-      required String email,
-      required String phone,
-      required String document,
-      String? password,}) async {
+  Future<void> updateProfile({
+    required String fullName,
+    required String email,
+    required String phone,
+    required String document,
+    String? password,
+  }) async {
     _isLoading = true;
     notifyListeners();
 
@@ -49,12 +54,12 @@ class ProfileDriverViewModel with ChangeNotifier {
       if (imageUrl == null) {
         _isLoading = false;
         notifyListeners();
-        return; // Si falla la subida, no continúes
+        return;
       }
     }
 
     // Actualiza el perfil con la nueva URL de la imagen
-   final response = await _profileService.updateDataDriver(
+    final response = await _profileService.updateDataDriver(
       fullName,
       document,
       email,
@@ -63,18 +68,17 @@ class ProfileDriverViewModel with ChangeNotifier {
       imageUrl ?? _profile.urlAvatarProfile ?? '',
     );
 
-
     _isLoading = false;
     notifyListeners();
 
     if (response != null && response['status'] == 'success') {
       _profile = _profile.copyWith(
-          urlAvatarProfile: imageUrl,
-          fullName: fullName,
-          document: document,
-          email: email,
-          phone: phone, 
-          );
+        urlAvatarProfile: imageUrl,
+        fullName: fullName,
+        document: document,
+        email: email,
+        phone: phone,
+      );
     }
   }
 

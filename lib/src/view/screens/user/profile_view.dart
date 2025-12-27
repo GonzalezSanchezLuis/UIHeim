@@ -48,7 +48,7 @@ class _ProfileViewState extends State<ProfileView> {
           backgroundColor: AppTheme.primarycolor,
           title: const Text(
             "Mi cuenta",
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white,fontSize: 18),
           ),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white),

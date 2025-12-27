@@ -8,7 +8,7 @@ import 'package:holi/src/model/payment/payment_model.dart';
 import 'package:holi/src/service/websocket/websocket_finished_move_service.dart';
 import 'package:holi/src/service/websocket/websocket_user_service.dart';
 import 'package:holi/src/utils/format_price.dart';
-import 'package:holi/src/view/screens/driver/driver_data_view.dart';
+import 'package:holi/src/view/screens/move/driver_information_view.dart';
 import 'package:holi/src/view/screens/move/calculate_price_view.dart';
 import 'package:holi/src/view/screens/move/history_move_view.dart';
 import 'package:holi/src/view/screens/move/select_payment_method_view.dart';
@@ -91,8 +91,13 @@ class _HomeUserState extends State<HomeUserView> {
         userId: userId,
         onMessage: (data) {
           debugPrint("🧲 Mensaje del backend recibido: $data");
+
+          if (data['move'] != null) {
+            Provider.of<GetDriverLocationViewmodel>(context, listen: false).setMoveData(data['move']);
+            print("DATA DENTRO DE GETDRIVERLOCATIONVIEWMODEL $data");
+          }
           _moveNotificationUserViewModel.addNotification(data);
-          print("DATA DE DATA   $data");
+          print("DATA DE LA MUDANZA QUE ACEPTA EL CONDUCTOR   $data");
 
           if (data['move'] != null && data['move']['moveId'] != null) {
             final int moveId = data['move']['moveId'];
@@ -126,12 +131,11 @@ class _HomeUserState extends State<HomeUserView> {
             children: [
               //  const  PaymentView(),
               _buildHomePage(context),
-            const CalculatePrice(),
-             const HistoryMoveView(),
+              const CalculatePrice(),
+              const HistoryMoveView(),
               const User(),
             ],
           ),
-
           Consumer<GetDriverLocationViewmodel>(
             builder: (context, driverVM, _) {
               final moveDataFromViewModel = driverVM.moveData;
@@ -165,11 +169,10 @@ class _HomeUserState extends State<HomeUserView> {
               return const SizedBox.shrink();
             },
           ),
-
           Positioned(
             left: 16,
             right: 16,
-            bottom: 16,
+            bottom: 30,
             child: Consumer<GetDriverLocationViewmodel>(
               builder: (context, driverVM, _) {
                 final moveData = driverVM.moveData;
@@ -190,7 +193,6 @@ class _HomeUserState extends State<HomeUserView> {
           ),
         ],
       ),
-
       bottomNavigationBar: currentPageIndex == 0
           ? Consumer<GetDriverLocationViewmodel>(
               builder: (context, driverVM, _) {
@@ -406,7 +408,7 @@ class _HomeUserState extends State<HomeUserView> {
   }
 
   Widget _buildSettingMethodPay({
-    required String title,
+    required Widget titleWidget,
     required VoidCallback onTap,
     required IconData icon,
   }) {
@@ -427,12 +429,7 @@ class _HomeUserState extends State<HomeUserView> {
               const SizedBox(
                 width: 4,
               ),
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white),
-                ),
-              ),
+              Expanded(child: titleWidget),
               const Icon(
                 Icons.chevron_right,
                 color: Colors.grey,
@@ -450,109 +447,145 @@ class _HomeUserState extends State<HomeUserView> {
     Decimal correctedPrice = Decimal.tryParse(priceString ?? '0') ?? Decimal.zero;
 
     print("🔢 Precio real convertido: $correctedPrice");
+    const Color primaryTextColor = Colors.white;
+    const Color secondaryTextColor = Colors.grey;
 
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(
                   formatPriceToHundreds(widget.calculatedPrice ?? '0'),
                   style: const TextStyle(
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.w900,
+                    color: primaryTextColor,
                   ),
-                  textAlign: TextAlign.center,
+                  textAlign: TextAlign.end,
                 ),
-              )
-            ],
+                // Divisa (más pequeña y secundaria)
+                const Text(
+                  ' ',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: secondaryTextColor,
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 5),
-          const Divider(color: Colors.grey, thickness: 2),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(children: [
-                    Icon(Icons.apartment_rounded, color: Colors.white, size: 18),
-                    SizedBox(width: 2),
-                    Text(
-                      "Tamaño mudanza",
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+          const Divider(color: Colors.grey, thickness: 1),
+          const SizedBox(height: 15),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Fila Tamaño
+                    Row(children: [
+                      Icon(Icons.apartment_rounded, color: secondaryTextColor, size: 20),
+                      SizedBox(width: 4),
+                      Text(
+                        "Tamaño mudanza",
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: secondaryTextColor,
+                        ),
                       ),
+                    ]),
+                    SizedBox(height: 12),
+                    // Fila Tiempo
+                    Row(
+                      children: [
+                        Icon(Icons.schedule, color: secondaryTextColor, size: 20),
+                        SizedBox(width: 4),
+                        Text(
+                          "Tiempo estimado",
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: secondaryTextColor,
+                          ),
+                        ),
+                      ],
                     ),
-                  ]),
-                  SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Icon(Icons.schedule, color: Colors.white, size: 18),
-                      SizedBox(width: 4),
-                      Text(
-                        "Tiempo estimado",
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                    SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Icon(Icons.route, color: secondaryTextColor, size: 20),
+                        SizedBox(width: 4),
+                        Text(
+                          "Distancia",
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: secondaryTextColor,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Icon(Icons.route, color: Colors.white, size: 18),
-                      SizedBox(width: 4),
-                      Text(
-                        "Distancia",
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(width: 180),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(widget.typeOfMove?.displayName ?? '', style: const TextStyle(fontSize: 17, color: Colors.white)),
-                  Text("${widget.estimatedTime}", style: const TextStyle(fontSize: 17, color: Colors.white)),
-                  Text("${widget.distanceKm}", style: const TextStyle(fontSize: 17, color: Colors.white)),
-                ],
-              ),
-            ],
+                      ],
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(widget.typeOfMove?.displayName ?? '', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: primaryTextColor)),
+                    const SizedBox(height: 12),
+                    Text("${widget.estimatedTime}", style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: primaryTextColor)),
+                    const SizedBox(height: 12),
+                    Text("${widget.distanceKm}", style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: primaryTextColor)),
+                  ],
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 10),
-          _buildSettingMethodPay(
-            icon: Icons.monetization_on,
-            title: "Forma de pago $_selectedPaymentMethod",
-            onTap: () async {
-              final selected = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => SelectPaymentMethod(
-                    initialMethod: _selectedPaymentMethod,
-                  ),
+          const Divider(color: Colors.grey, thickness: 1),
+          const SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: _buildSettingMethodPay(
+              icon: Icons.monetization_on,
+              titleWidget: Text.rich(
+                TextSpan(
+                  text: 'Mi forma de pago es con ',
+                  style: const TextStyle(fontSize: 15, color: secondaryTextColor),
+                  children: <TextSpan>[
+                    TextSpan(
+                      text: _selectedPaymentMethod,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: primaryTextColor,
+                      ),
+                    ),
+                  ],
                 ),
-              );
-              if (selected != null) {
-                setState(() {
-                  _selectedPaymentMethod = selected;
-                });
-              }
-            },
+              ),
+              onTap: () async {
+                final selected = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SelectPaymentMethod(
+                      initialMethod: _selectedPaymentMethod,
+                    ),
+                  ),
+                );
+                if (selected != null) {
+                  setState(() {
+                    _selectedPaymentMethod = selected;
+                  });
+                }
+              },
+            ),
           ),
         ],
       ),

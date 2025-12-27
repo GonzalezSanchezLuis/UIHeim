@@ -27,7 +27,7 @@ class DriverProfileService {
 
       // Construir la solicitud
       final response = await http.get(
-        Uri.parse('$apiBaseUrl/drivers/driver/$driverId'), 
+        Uri.parse('$apiBaseUrl/drivers/$driverId/driver'), 
         headers: {
           'Content-Type':'application/json', 
           });
@@ -37,7 +37,7 @@ class DriverProfileService {
         print(response.body); 
         return jsonDecode(response.body);
       } else {
-        print("Error al obtener los datos del usuario: ${response.body}");
+        print("Error al obtener los datos del usuario conductor: ${response.body}");
         return null;
       }
     } catch (e) {

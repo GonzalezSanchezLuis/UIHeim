@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:holi/src/core/enums/status_of_the_move.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/view/screens/move/moving_summary_view.dart';
+import 'package:holi/src/viewmodels/move/finish_move_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/update_status_move_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:slide_to_act/slide_to_act.dart';
@@ -33,7 +34,6 @@ class _BottomMoveCardState extends State<BottomMoveCard> {
       _isExpanded = true;
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -126,22 +126,19 @@ class _BottomMoveCardState extends State<BottomMoveCard> {
                     case StatusOfTheMove.MOVE_COMPLETE:
                       return SlideAction(
                         onSubmit: () async {
-                          await updateStausMoveViewmodel.changeStatus(
-                            moveId: widget.moveId,
-                            driverId: widget.driverId,
-                            status: StatusOfTheMove.MOVE_COMPLETE,
-                          );
-                          Navigator.push(context,MaterialPageRoute(builder: (context) =>  MovingSummaryView(moveId: widget.moveId,)
-                            )
-                            );
+                          final finishMoveViewModel = Provider.of<FinishMoveViewmodel>(context, listen: false);
 
-                          /*   setState(() {
-                            _statusOfTheMove = StatusOfTheMove.MOVE_FINISHED;
-                          });*/
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("✅ Mudanza finalizada correctamente")),
+                          final success = await finishMoveViewModel.finishMove(
+                            widget.moveId,
+                             widget.driverId,
                           );
+
+                          if (success) {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => MovingSummaryView(moveId: widget.moveId,)));
+                          }
+                          
                         },
                         text: 'Finalizar mudanza',
                         outerColor: AppTheme.warningcolor,

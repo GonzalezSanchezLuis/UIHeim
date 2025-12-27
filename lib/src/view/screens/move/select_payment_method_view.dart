@@ -15,7 +15,7 @@ class _SelectPaymentMethodState extends State<SelectPaymentMethod> {
 @override
   void initState() {
     super.initState();
-    selectedMethod = widget.initialMethod; // 🔸 Iniciamos con el método recibido
+    selectedMethod = widget.initialMethod; 
   }
  
   @override
@@ -34,13 +34,19 @@ class _SelectPaymentMethodState extends State<SelectPaymentMethod> {
           onPressed: () => {Navigator.pop(context)},
         ),
       ),
-      body: Padding(
+      body: Padding(       
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+           const  SizedBox(height: 20,),
+            const Text(
+              "Selecciona tu método  de pago favorito.",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.grey),
+            ),
+               const SizedBox( height: 10,),
             _buildPaymentOption('Nequi', 'assets/images/nequi.png'),
             _buildPaymentOption('Daviplata', 'assets/images/daviplata.png'),
-            _buildPaymentOption('Tarjeta crédito/débito', 'assets/images/cards.png'),
+          //  _buildPaymentOption('Tarjeta crédito/débito', 'assets/images/cards.png'),
           ],
         ),
       ),
@@ -53,7 +59,7 @@ class _SelectPaymentMethodState extends State<SelectPaymentMethod> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
         side: BorderSide(
-          color: selectedMethod == title ? Colors.blue : Colors.grey.shade300,
+          color: selectedMethod == title ? Colors.black : Colors.grey.shade300,
           width: 2,
         ),
       ),
@@ -86,7 +92,7 @@ class _SelectPaymentMethodState extends State<SelectPaymentMethod> {
             Text(title, style: const TextStyle(fontSize: 16)),
           ],
         ),
-        activeColor: Colors.blue,
+        activeColor: Colors.black,
       ),
     );
   }

@@ -53,14 +53,12 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
     });
   }
 
-  @override
+ /* @override
   void didUpdateWidget(covariant DriverMapWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     // Si la ubicación del conductor cambió
     final driverChanged = widget.driverLocation != null && widget.driverLocation != oldWidget.driverLocation;
-
-    // Si la ruta cambió y ahora tiene datos
     final routeChanged = widget.route.isNotEmpty && widget.route != oldWidget.route;
 
     if (driverChanged) {
@@ -84,6 +82,44 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
       print("📍 Datos completos. Trazando rutas...");
       _drawRoute();
     }
+  } */
+
+ @override
+  void didUpdateWidget(covariant DriverMapWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // 1. Detectar cambios en la ubicación del conductor (lógica existente)
+    final driverChanged = widget.driverLocation != null && widget.driverLocation != oldWidget.driverLocation;
+
+    // 🚨 2. Detectar cambios específicos en las listas de puntos (NUEVA LÓGICA)
+    // Compara la referencia de la lista actual con la anterior.
+    final mainRoutePointsChanged = widget.route != oldWidget.route;
+    final driverToOriginPointsChanged = widget.driverToOriginRoute != oldWidget.driverToOriginRoute;
+
+    // Si la ubicación del conductor cambió
+    if (driverChanged) {
+      _updateDriverMarker(widget.driverLocation!);
+
+      if (!_hasCenteredOnDriver && _mapReady && googleMapController != null) {
+        _hasCenteredOnDriver = true;
+        googleMapController!.animateCamera(
+          CameraUpdate.newLatLngZoom(widget.driverLocation!, _activeLocationZoom),
+        );
+        // Notifica al padre
+        widget.onDriverConnected?.call(widget.driverLocation!);
+      }
+    }
+
+    // 🚨 3. Condición Final: Llamar a _drawRoute si alguna de las listas se actualizó.
+    // Esto se ejecutará cada vez que el ViewModel llame a notifyListeners() después de obtener una ruta.
+    if (mainRoutePointsChanged || driverToOriginPointsChanged) {
+      print("📍 Cambio detectado en las polilíneas. Redibujando...");
+      print("VERIFICACIÓN FINAL: Ruta Principal tiene: ${widget.route.length} | Conductor a Origen tiene: ${widget.driverToOriginRoute?.length ?? 0}");
+      _drawRoute();
+    }
+
+    // Eliminamos la vieja y compleja condición:
+    // if (_mapReady && (routeReady || driverToOriginReady)) { ... }
   }
 
 

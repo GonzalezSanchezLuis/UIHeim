@@ -17,13 +17,14 @@ import 'package:holi/src/view/widget/button/button_card_home_widget.dart';
 import 'package:holi/src/view/widget/card/bottom_move_card.dart';
 import 'package:holi/src/view/widget/card/floating_move_card_wrapper.dart';
 import 'package:holi/src/view/widget/card/move_request_card.dart';
+import 'package:holi/src/view/widget/card/verifcation_pending_card.dart';
 import 'package:holi/src/view/widget/maps/driver_maps_widget.dart';
 import 'package:holi/src/viewmodels/auth/sesion_viewmodel.dart';
 import 'package:holi/src/viewmodels/driver/profile_driver_viewmodel.dart';
 import 'package:holi/src/viewmodels/driver/route_driver_viewmodel.dart';
 import 'package:holi/src/viewmodels/driver/driver_location_viewmodel.dart';
 import 'package:holi/src/viewmodels/driver/driver_status_viewmodel.dart';
-import 'package:holi/src/viewmodels/move/websocket/move_notification_viewmodel.dart';
+import 'package:holi/src/viewmodels/move/websocket/move_notification_driver_viewmodel.dart';
 import 'package:holi/src/viewmodels/payment/wallet_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -49,7 +50,6 @@ class _HomeDriverState extends State<HomeDriverView> {
   Map<String, dynamic>? _currentMoveData;
   bool _isMapReady = false;
   late final WebSocketDriverService _socketService;
-  late final MoveNotificationViewmodel _moveNotificationViewModel;
   Map<String, dynamic>? _incomingMoveData;
   final AuthService _authService = AuthService();
 
@@ -58,21 +58,29 @@ class _HomeDriverState extends State<HomeDriverView> {
     super.initState();
     initializeStatusFromPrefs();
 
+    final routeDriverViewmodel = Provider.of<RouteDriverViewmodel>(context, listen: false);
+    final moveNotificationVM = Provider.of<MoveNotificationDriverViewmodel>(context, listen: false);
+
     // _debugSetStatusForTesting();
     Future.microtask(() async {
       await _validateGpsAndPermissions(context);
       await _setInitialLocation();
       Provider.of<DriverStatusViewmodel>(context, listen: false).loadDriverStatusViewmodel();
       final driverLocationViewModel = Provider.of<DriverLocationViewmodel>(context, listen: false);
-      driverLocationViewModel.startLocationUpdates();
-    });
+      final sessionVM = Provider.of<SessionViewModel>(context, listen: false);
+      final int driverId = int.tryParse(sessionVM.userId?.toString() ?? '0') ?? 0;
 
-    _moveNotificationViewModel = MoveNotificationViewmodel();
+    if (driverId != 0) {
+      final driverLocationVM = Provider.of<DriverLocationViewmodel>(context, listen: false);
+      driverLocationVM.startLocationUpdates(driverId);
+    }
+    });
 
     final sessionVM = Provider.of<SessionViewModel>(context, listen: false);
     final rawUserId = sessionVM.userId;
     final int driverId = int.tryParse(rawUserId?.toString() ?? '1') ?? 1;
     print("ID $driverId");
+  
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<WalletViewmodel>(context, listen: false).loadWallet(driverId);
@@ -82,13 +90,13 @@ class _HomeDriverState extends State<HomeDriverView> {
       driverId: driverId,
       onMessage: (data) {
         debugPrint("🧲 Mensaje del backend recibido: $data");
-        _moveNotificationViewModel.addNotification(data);
+        moveNotificationVM.addNotification(data);
 
-        setState(() {
+        /*  setState(() {
           _incomingMoveData = data['move'];
           print("INCOMINGDATA $_incomingMoveData");
           // _incomingMoveData = data;
-        });
+        }); */
       },
     );
 
@@ -102,12 +110,7 @@ class _HomeDriverState extends State<HomeDriverView> {
     super.dispose();
   }
 
-  /* void _debugSetStatusForTesting() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('driverStatus', ConnectionStatus.CONNECTED.value);
-    print("🧪 Estado simulado guardado: ${ConnectionStatus.CONNECTED.value}");
-  }*/
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -192,8 +195,12 @@ class _HomeDriverState extends State<HomeDriverView> {
                           );
                         }
 
-                        final double balance = walletViewModel.wallet?.currentEarnedBalance ?? 0.00;
-                        final String formattedBalance = balance.toStringAsFixed(2);
+                        final double available = walletViewModel.wallet?.availableBalance ?? 0.00;
+                        final double pending = walletViewModel.wallet?.pendingBalance ?? 0.00;
+
+                        final double totalBalance = available + pending;
+
+                        final String formattedBalance = totalBalance.toStringAsFixed(2);
                         final String raw = formatPriceMovingDetails(formattedBalance);
 
                         return SizedBox(
@@ -202,7 +209,7 @@ class _HomeDriverState extends State<HomeDriverView> {
                             onTap: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => WalletView()),
+                                MaterialPageRoute(builder: (context) => const WalletView()),
                               );
                             },
                             child: Padding(
@@ -255,7 +262,8 @@ class _HomeDriverState extends State<HomeDriverView> {
                     right: 0,
                     child: Consumer2<RouteDriverViewmodel, DriverStatusViewmodel>(
                       builder: (context, directionsViewModel, driverViewModel, child) {
-                        final bool hasMoveData = (_incomingMoveData != null || (directionsViewModel.moveData != null && directionsViewModel.moveData!.isNotEmpty)) && _currentMoveData == null;
+                        final bool hasMoveData = directionsViewModel.moveData != null && directionsViewModel.moveData!.isNotEmpty && _currentMoveData == null;
+                        // final bool hasMoveData = (_incomingMoveData != null || (directionsViewModel.moveData != null && directionsViewModel.moveData!.isNotEmpty)) && _currentMoveData == null;
                         return AnimatedContainer(
                           duration: const Duration(milliseconds: 300),
                           height: hasMoveData ? MediaQuery.of(context).size.height * 0.47 : MediaQuery.of(context).size.height * 0.16,
@@ -279,41 +287,40 @@ class _HomeDriverState extends State<HomeDriverView> {
                                     child: CircularProgressIndicator(
                                     color: Colors.white,
                                   ))
-                                : _incomingMoveData != null
+
+                                : hasMoveData
                                     ? MoveRequestCard(
-                                        moveData: _incomingMoveData!,
+                                        moveData: directionsViewModel.moveData!,
                                         onMoveAccepted: (data) {
+                                          //directionsViewModel.clearMoveData();
+                                          directionsViewModel.stopTimerAndRemoveRequest();
                                           setState(() {
                                             _currentMoveData = data;
-                                            print("DATA DE INCOMINGDATA $data");
-                                            _incomingMoveData = null;
                                           });
-                                          print("🔥 _currentMoveData actualizado: $_currentMoveData");
                                         },
                                       )
-                                    : hasMoveData
-                                        ? MoveRequestCard(
-                                            moveData: directionsViewModel.moveData!,
-                                            onMoveAccepted: (data) {
-                                              setState(() {
-                                                _currentMoveData = data;
-                                              });
-                                            },
-                                          )
-                                        : Column(
-                                            children: [
-                                              const SizedBox(height: 10),
-                                              Row(
-                                                children: [
+                                    : 
+                                      Column(
+                                          children: [
+                                            Row(
+                                              children: [
+
+                                                if (profileViewModel.isDriverActive) ...[
                                                   Expanded(
                                                     child: driverViewModel.connectionStatus!.isConnected ? _buildDisconnectCard() : _buildConnectCard(),
                                                   ),
-                                                  _buildHistoryButton()
-                                                ],
-                                              )
-                                              //  driverViewModel.connectionStatus!.isConnected ? _buildDisconnectCard() : _buildConnectCard(),
-                                            ],
-                                          ),
+                                                  const SizedBox(width: 8),
+                                                  _buildHistoryButton(),
+                                                ]
+                                                
+                                                else
+                                                  const Expanded(
+                                                    child: VerifcationPendingCard(),
+                                                  ),
+                                              ],
+                                            ),
+                                          ],
+                                        )
                           ),
                         );
                       },

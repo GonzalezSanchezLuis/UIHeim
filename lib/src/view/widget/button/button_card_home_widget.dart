@@ -145,7 +145,6 @@ class ConnectButton extends StatelessWidget {
               );
 
         return ElevatedButton(
-          // La clave: onPressed siempre es una función para evitar que el botón se "deshabilite"
           onPressed: () async {
             if (!provider.isLoading) {
               LatLng? newLocation = await provider.connectDriverViewmodel(context);
@@ -180,7 +179,6 @@ class DisconnectButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<DriverStatusViewmodel>(
       builder: (context, provider, _) {
-        // Oculta el botón si no está conectado
         if (provider.connectionStatus != ConnectionStatus.CONNECTED) {
           return const SizedBox.shrink();
         }
@@ -309,7 +307,7 @@ class ConfirmButton extends StatelessWidget {
               onConfirmed();
             },
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.green,
+        backgroundColor: AppTheme.confirmationscolor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(30),
         ),

@@ -27,29 +27,35 @@ class ImagePickerWidget extends StatelessWidget {
 
   void _showImageSourceDialog(BuildContext context) {
     showModalBottomSheet(
-      context: context,
-      backgroundColor: AppTheme.primarycolor,
-      builder: (context) => Wrap(
-        children: [
-          ListTile(
-            leading: const Icon(Icons.camera_alt, color: Colors.white),
-            title: const Text("Tomar foto", style: TextStyle(color: Colors.white)),
-            onTap: () {
-              Navigator.pop(context);
-              _pickImage(context, ImageSource.camera);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.photo_library, color: Colors.white),
-            title: const Text("Seleccionar de la galería", style: TextStyle(color: Colors.white)),
-            onTap: () {
-              Navigator.pop(context);
-              _pickImage(context, ImageSource.gallery);
-            },
-          ),
-        ],
-      ),
-    );
+        context: context,
+        backgroundColor: AppTheme.primarycolor,
+        useSafeArea: true,
+        isScrollControlled: true,
+        builder: (context) {
+          return SafeArea(
+            child: Wrap(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.camera_alt, color: Colors.white),
+                  title: const Text("Tomar foto", style: TextStyle(color: Colors.white)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickImage(context, ImageSource.camera);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.photo_library, color: Colors.white),
+                  title: const Text("Seleccionar de la galería", style: TextStyle(color: Colors.white)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickImage(context, ImageSource.gallery);
+                  },
+                ),
+                const SizedBox(height: 8,)
+              ],
+            ),
+          );
+        });
   }
 
   @override
@@ -84,4 +90,3 @@ class ImagePickerWidget extends StatelessWidget {
     );
   }
 }
-

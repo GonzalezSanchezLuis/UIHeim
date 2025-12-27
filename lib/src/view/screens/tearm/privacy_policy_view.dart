@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 
-class PrivacyPolicy extends StatelessWidget {
-  const PrivacyPolicy({super.key});
+class PrivacyPolicyView extends StatelessWidget {
+  const PrivacyPolicyView({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:another_flushbar/flushbar.dart';
 import 'package:holi/src/viewmodels/auth/auth_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
@@ -100,7 +101,7 @@ class _LoginState extends State<LoginView> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 20), 
                           ButtonAuth(formKey: _formKey, onPressed: _handleLogin),
                         ],
                       ),
@@ -128,9 +129,10 @@ class _LoginState extends State<LoginView> {
                           ),
                         ),
                         const SizedBox(width: 10),
-                        GestureDetector(
+                      GestureDetector(
                           onTap: () {
-                            String email = '';
+                            final TextEditingController emailController = TextEditingController();
+
                             showModalBottomSheet(
                               context: context,
                               isScrollControlled: true,
@@ -140,6 +142,7 @@ class _LoginState extends State<LoginView> {
                               backgroundColor: AppTheme.primarycolor,
                               builder: (BuildContext context) {
                                 final passwordVM = Provider.of<PasswordResetViewmodel>(context);
+
                                 return Padding(
                                   padding: EdgeInsets.only(
                                     bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -156,51 +159,57 @@ class _LoginState extends State<LoginView> {
                                       ),
                                       const SizedBox(height: 10),
                                       TextFormField(
-                                        onChanged: (value) => email = value,
-                                        decoration: InputDecoration(
+                                        controller: emailController,
+                                        decoration: const InputDecoration(
                                           labelText: 'Ingresa tu correo electrónico',
-                                          errorText: passwordVM.errorMessage,
-                                          border: const OutlineInputBorder(),
-                                          focusedBorder: const OutlineInputBorder(
+                                          border: OutlineInputBorder(),
+                                          focusedBorder:  OutlineInputBorder(
                                             borderSide: BorderSide(color: Colors.white, width: 2.0),
                                           ),
-                                          enabledBorder: const OutlineInputBorder(
+                                          enabledBorder:  OutlineInputBorder(
                                             borderSide: BorderSide(color: Colors.white, width: 2.0),
                                           ),
-                                          floatingLabelStyle: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                          floatingLabelStyle:  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                                         ),
                                         style: const TextStyle(color: Colors.white),
                                         keyboardType: TextInputType.emailAddress,
                                       ),
                                       const SizedBox(height: 20),
-                                      Row(
-                                        children: [
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                            child: ElevatedButton(
-                                              onPressed: passwordVM.isLoading
-                                                  ? null
-                                                  : () async {
-                                                      await passwordVM.resetPassword(email);
-                                                    },
-                                              style: TextButton.styleFrom(
-                                                backgroundColor: AppTheme.greenColors,
-                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
-                                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-                                              ),
-                                              child: passwordVM.isLoading ? const CircularProgressIndicator() : const Text('Enviar mi email ', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20)),
-                                            ),
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: ElevatedButton(
+                                          onPressed: passwordVM.isLoading
+                                              ? null
+                                              : () async {
+                                                  String email = emailController.text.trim();
+                                                  if (email.isEmpty || !email.contains('@')) {
+                                                    _showFlushbar(context, "Por favor ingresa un correo válido", Colors.orange);
+                                                    return;
+                                                  }
+                                                  await passwordVM.resetPassword(email);
+                                                  if (passwordVM.successMessage != null) {
+                                                    if (context.mounted) {
+                                                      Navigator.pop(context);
+                                                      _showFlushbar(context, passwordVM.successMessage!, AppTheme.confirmationscolor);
+                                                    }
+                                                  } else if (passwordVM.errorMessage != null) {
+                                                    _showFlushbar(context, passwordVM.errorMessage!, Colors.red);
+                                                  }
+                                                },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: AppTheme.confirmationscolor,
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                                            padding: const EdgeInsets.symmetric(vertical: 18),
                                           ),
-                                        ],
-                                      ),
-                                      if (passwordVM.successMessage != null)
-                                        Padding(
-                                          padding: const EdgeInsets.only(top: 10),
-                                          child: Text(passwordVM.successMessage!, style: const TextStyle(color: Colors.green)),
+                                          child: passwordVM.isLoading
+                                              ? const SizedBox(
+                                                  height: 20,
+                                                  width: 20,
+                                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                                )
+                                              : const Text('Enviar mi email', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
                                         ),
+                                      ),
                                       const SizedBox(height: 20),
                                     ],
                                   ),
@@ -210,12 +219,9 @@ class _LoginState extends State<LoginView> {
                           },
                           child: const Text(
                             '¿Olvidaste tu contraseña?',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 14,
-                            ),
+                            style: TextStyle(color: Colors.black, fontSize: 14),
                           ),
-                        ),
+                        )
                       ],
                     ),
                   ),
@@ -232,16 +238,20 @@ class _LoginState extends State<LoginView> {
     if (!_formKey.currentState!.validate()) return;
 
     if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            "Por favor, ingresa tu correo y contraseña",
-            style: TextStyle(fontWeight: FontWeight.w600),
-          ),
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: Colors.red,
+      Flushbar(
+        title: 'Error',
+        message: 'Por favor, ingresa tu correo y contraseña',
+        backgroundColor: AppTheme.warningcolor,
+        icon: const Icon(
+          Icons.error_outline,
+          size: 28.0,
+          color: Colors.white,
         ),
-      );
+        borderRadius: BorderRadius.circular(8),
+        margin: const EdgeInsets.all(8),
+        duration: const Duration(seconds: 3),
+        flushbarPosition: FlushbarPosition.TOP,
+      ).show(context);
       return;
     }
 
@@ -267,16 +277,21 @@ class _LoginState extends State<LoginView> {
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
       final error = authViewModel.errorMessage ?? "Correo o contraseña incorrectos.";
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            error,
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: Colors.red,
+
+      Flushbar(
+        title: 'Error',
+        message: error,
+        backgroundColor: AppTheme.warningcolor,
+        icon: const Icon(
+          Icons.error_outline,
+          size: 28.0,
+          color: Colors.white,
         ),
-      );
+        borderRadius: BorderRadius.circular(8),
+        margin: const EdgeInsets.all(8),
+        duration: const Duration(seconds: 3),
+        flushbarPosition: FlushbarPosition.TOP,
+      ).show(context);
     } 
    /* finally {
       if (mounted) setState(() => _isLoading = false);
@@ -289,4 +304,19 @@ class _LoginState extends State<LoginView> {
     _passwordController.dispose();
     super.dispose();
   }
+}
+
+void _showFlushbar(BuildContext context, String message, Color color) {
+  Flushbar(
+    message: message,
+    backgroundColor: color,
+    duration: const Duration(seconds: 3),
+    flushbarPosition: FlushbarPosition.TOP, 
+    borderRadius: BorderRadius.circular(8),
+    margin: const EdgeInsets.all(8),
+    icon: Icon(
+      color == AppTheme.confirmationscolor ? Icons.check_circle : Icons.error_outline,
+      color: Colors.white,
+    ),
+  ).show(context);
 }
