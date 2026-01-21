@@ -12,7 +12,7 @@ class FloatingMoveCardWrapper extends StatefulWidget {
 
 class _FloatingMoveCardWrapperState extends State<FloatingMoveCardWrapper> with SingleTickerProviderStateMixin {
   double _opacity = 0.0;
-  Offset _offset = const Offset(0, 0.2); // parte ligeramente abajo
+  Offset _offset = const Offset(0, 0.2);
 
   @override
   void initState() {
@@ -20,7 +20,7 @@ class _FloatingMoveCardWrapperState extends State<FloatingMoveCardWrapper> with 
     Future.delayed(const Duration(milliseconds: 100), () {
       setState(() {
         _opacity = 1.0;
-        _offset = Offset.zero; 
+        _offset = Offset.zero;
       });
     });
   }
@@ -39,10 +39,11 @@ class _FloatingMoveCardWrapperState extends State<FloatingMoveCardWrapper> with 
     );
   }
 
- Widget _buildFloatingMoveCard(BuildContext context, Map<String, dynamic> moveData) {
+  Widget _buildFloatingMoveCard(BuildContext context, Map<String, dynamic> moveData) {
     String originalAddress = moveData['origin'];
     List<String> parts = originalAddress.split(',');
     String reduced = parts.take(2).join(',').trim();
+    final String userName = (moveData['fullName'] ?? moveData['userName'])?.toString() ?? '';
 
     String destinationAddress = moveData['destination'];
     List<String> partsDestination = destinationAddress.split(',');
@@ -74,9 +75,7 @@ class _FloatingMoveCardWrapperState extends State<FloatingMoveCardWrapper> with 
                 ),
               ],
             ),
-
             const SizedBox(height: 15),
-
             Row(
               children: [
                 CircleAvatar(
@@ -88,7 +87,7 @@ class _FloatingMoveCardWrapperState extends State<FloatingMoveCardWrapper> with 
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Vamos por ${moveData['fullName'] ?? 'Usuario'}',
+                    'Vamos por $userName',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 18,
@@ -98,10 +97,7 @@ class _FloatingMoveCardWrapperState extends State<FloatingMoveCardWrapper> with 
                 ),
               ],
             ),
-
-
             const SizedBox(height: 8),
-
             Row(
               children: [
                 const Icon(Icons.circle, color: Colors.green, size: 20),
@@ -115,9 +111,7 @@ class _FloatingMoveCardWrapperState extends State<FloatingMoveCardWrapper> with 
                 ),
               ],
             ),
-
             const SizedBox(height: 8),
-
             Row(
               children: [
                 const Icon(Icons.circle, color: Colors.blueAccent, size: 20),
@@ -131,8 +125,33 @@ class _FloatingMoveCardWrapperState extends State<FloatingMoveCardWrapper> with 
                 ),
               ],
             ),
-
             const SizedBox(height: 15),
+            const SizedBox(height: 10),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+              decoration: BoxDecoration(
+                color: Colors.green.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.location_on, color: Colors.green, size: 18),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Tu presencia mantiene el viaje en marcha.',
+                      style: TextStyle(
+                        color: Colors.greenAccent,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
           ],
         ),
       ),

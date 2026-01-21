@@ -42,10 +42,9 @@ class MoveRequestCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dynamic priceRaw = moveData['price'];
-    final double priceInPesos = priceRaw != null ? (priceRaw is double ? priceRaw : double.tryParse(priceRaw.toString()) ?? 0) / 100 : 0;
-
-    final String formattedPrice = formatPriceToHundredsDriver(priceInPesos.toString());
-    final String userName = moveData['fullName']?.toString() ?? '';
+    final double priceValue = priceRaw != null ? (priceRaw is num ? priceRaw.toDouble() : double.tryParse(priceRaw.toString()) ?? 0) : 0;
+    final String formattedPrice = formatPriceToHundredsDriver(priceValue.toString());
+    final String userName = (moveData['fullName']?? moveData['userName'])?.toString() ?? '';
     print("USERNAME DESDE MOVEDATA $userName");
 
     final String originalAddress = moveData['origin'] ?? '';

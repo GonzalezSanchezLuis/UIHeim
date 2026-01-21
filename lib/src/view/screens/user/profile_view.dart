@@ -58,7 +58,7 @@ class _ProfileViewState extends State<ProfileView> {
         body: Consumer<ProfileUserViewModel>(
           builder: (context, viewModel, child) {
             if (viewModel.isLoading) {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(child: CircularProgressIndicator(color: Colors.black,));
             }
 
             final profile = viewModel.profile;
@@ -103,10 +103,15 @@ class _ProfileViewState extends State<ProfileView> {
                                     : null,
                                 decoration: const InputDecoration(
                                   labelText: "Nombre(s)",
-                                  labelStyle: TextStyle(fontWeight: FontWeight.w600),
+                                  labelStyle: TextStyle(fontWeight: FontWeight.w600,color: Colors.black),
                                   border: UnderlineInputBorder(),
-                                ),
+                                  focusedBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(color: Colors.black, width: 2)
+                                  )
+                                ),   
+                                                            
                               ),
+                              
                               const SizedBox(height: 10),
                             ],
                           ),

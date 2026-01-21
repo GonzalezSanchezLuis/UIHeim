@@ -69,10 +69,8 @@ class RouteDriverViewmodel extends ChangeNotifier {
         notifyListeners();
       } else {
         timer.cancel();
-        // clearMoveData();
         handleMoveCancelled();
         isTimerRunning = false;
-        // notifyListeners();
       }
     });
   }
@@ -83,13 +81,6 @@ class RouteDriverViewmodel extends ChangeNotifier {
     _remainingTime = 15;
     notifyListeners();
   }
-
-  /*void clearMoveData() {
-    moveData = null;
-    _route = [];
-   _driverToOriginRoute = [];
-    notifyListeners();
-  } */
 
   void handleIncomingMove(Map<String, dynamic> data) {
     updateMoveData(data);
@@ -108,7 +99,6 @@ class RouteDriverViewmodel extends ChangeNotifier {
     stopTimer();
     notifyListeners();
   }
-
 
   void handleMoveFinished() {
     handleMoveCancelled();
@@ -180,6 +170,8 @@ class RouteDriverViewmodel extends ChangeNotifier {
       rethrow;
     }
   }
+
+ 
 
   @override
   void dispose() {

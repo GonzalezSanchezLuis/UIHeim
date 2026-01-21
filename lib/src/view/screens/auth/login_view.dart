@@ -132,18 +132,17 @@ class _LoginState extends State<LoginView> {
                       GestureDetector(
                           onTap: () {
                             final TextEditingController emailController = TextEditingController();
-
                             showModalBottomSheet(
                               context: context,
                               isScrollControlled: true,
                               shape: const RoundedRectangleBorder(
                                 borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                               ),
-                              backgroundColor: AppTheme.primarycolor,
+                              backgroundColor: Colors.black,
                               builder: (BuildContext context) {
                                 final passwordVM = Provider.of<PasswordResetViewmodel>(context);
-
-                                return Padding(
+                                return SafeArea(child: 
+                                 Padding(
                                   padding: EdgeInsets.only(
                                     bottom: MediaQuery.of(context).viewInsets.bottom,
                                     left: 20,
@@ -207,13 +206,15 @@ class _LoginState extends State<LoginView> {
                                                   width: 20,
                                                   child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                                                 )
-                                              : const Text('Enviar mi email', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+                                              : const Text('Enviar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 22)),
                                         ),
                                       ),
                                       const SizedBox(height: 20),
                                     ],
                                   ),
+                                )
                                 );
+                                
                               },
                             );
                           },

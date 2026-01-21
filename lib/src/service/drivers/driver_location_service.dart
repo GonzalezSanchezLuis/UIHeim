@@ -5,8 +5,8 @@ import 'package:holi/config/app_config.dart';
 
 class DriverLocationService {
   Future<void> sendLocation(DriverLocationModel location, int driverId) async {
-    final response = await http.post(
-      Uri.parse('$apiBaseUrl/location$driverId'),
+    final response = await http.put(
+      Uri.parse('$apiBaseUrl/drivers/$driverId/location'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'driverId': driverId,
@@ -15,7 +15,9 @@ class DriverLocationService {
       })
     );
     if(response.statusCode != 200){
-       throw Exception('Error al enviar ubicación: ${response.statusCode}'); 
+       throw Exception('Error al enviar ubicación al servidor: ${response.statusCode}'); 
+    }else{
+
     }
   }
 }

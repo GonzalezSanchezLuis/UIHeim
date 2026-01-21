@@ -1,12 +1,14 @@
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:holi/config/app_config.dart';
 import 'package:holi/src/service/auth/auth_service.dart';
 import 'package:holi/src/service/fcm/firebase_messaging_service.dart';
+import 'package:holi/src/service/location/background_location_service.dart';
 import 'package:holi/src/service/moves/accept_move_service.dart';
 import 'package:holi/src/service/moves/update_status_move_service.dart';
 import 'package:holi/src/view/screens/driver/home_driver_view.dart';
+import 'package:holi/src/view/screens/move/restore_move_viewmodel.dart';
 import 'package:holi/src/view/screens/user/home_user_view.dart';
 import 'package:holi/src/view/screens/welcome/wrapper_view.dart';
 import 'package:holi/src/viewmodels/auth/auth_viewmodel.dart';
@@ -40,14 +42,14 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:holi/config/development.dart' as development;
 import 'package:holi/config/production.dart' as production;
 
-
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+ // FlutterForegroundTask.initCommunicationPort();
+//BackgroundLocationService.initService();
 
-
- 
   const String env = String.fromEnvironment('FLUTTER_ENV', defaultValue: 'DEVELOPMENT');
   configureApp(env);
 
@@ -127,7 +129,6 @@ void main() async {
 }
 
 class App extends StatelessWidget {
-
   final GlobalKey<NavigatorState> navigatorKey;
   const App({super.key, required this.navigatorKey});
 
@@ -135,12 +136,13 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        Provider<UpdateStatusMoveService>(create: (context) => UpdateStatusMoveService()),       
+        Provider<RestoreMoveViewmodel>(create: (context) => RestoreMoveViewmodel()),
+        Provider<UpdateStatusMoveService>(create: (context) => UpdateStatusMoveService()),
         ChangeNotifierProvider(create: (context) => ProfileUserViewModel()),
         ChangeNotifierProvider(create: (context) => LocationViewModel()),
         ChangeNotifierProvider(create: (context) => ConfirmMoveViewModel()),
         ChangeNotifierProvider(create: (context) => DriverStatusViewmodel()),
-       // ChangeNotifierProvider(create: (context) => RouteDriverViewmodel()),
+        // ChangeNotifierProvider(create: (context) => RouteDriverViewmodel()),
         ChangeNotifierProvider(create: (context) => DriverLocationViewmodel()),
         ChangeNotifierProvider(create: (context) => AcceptMoveViewmodel(AcceptMoveService())),
         ChangeNotifierProvider(create: (context) => GetDriverLocationViewmodel()),
@@ -151,25 +153,22 @@ class App extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => RouteUserViewmodel()),
         ChangeNotifierProvider(create: (_) => ProfileDriverViewModel()..fetchDriverData()),
         ChangeNotifierProvider(create: (context) => PaymentViewmodel()),
-      //  ChangeNotifierProvider(create: (context) => MoveNotificationDriverViewmodel()),
+        //  ChangeNotifierProvider(create: (context) => MoveNotificationDriverViewmodel()),
         ChangeNotifierProvider(create: (context) => MovingSummaryViewmodel()),
         ChangeNotifierProvider(create: (context) => MovingHistoryViewmodel()),
         ChangeNotifierProvider(create: (context) => MovingDetailsViewmodel()),
         ChangeNotifierProvider(create: (context) => DriverDataViewmodel()),
         ChangeNotifierProvider(create: (context) => WalletViewmodel()),
-        ChangeNotifierProvider(create: (context) => MoveNotificationDriverViewmodel()), 
-        ChangeNotifierProvider(create: (context) => PaymentDriverAccountViewmodel()), 
+        ChangeNotifierProvider(create: (context) => MoveNotificationDriverViewmodel()),
+        ChangeNotifierProvider(create: (context) => PaymentDriverAccountViewmodel()),
         ChangeNotifierProxyProvider<MoveNotificationDriverViewmodel, RouteDriverViewmodel>(
-
-          create: (context) => RouteDriverViewmodel(), 
-        
+          create: (context) => RouteDriverViewmodel(),
           update: (context, notificationVM, routeDriverVM) {
-            
             if (notificationVM.latestMoveData != null) {
               routeDriverVM!.handleIncomingMove(notificationVM.latestMoveData!);
-              notificationVM.clearLatestMoveData(); 
+              notificationVM.clearLatestMoveData();
             }
-            
+
             return routeDriverVM!;
           },
         ),
@@ -180,16 +179,15 @@ class App extends StatelessWidget {
                 )),
       ],
       child: MaterialApp(
-        navigatorKey: navigatorKey,
-        theme: ThemeData(
-          textTheme: GoogleFonts.latoTextTheme(Theme.of(context).textTheme).copyWith(
-            bodyMedium: GoogleFonts.ubuntu(textStyle: Theme.of(context).textTheme.bodyMedium),
+          navigatorKey: navigatorKey,
+          theme: ThemeData(
+            textTheme: GoogleFonts.latoTextTheme(Theme.of(context).textTheme).copyWith(
+              bodyMedium: GoogleFonts.ubuntu(textStyle: Theme.of(context).textTheme.bodyMedium),
+            ),
           ),
-        ),
-        debugShowCheckedModeBanner: false,
-       // home: const WrapperView(),
-       home: const WrapperView()
-      ),
+          debugShowCheckedModeBanner: false,
+          // home: const WrapperView(),
+          home: const WrapperView()),
     );
   }
 }

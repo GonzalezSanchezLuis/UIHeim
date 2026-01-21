@@ -22,10 +22,10 @@ class ConfirmMoveService {
       String? paymentMethod}) async {
     try {
       final url = Uri.parse("$apiBaseUrl/move/confirm");
-      final cleanedPrice = calculatedPrice.replaceAll(',', '');
+      final cleanedPrice = calculatedPrice.replaceAll('\$', '').replaceAll(' ', '').replaceAll('.', '').split(',')[0];
 
       final Map<String, dynamic> requestBody = {
-        "price": cleanedPrice,
+        "price": double.tryParse(cleanedPrice) ?? 0.0,
         "distanceKm": distanceKm,
         "duration": duration,
         "typeOfMove": typeOfMove.name,

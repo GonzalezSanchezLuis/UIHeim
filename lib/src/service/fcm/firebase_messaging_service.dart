@@ -4,6 +4,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+@pragma('vm:entry-point')
 class FirebaseMessagingService {
   static Function(Map<String, dynamic> data)? onNewTripData;
   static final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
@@ -33,7 +34,7 @@ class FirebaseMessagingService {
 
   // 🔔 Inicializa las notificaciones locales
   void initializeNotifications() {
-    const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('ic_notification'); // asegúrate de tener este ícono en res/drawable
+    const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('ic_notification'); 
 
     const InitializationSettings initializationSettings = InitializationSettings(android: initializationSettingsAndroid);
 
@@ -75,14 +76,7 @@ class FirebaseMessagingService {
     );
   }
 
-  // 🔕 Notificación en background
-  static Future<void> _backgroundHandler(RemoteMessage message) async {
-    await Firebase.initializeApp();
-    print('🔕 Notificación en background');
-    print('Título: ${message.notification?.title}');
-    print('Mensaje: ${message.notification?.body}');
-    log('📦 Data payload: ${message.data}');
-  }
+ 
 
   // 🔧 Crear canal de notificación
   Future<void> _createNotificationChannel() async {
@@ -96,3 +90,12 @@ class FirebaseMessagingService {
     await flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(channel);
   }
 }
+ // 🔕 Notificación en background
+  @pragma('vm:entry-point')
+   Future<void> _backgroundHandler(RemoteMessage message) async {
+    await Firebase.initializeApp();
+    print('🔕 Notificación en background');
+    print('Título: ${message.notification?.title}');
+    print('Mensaje: ${message.notification?.body}');
+    log('📦 Data payload: ${message.data}');
+  }

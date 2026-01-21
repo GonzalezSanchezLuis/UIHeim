@@ -12,7 +12,7 @@ plugins {
 
 
 android {
-    compileSdkVersion 35 
+    compileSdk 36
      ndkVersion "26.1.10909125"
     namespace = "com.heim.app"
     //compileSdk = flutter.compileSdkVersion
@@ -20,18 +20,23 @@ android {
 
     compileOptions {
         coreLibraryDesugaringEnabled true
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = "17"
+    }
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
     }
 
     defaultConfig {
         applicationId = "com.heim.app"
         minSdkVersion flutter.minSdkVersion
-        targetSdkVersion 35
+        targetSdk 36
         versionCode 1              // ← Número entero (incrementa con cada release)
         versionName "1.0.0"        // ← String semántico (MAJOR.MINOR.PATCH)
         multiDexEnabled true
@@ -69,3 +74,7 @@ configurations.all {
         force 'androidx.lifecycle:lifecycle-common:2.6.2'
     }
 }
+
+
+
+

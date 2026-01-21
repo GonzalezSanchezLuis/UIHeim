@@ -5,14 +5,18 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:holi/src/core/enums/connection_status.dart';
 import 'package:holi/src/core/gps_validator/gps_validator_service.dart';
+import 'package:holi/src/core/helper/screen_helper.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/service/auth/auth_service.dart';
+import 'package:holi/src/service/location/background_location_service.dart';
+import 'package:holi/src/service/moves/restore_move_service.dart';
 import 'package:holi/src/service/websocket/websocket_driver_service.dart';
 import 'package:holi/src/utils/format_price.dart';
 import 'package:holi/src/view/screens/auth/login_view.dart';
 import 'package:holi/src/view/screens/driver/driver_view.dart';
 import 'package:holi/src/view/screens/driver/wallet_view.dart';
 import 'package:holi/src/view/screens/move/history_move_view.dart';
+import 'package:holi/src/view/screens/move/restore_move_viewmodel.dart';
 import 'package:holi/src/view/widget/button/button_card_home_widget.dart';
 import 'package:holi/src/view/widget/card/bottom_move_card.dart';
 import 'package:holi/src/view/widget/card/floating_move_card_wrapper.dart';
@@ -28,6 +32,7 @@ import 'package:holi/src/viewmodels/move/websocket/move_notification_driver_view
 import 'package:holi/src/viewmodels/payment/wallet_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 class HomeDriverView extends StatefulWidget {
   const HomeDriverView({super.key});
@@ -57,33 +62,35 @@ class _HomeDriverState extends State<HomeDriverView> {
   void initState() {
     super.initState();
     initializeStatusFromPrefs();
+    BackgroundLocationService.initService();
 
     final routeDriverViewmodel = Provider.of<RouteDriverViewmodel>(context, listen: false);
     final moveNotificationVM = Provider.of<MoveNotificationDriverViewmodel>(context, listen: false);
 
-    // _debugSetStatusForTesting();
     Future.microtask(() async {
       await _validateGpsAndPermissions(context);
       await _setInitialLocation();
       Provider.of<DriverStatusViewmodel>(context, listen: false).loadDriverStatusViewmodel();
-      final driverLocationViewModel = Provider.of<DriverLocationViewmodel>(context, listen: false);
+      final driverLocationVM = Provider.of<DriverLocationViewmodel>(context, listen: false);
       final sessionVM = Provider.of<SessionViewModel>(context, listen: false);
       final int driverId = int.tryParse(sessionVM.userId?.toString() ?? '0') ?? 0;
 
-    if (driverId != 0) {
-      final driverLocationVM = Provider.of<DriverLocationViewmodel>(context, listen: false);
-      driverLocationVM.startLocationUpdates(driverId);
-    }
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('driverId', driverId);
+
+      if (driverId != 0) {
+        Provider.of<DriverLocationViewmodel>(context, listen: false).startLocationUpdates(driverId);
+      }
     });
 
     final sessionVM = Provider.of<SessionViewModel>(context, listen: false);
     final rawUserId = sessionVM.userId;
     final int driverId = int.tryParse(rawUserId?.toString() ?? '1') ?? 1;
     print("ID $driverId");
-  
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<WalletViewmodel>(context, listen: false).loadWallet(driverId);
+      Provider.of<RestoreMoveViewmodel>(context, listen: false).restoreMoveIfExists(driverId);
     });
 
     _socketService = WebSocketDriverService(
@@ -91,6 +98,8 @@ class _HomeDriverState extends State<HomeDriverView> {
       onMessage: (data) {
         debugPrint("🧲 Mensaje del backend recibido: $data");
         moveNotificationVM.addNotification(data);
+        final moveId = data['moveId'];
+        // saveActiveMoveId(moveId);
 
         /*  setState(() {
           _incomingMoveData = data['move'];
@@ -110,20 +119,32 @@ class _HomeDriverState extends State<HomeDriverView> {
     super.dispose();
   }
 
-  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(
         index: currentPageIndex,
         children: [
-          _buildHomeScreen(),
+          Consumer<RestoreMoveViewmodel>(
+            builder: (context, restoreMoveVM, _) {
+              final restoredMove = restoreMoveVM.activeMove;
+              if (restoredMove != null && _currentMoveData == null) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  setState(() {
+                    _currentMoveData = restoredMove;
+                  });
+                });
+              }
+
+              return _buildHomeContent();
+            },
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildHomeScreen() {
+  Widget _buildHomeContent() {
     return Consumer<ProfileDriverViewModel>(builder: (context, profileViewModel, _) {
       final profile = profileViewModel.profile;
 
@@ -132,9 +153,13 @@ class _HomeDriverState extends State<HomeDriverView> {
 
         return Stack(
           children: [
-            Consumer<RouteDriverViewmodel>(builder: (context, directionsViewmodel, _) {
+            Consumer2<RouteDriverViewmodel, DriverLocationViewmodel>(builder: (context, directionsViewmodel, locationVM, _) {
+              LatLng? driverLatLng;
+              if (locationVM.currentLocation != null) {
+                driverLatLng = LatLng(locationVM.currentLocation!.latitude, locationVM.currentLocation!.longitude);
+              }
               return DriverMapWidget(
-                driverLocation: _currentDriverLocation,
+                driverLocation: driverLatLng,
                 route: directionsViewmodel.route,
                 driverToOriginRoute: directionsViewmodel.driverToOriginRoute,
               );
@@ -281,47 +306,43 @@ class _HomeDriverState extends State<HomeDriverView> {
                             ],
                           ),
                           child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: driverViewModel.connectionStatus == null
-                                ? const Center(
-                                    child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                  ))
-
-                                : hasMoveData
-                                    ? MoveRequestCard(
-                                        moveData: directionsViewModel.moveData!,
-                                        onMoveAccepted: (data) {
-                                          //directionsViewModel.clearMoveData();
-                                          directionsViewModel.stopTimerAndRemoveRequest();
-                                          setState(() {
-                                            _currentMoveData = data;
-                                          });
-                                        },
-                                      )
-                                    : 
-                                      Column(
+                              padding: const EdgeInsets.all(16.0),
+                              child: driverViewModel.connectionStatus == null
+                                  ? const Center(
+                                      child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                    ))
+                                  : hasMoveData
+                                      ? MoveRequestCard(
+                                          moveData: directionsViewModel.moveData!,
+                                          onMoveAccepted: (data) async {
+                                            directionsViewModel.stopTimerAndRemoveRequest();
+                                            //await BackgroundLocationService.start();
+                                            WakelockPlus.enable();
+                                            await ScreenHelper.enableTravelMode();
+                                            setState(() {
+                                              _currentMoveData = data;
+                                            });
+                                          },
+                                        )
+                                      : Column(
                                           children: [
                                             Row(
                                               children: [
-
                                                 if (profileViewModel.isDriverActive) ...[
                                                   Expanded(
                                                     child: driverViewModel.connectionStatus!.isConnected ? _buildDisconnectCard() : _buildConnectCard(),
                                                   ),
                                                   const SizedBox(width: 8),
                                                   _buildHistoryButton(),
-                                                ]
-                                                
-                                                else
+                                                ] else
                                                   const Expanded(
                                                     child: VerifcationPendingCard(),
                                                   ),
                                               ],
                                             ),
                                           ],
-                                        )
-                          ),
+                                        )),
                         );
                       },
                     ),
@@ -368,14 +389,21 @@ class _HomeDriverState extends State<HomeDriverView> {
 
   Future<void> _setInitialLocation() async {
     try {
-      final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.best,
-      );
-      setState(() {
+      /*   bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        debugPrint("El GPS está apagado físicamente.");
+        return;
+      } */
+      final position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best, timeLimit: const Duration(seconds: 8));
+      /* setState(() {
         _currentDriverLocation = LatLng(position.latitude, position.longitude);
-      });
+      }); */
+      log("📍 Ubicación real encontrada: ${position.latitude}");
+      final locationVM = Provider.of<DriverLocationViewmodel>(context, listen: false);
+      locationVM.updateInitialPosition(position);
     } catch (e) {
       log("❌ Error al obtener ubicación inicial: $e");
+      log("❌ El satélite no respondió: $e");
     }
   }
 
@@ -404,11 +432,20 @@ class _HomeDriverState extends State<HomeDriverView> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         ConnectButton(onConnected: (LatLng location) {
-          setState(() {
+          final locationVM = Provider.of<DriverLocationViewmodel>(context, listen: false);
+          locationVM.setManualLocation(location);
+          /*  setState(() {
+            _isConnected = true;
+            driverStatus = ConnectionStatus.CONNECTED;
+          });*/
+          /* setState(() {
             _currentDriverLocation = location;
             _isConnected = true;
             driverStatus = ConnectionStatus.CONNECTED;
-          });
+          }); */
+          final sessionVM = Provider.of<SessionViewModel>(context, listen: false);
+          final driverId = int.tryParse(sessionVM.userId?.toString() ?? '0') ?? 0;
+          locationVM.startLocationUpdates(driverId);
         }),
       ],
     );
@@ -544,5 +581,10 @@ class _HomeDriverState extends State<HomeDriverView> {
         );
       },
     );
+  }
+
+  Future<void> saveActiveMoveId(int moveId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('active_move_id', moveId);
   }
 }

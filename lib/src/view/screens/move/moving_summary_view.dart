@@ -73,11 +73,11 @@ class _MovingSummaryViewState extends State<MovingSummaryView> {
               Color _getPaymentColor() {
               final String paymentMethod = summary.paymentMethod.toLowerCase();
               if (paymentMethod.toLowerCase() == "nequi") {
-                return const Color(0xFF7B1FA2); // Morado
+                return const Color(0xFF7B1FA2); 
               } else if (paymentMethod.toLowerCase() == "daviplata") {
-                return const Color(0xFFE53935); // Rojo
+                return const Color(0xFFE53935); 
               }
-              return Colors.orange; // Color por defecto
+              return Colors.orange; 
             }
 
 
@@ -127,8 +127,7 @@ class _MovingSummaryViewState extends State<MovingSummaryView> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 const Text("Total a pagar:", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                Text(
-                                  
+                                Text(                               
                                   formattedPrice,
                                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                                 ),
@@ -156,21 +155,28 @@ class _MovingSummaryViewState extends State<MovingSummaryView> {
                               alignment: Alignment.centerLeft,
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                                 decoration: BoxDecoration(
-                                  color: Colors.orange.withOpacity(0.1), 
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: Colors.orange), 
-                                ),
-                                child : Row(
-                                  children: [
-                                  const   Icon(Icons.pending_actions, color: Colors.orange),
-                                   const  SizedBox(width: 8),
-                                     Text(
-                                  summary.paymentCompleted ? "Pago Completado" : "Pago Pendiente",
-                                  style: const TextStyle(fontSize: 16, color: Colors.white),
-                                ),
-                                  ],
-                                )
+                               decoration: BoxDecoration(
+                                    // Si el pago está completado usa verde, si no, naranja
+                                    color: summary.paymentCompleted ? Colors.green.withOpacity(0.1) : Colors.orange.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(color: summary.paymentCompleted ? Colors.green : Colors.orange),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min, // Ajusta el tamaño al contenido
+                                    children: [
+                                      Icon(summary.paymentCompleted ? Icons.check_circle : Icons.pending_actions, color: summary.paymentCompleted ? Colors.green : Colors.orange),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        summary.paymentCompleted ? "Pago Completado" : "Pago Pendiente",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          // Color dinámico para que sea legible
+                                          color: summary.paymentCompleted ? Colors.green : Colors.orange,
+                                        ),
+                                      ),
+                                    ],
+                                  )
                                 
                                 
                                

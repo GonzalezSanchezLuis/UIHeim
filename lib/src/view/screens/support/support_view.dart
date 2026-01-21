@@ -1,3 +1,4 @@
+import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
@@ -14,10 +15,13 @@ class Support extends StatelessWidget {
         backgroundColor: AppTheme.primarycolor,
         title: const Text(
           "Atras",
-          style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_outlined,color: Colors.white,),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_outlined,
+            color: Colors.white,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -68,14 +72,14 @@ class Support extends StatelessWidget {
 }
 
 Future<void> _openWhatsApp(BuildContext context) async {
-  final whatsappUrl = Uri.parse("whatsapp://send?phone=3227603630&text=Hola");
-  final whatsappWeb = Uri.parse("https://wa.me/3227603630"); // Reemplaza con el número de soporte
+  final whatsappUrl = Uri.parse("whatsapp://send?phone=3217181031&text=Hola");
+  final whatsappWeb = Uri.parse("https://wa.me/3227603630");
 
   try {
     if (await canLaunchUrl(whatsappUrl)) {
       await launchUrl(whatsappUrl);
     } else if (await canLaunchUrl(whatsappWeb)) {
-      await launchUrl(whatsappWeb); // Abre en el navegador si no está instalado
+      await launchUrl(whatsappWeb);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("WhatsApp no está instalado en este dispositivo.")));
     }
@@ -85,11 +89,37 @@ Future<void> _openWhatsApp(BuildContext context) async {
 }
 
 Future<void> _sendEmail(BuildContext context) async {
-  final emailUrl = Uri.parse("mailto:luisrbn10@outlook.es?subject=Soporte&body=Hola, necesito ayuda con...");
-  if (await canLaunchUrl(emailUrl)) {
-    await launchUrl(emailUrl);
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("WhatsApp no está instalado en este dispositivo.")));
-    throw 'No se pudo abrir la aplicación de correo';
+  final Uri emailUri = Uri(scheme: 'mailto', path: 'luisrbn10@outlook.es', queryParameters: {'subject': 'Soporte con'});
+
+  try {
+    bool launched = await launchUrl(emailUri, mode: LaunchMode.externalApplication);
+
+    if (!launched) {
+      _showFlushbar(context, 'No se encontró una aplicación de correo instalada.', AppTheme.warningcolor);
+    }
+  } catch (e) {
+   debugPrint("Error abriendo el email $e");
+    _showFlushbar(context, 'No se pudo abrir el correo.', AppTheme.warningcolor);
   }
+     
+  }
+  
+  
+
+  void _showFlushbar(BuildContext context, String message, Color color) {
+  Flushbar(
+    message: message,
+    backgroundColor: color,
+    duration: const Duration(seconds: 3),
+    flushbarPosition: FlushbarPosition.TOP, 
+    borderRadius: BorderRadius.circular(8),
+    margin: const EdgeInsets.all(8),
+    icon: Icon(
+      color == AppTheme.confirmationscolor ? Icons.check_circle : Icons.error_outline,
+      color: Colors.white,
+    ),
+  ).show(context);
 }
+
+
+

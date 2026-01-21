@@ -1,16 +1,15 @@
-import 'dart:async';
+/*import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'dart:math' as Math;
+import 'dart:math' as math;
 
 class DriverMapWidget extends StatefulWidget {
   final LatLng? driverLocation;
   final List<LatLng> route;
   final List<LatLng>? driverToOriginRoute;
   final void Function(LatLng)? onDriverConnected;
-
 
   const DriverMapWidget({super.key, required this.driverLocation, required this.route, this.driverToOriginRoute, this.onDriverConnected});
 
@@ -43,6 +42,7 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
 
   bool _hasCenteredOnDriver = false;
   bool _isIconsLoaded = false;
+  bool _isUserInteracting = false;
 
   @override
   void initState() {
@@ -53,61 +53,57 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
     });
   }
 
- /* @override
+  @override
   void didUpdateWidget(covariant DriverMapWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    // Si la ubicación del conductor cambió
-    final driverChanged = widget.driverLocation != null && widget.driverLocation != oldWidget.driverLocation;
-    final routeChanged = widget.route.isNotEmpty && widget.route != oldWidget.route;
+    final hasLocationNow = widget.driverLocation != null;
+    final wasLocationNull = oldWidget.driverLocation != null;
 
-    if (driverChanged) {
+    if (wasLocationNull && hasLocationNow) {
+      _hasCenteredOnDriver = false; 
+    }
+
+    if (!_hasCenteredOnDriver && hasLocationNow && _mapReady) {
+      _hasCenteredOnDriver = true;
+
+      Future.delayed(const Duration(milliseconds: 600), () {
+        googleMapController?.animateCamera(CameraUpdate.newLatLngZoom(widget.driverLocation!, 16));
+      });
+    }
+
+    if (hasLocationNow && widget.driverLocation != oldWidget.driverLocation) {
       _updateDriverMarker(widget.driverLocation!);
 
-      if (!_hasCenteredOnDriver && _mapReady && googleMapController != null) {
-        _hasCenteredOnDriver = true;
+      // Solo mover cámara si el usuario NO está interactuando
+      if (_mapReady && googleMapController != null && !_isUserInteracting) {
         googleMapController!.animateCamera(
-          CameraUpdate.newLatLngZoom(widget.driverLocation!, _activeLocationZoom),
+          CameraUpdate.newLatLng(widget.driverLocation!),
         );
-        // Notifica al padre
-        widget.onDriverConnected?.call(widget.driverLocation!);
       }
     }
-    print("🔎 driverToOriginRoute tiene ${widget.driverToOriginRoute?.length ?? 0} puntos");
-
-    final routeReady = widget.route.isNotEmpty;
-    final driverToOriginReady = widget.driverToOriginRoute != null && widget.driverToOriginRoute!.isNotEmpty;
-
-    if (_mapReady && (routeReady || driverToOriginReady)) {
-      print("📍 Datos completos. Trazando rutas...");
-      _drawRoute();
-    }
-  } */
-
- @override
-  void didUpdateWidget(covariant DriverMapWidget oldWidget) {
-    super.didUpdateWidget(oldWidget);
 
     // 1. Detectar cambios en la ubicación del conductor (lógica existente)
     final driverChanged = widget.driverLocation != null && widget.driverLocation != oldWidget.driverLocation;
 
-    // 🚨 2. Detectar cambios específicos en las listas de puntos (NUEVA LÓGICA)
-    // Compara la referencia de la lista actual con la anterior.
     final mainRoutePointsChanged = widget.route != oldWidget.route;
     final driverToOriginPointsChanged = widget.driverToOriginRoute != oldWidget.driverToOriginRoute;
 
-    // Si la ubicación del conductor cambió
     if (driverChanged) {
       _updateDriverMarker(widget.driverLocation!);
+      if (_mapReady && googleMapController != null && !_isUserInteracting) {
+        googleMapController!.animateCamera(
+          CameraUpdate.newLatLng(widget.driverLocation!),
+        );
+      }
 
-      if (!_hasCenteredOnDriver && _mapReady && googleMapController != null) {
+      /* if (!_hasCenteredOnDriver && _mapReady && googleMapController != null) {
         _hasCenteredOnDriver = true;
         googleMapController!.animateCamera(
           CameraUpdate.newLatLngZoom(widget.driverLocation!, _activeLocationZoom),
         );
-        // Notifica al padre
         widget.onDriverConnected?.call(widget.driverLocation!);
-      }
+      } */
     }
 
     // 🚨 3. Condición Final: Llamar a _drawRoute si alguna de las listas se actualizó.
@@ -117,11 +113,7 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
       print("VERIFICACIÓN FINAL: Ruta Principal tiene: ${widget.route.length} | Conductor a Origen tiene: ${widget.driverToOriginRoute?.length ?? 0}");
       _drawRoute();
     }
-
-    // Eliminamos la vieja y compleja condición:
-    // if (_mapReady && (routeReady || driverToOriginReady)) { ... }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -137,6 +129,13 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
             _controller.complete(controller);
             _mapReady = true;
             //setDarkMode();
+
+            if (widget.driverLocation != null && !_hasCenteredOnDriver) {
+              _hasCenteredOnDriver = true;
+              googleMapController?.animateCamera(
+                CameraUpdate.newLatLngZoom(widget.driverLocation!, 16),
+              );
+            }
 
             if (widget.driverLocation != null) {
               _updateDriverMarker(widget.driverLocation!);
@@ -161,10 +160,38 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
             target: widget.driverLocation ?? _defaultLocation,
             zoom: _currentZoom,
           ),
+          /*  onCameraMove: (CameraPosition position) {
+            _currentZoom = position.zoom;
+          }, */
           onCameraMove: (CameraPosition position) {
             _currentZoom = position.zoom;
+            if (!_isUserInteracting) {
+              setState(() {
+                _isUserInteracting = true;
+              });
+            }
           },
         ),
+        if (_isUserInteracting)
+          Positioned(
+            bottom: 20,
+            right: 20,
+            child: FloatingActionButton(
+              mini: true,
+              backgroundColor: Colors.white,
+              child: const Icon(Icons.my_location, color: Colors.black),
+              onPressed: () {
+                setState(() {
+                  _isUserInteracting = false;
+                });
+                if (widget.driverLocation != null) {
+                  googleMapController?.animateCamera(
+                    CameraUpdate.newLatLngZoom(widget.driverLocation!, 16),
+                  );
+                }
+              },
+            ),
+          ),
         if (!_mapReady)
           Container(
             color: Colors.black.withOpacity(0.3),
@@ -181,20 +208,19 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
 
     print('✅ CustomIcon status: ${_customIcon != null}');
 
-    final marker = Marker(markerId: const MarkerId("driver_location"), icon: _driverIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed), position: location, anchor: const Offset(0.5, 0.5));
+    final driverMarker = Marker(markerId: const MarkerId("driver_location"), icon: _driverIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed), position: location, rotation: rotation, flat: true, anchor: const Offset(0.5, 0.5));
 
     setState(() {
       _markers.clear();
-
       _markers.removeWhere((m) => m.markerId.value == "driver_location");
-      _markers.add(marker);
+      _markers.add(driverMarker);
 
       if (location != _defaultLocation) {
         _currentZoom = _activeLocationZoom;
       }
     });
 
-    print("📍 Marcador actualizado. Ícono usado: ${marker.icon}");
+    print("📍 Marcador actualizado. Ícono usado: ${driverMarker.icon}");
   }
 
   Future<void> setDarkMode() async {
@@ -208,14 +234,18 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
 
   Future<void> _loadCustomIcons() async {
     try {
-      _driverIcon = await _getMarkerFromIcon(
-        Icons.navigation, Colors.black, size: 70.0);
+      _driverIcon = await _getMarkerFromIcon(Icons.navigation, Colors.black, size: 70.0);
 
       _originIcon = await _getMarkerFromIconOriginToDestination(
-        Icons.circle, Colors.green,
+        Icons.circle,
+        Colors.green,
         size: 70.0,
       );
-      _destinationIcon = await _getMarkerFromIconOriginToDestination(Icons.circle,Colors.blueAccent, size: 70.0,);
+      _destinationIcon = await _getMarkerFromIconOriginToDestination(
+        Icons.circle,
+        Colors.blueAccent,
+        size: 70.0,
+      );
       print("✅ Íconos cargados correctamente");
 
       _isIconsLoaded = true;
@@ -326,7 +356,7 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
     );
   }
 
-   Future<BitmapDescriptor> _getMarkerFromIconOriginToDestination(IconData iconData, Color color, {double size = 80.0}) async {
+  Future<BitmapDescriptor> _getMarkerFromIconOriginToDestination(IconData iconData, Color color, {double size = 80.0}) async {
     try {
       final pictureRecorder = PictureRecorder();
       final canvas = Canvas(pictureRecorder);
@@ -357,8 +387,8 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
     IconData iconData,
     Color fillColor, {
     double size = 80.0,
-    Color borderColor = Colors.white, 
-    double borderWidth = 6.0, 
+    Color borderColor = Colors.white,
+    double borderWidth = 6.0,
   }) async {
     try {
       final pictureRecorder = PictureRecorder();
@@ -375,14 +405,11 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
 
       canvas.drawCircle(center, radius, borderPaint);
 
-      // 2. Dibuja el círculo interior (relleno principal)
       final fillPaint = Paint()
         ..color = fillColor
         ..style = PaintingStyle.fill;
 
       canvas.drawCircle(center, radius - borderWidth, fillPaint);
-
-      // 3. Dibuja el icono encima
       final textPainter = TextPainter(textDirection: TextDirection.ltr);
       final textStyle = TextStyle(
         fontSize: iconSize * 0.8,
@@ -412,7 +439,6 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
     }
   }
 
-
   void _simulateDriverMovement(List<LatLng> routePoints, {int stepsPerSegment = 20, int stepDurationMs = 100}) {
     if (_isSimulating || routePoints.length < 2) return;
 
@@ -434,14 +460,13 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
       final interpolated = _interpolateLatLng(start, end, t);
       final bearing = _getBearing(start, end);
       _updateDriverMarker(interpolated, rotation: bearing);
-      //  googleMapController?.animateCamera(CameraUpdate.newLatLngZoom(interpolated, 17,));
 
       googleMapController!.animateCamera(
         CameraUpdate.newCameraPosition(
           CameraPosition(
             target: interpolated,
             zoom: 17,
-            tilt: 45.0, 
+            tilt: 45.0,
             bearing: 0.0,
           ),
         ),
@@ -475,10 +500,10 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
 
     final dLon = lon2 - lon1;
 
-    final y = Math.sin(dLon) * Math.cos(lat2);
-    final x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+    final y = math.sin(dLon) * math.cos(lat2);
+    final x = math.cos(lat1) * math.sin(lat2) - math.sin(lat1) * math.cos(lat2) * math.cos(dLon);
 
-    final bearing = Math.atan2(y, x);
+    final bearing = math.atan2(y, x);
     return (bearing * (180 / 3.141592653589793) + 360) % 360;
   }
 
@@ -498,5 +523,648 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
         ),
       ),
     );
+  }
+
+  void _animateDriverToNewLocation(LatLng start, LatLng end) {
+    const int steps = 25;
+    const int durationMs = 1500;
+    int currentStep = 0;
+
+    Timer.periodic(const Duration(milliseconds: durationMs ~/ steps), (timer) {
+      currentStep++;
+      double t = currentStep / steps;
+      LatLng interpolated = _interpolateLatLng(start, end, t);
+      double bearing = _getBearing(start, end);
+
+      _updateDriverMarker(interpolated, rotation: bearing);
+
+      if (currentStep >= steps) {
+        timer.cancel();
+      }
+    });
+  }
+}*/
+/*import 'dart:async';
+import 'dart:ui';
+import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'dart:math' as math;
+
+class DriverMapWidget extends StatefulWidget {
+  final LatLng? driverLocation;
+  final List<LatLng> route;
+  final List<LatLng>? driverToOriginRoute;
+  final void Function(LatLng)? onDriverConnected;
+
+  const DriverMapWidget({
+    super.key,
+    required this.driverLocation,
+    required this.route,
+    this.driverToOriginRoute,
+    this.onDriverConnected,
+  });
+
+  @override
+  State<DriverMapWidget> createState() => _DriverMapWidgetState();
+}
+
+class _DriverMapWidgetState extends State<DriverMapWidget> {
+  GoogleMapController? _mapController;
+
+  // Estado del Mapa
+  final Set<Marker> _markers = {};
+  final Set<Polyline> _polylines = {};
+  bool _mapReady = false;
+  bool _hasCenteredOnDriver = false;
+  bool _isUserInteracting = false;
+
+  // Iconos Personalizados
+  late BitmapDescriptor _driverIcon;
+  BitmapDescriptor? _originIcon;
+  BitmapDescriptor? _destinationIcon;
+
+  // Configuración Visual
+  final double _activeZoom = 15.0;
+  final double _initialZoom = 5.0;
+  final LatLng _defaultLocation = const LatLng(4.709870566194833, -74.07554855445838);
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCustomIcons();
+  }
+
+  @override
+  void didUpdateWidget(covariant DriverMapWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_mapReady) return;
+
+    // 1. Manejo de Ubicación del Conductor
+    if (widget.driverLocation != null) {
+      _updateDriverMarker(widget.driverLocation!);
+
+      // Enfoque inicial automático
+      if (!_hasCenteredOnDriver) {
+        _hasCenteredOnDriver = true;
+        _animateCamera(widget.driverLocation!, zoom: _activeZoom);
+        widget.onDriverConnected?.call(widget.driverLocation!);
+      }
+      // Seguimiento constante (solo si el usuario no está moviendo el mapa)
+      else if (!_isUserInteracting && widget.driverLocation != oldWidget.driverLocation) {
+        _animateCamera(widget.driverLocation!);
+      }
+    }
+
+    // 2. Manejo de Rutas y Polilíneas
+    if (widget.route != oldWidget.route || widget.driverToOriginRoute != oldWidget.driverToOriginRoute) {
+      _drawRoute();
+    }
+  }
+
+  // --- LÓGICA DE CÁMARA ---
+
+  void _animateCamera(LatLng target, {double? zoom}) {
+    if (_mapController == null) return;
+    _mapController!.animateCamera(
+      zoom != null ? CameraUpdate.newLatLngZoom(target, zoom) : CameraUpdate.newLatLng(target),
+    );
+  }
+
+  void _fitRouteBounds() {
+    final allPoints = [...widget.route, ...?widget.driverToOriginRoute];
+    if (allPoints.length < 2 || _isUserInteracting) return;
+
+    final bounds = _boundsFromLatLngList(allPoints);
+    _mapController?.animateCamera(CameraUpdate.newLatLngBounds(bounds, 80));
+  }
+
+  // --- LÓGICA DE DIBUJO ---
+
+  void _updateDriverMarker(LatLng location, {double rotation = 0.0}) {
+    final driverMarker = Marker(
+      markerId: const MarkerId("driver_location"),
+      position: location,
+      rotation: rotation,
+      icon: _driverIcon,
+      flat: true,
+      anchor: const Offset(0.5, 0.5),
+      zIndex: 5,
+    );
+
+    setState(() {
+      _markers.removeWhere((m) => m.markerId.value == "driver_location");
+      _markers.add(driverMarker);
+    });
+  }
+
+  void _drawRoute() {
+    if (!_mapReady) return;
+
+    final newPolylines = <Polyline>{};
+    final newMarkers = <Marker>{};
+
+    // Ruta Principal (Destino Final)
+    if (widget.route.isNotEmpty) {
+      newPolylines.add(Polyline(
+        polylineId: const PolylineId('route'),
+        color: Colors.green,
+        width: 6,
+        points: widget.route,
+      ));
+
+      newMarkers.add(Marker(
+        markerId: const MarkerId('origin'),
+        position: widget.route.first,
+        icon: _originIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+      ));
+
+      newMarkers.add(Marker(
+        markerId: const MarkerId('destination'),
+        position: widget.route.last,
+        icon: _destinationIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+      ));
+    }
+
+    // Ruta Conductor -> Origen (Recogida)
+    if (widget.driverToOriginRoute != null && widget.driverToOriginRoute!.isNotEmpty) {
+      newPolylines.add(Polyline(
+        polylineId: const PolylineId('driver_to_origin'),
+        color: Colors.orange,
+        width: 6,
+        points: widget.driverToOriginRoute!,
+      ));
+    }
+
+    setState(() {
+      _polylines.clear();
+      _polylines.addAll(newPolylines);
+
+      // Limpiamos marcadores excepto el del conductor para re-dibujar
+      _markers.removeWhere((m) => m.markerId.value != "driver_location");
+      _markers.addAll(newMarkers);
+    });
+
+    _fitRouteBounds();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        GoogleMap(
+          initialCameraPosition: CameraPosition(
+            target: widget.driverLocation ?? _defaultLocation,
+            zoom: _initialZoom,
+          ),
+          markers: _markers,
+          polylines: _polylines,
+          myLocationEnabled: false,
+          myLocationButtonEnabled: false,
+          onMapCreated: (controller) {
+            _mapController = controller;
+            setState(() => _mapReady = true);
+
+            if (widget.driverLocation != null) {
+              _animateCamera(widget.driverLocation!, zoom: _activeZoom);
+              _hasCenteredOnDriver = true;
+              _updateDriverMarker(widget.driverLocation!);
+            }
+            if (widget.route.isNotEmpty) _drawRoute();
+          },
+          onCameraMove: (position) {
+            if (!_isUserInteracting) setState(() => _isUserInteracting = true);
+          },
+        ),
+
+        // Botón para recuperar el enfoque del conductor
+        if (_isUserInteracting)
+          Positioned(
+            bottom: 25,
+            right: 20,
+            child: FloatingActionButton(
+              mini: true,
+              backgroundColor: Colors.white,
+              onPressed: () {
+                setState(() => _isUserInteracting = false);
+                if (widget.driverLocation != null) {
+                  _animateCamera(widget.driverLocation!, zoom: _activeZoom);
+                }
+              },
+              child: const Icon(Icons.my_location, color: Colors.black),
+            ),
+          ),
+
+        if (!_mapReady) const Center(child: CircularProgressIndicator(color: Colors.black)),
+      ],
+    );
+  }
+
+  // --- UTILS Y GENERACIÓN DE ICONOS ---
+
+  Future<void> _loadCustomIcons() async {
+    try {
+      _driverIcon = await _getMarkerFromIcon(Icons.navigation, Colors.black, size: 80);
+      _originIcon = await _getMarkerFromIcon(Icons.location_on, Colors.green, size: 80);
+      _destinationIcon = await _getMarkerFromIcon(Icons.flag, Colors.red, size: 80);
+      setState(() {});
+    } catch (e) {
+      _driverIcon = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure);
+    }
+  }
+
+  Future<BitmapDescriptor> _getMarkerFromIcon(IconData iconData, Color color, {double size = 80.0}) async {
+    final pictureRecorder = PictureRecorder();
+    final canvas = Canvas(pictureRecorder);
+    final textPainter = TextPainter(textDirection: TextDirection.ltr);
+
+    textPainter.text = TextSpan(
+      text: String.fromCharCode(iconData.codePoint),
+      style: TextStyle(
+        fontSize: size * 0.8,
+        fontFamily: iconData.fontFamily,
+        package: iconData.fontPackage,
+        color: color,
+      ),
+    );
+    textPainter.layout();
+    textPainter.paint(canvas, const Offset(0, 0));
+
+    final image = await pictureRecorder.endRecording().toImage(size.toInt(), size.toInt());
+    final byteData = await image.toByteData(format: ImageByteFormat.png);
+    return BitmapDescriptor.fromBytes(byteData!.buffer.asUint8List());
+  }
+
+  LatLngBounds _boundsFromLatLngList(List<LatLng> list) {
+    double minLat = list.first.latitude, maxLat = list.first.latitude;
+    double minLng = list.first.longitude, maxLng = list.first.longitude;
+
+    for (var point in list) {
+      if (point.latitude < minLat) minLat = point.latitude;
+      if (point.latitude > maxLat) maxLat = point.latitude;
+      if (point.longitude < minLng) minLng = point.longitude;
+      if (point.longitude > maxLng) maxLng = point.longitude;
+    }
+    return LatLngBounds(
+      southwest: LatLng(minLat, minLng),
+      northeast: LatLng(maxLat, maxLng),
+    );
+  }
+}*/
+import 'dart:async';
+import 'dart:ui';
+import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'dart:math' as math;
+
+class DriverMapWidget extends StatefulWidget {
+  final LatLng? driverLocation;
+  final List<LatLng> route;
+  final List<LatLng>? driverToOriginRoute;
+  final void Function(LatLng)? onDriverConnected;
+
+  const DriverMapWidget({super.key, required this.driverLocation, required this.route, this.driverToOriginRoute, this.onDriverConnected});
+
+  @override
+  State<DriverMapWidget> createState() => _DriverMapWidgetState();
+}
+
+class _DriverMapWidgetState extends State<DriverMapWidget> {
+  // --- CONTROLADORES Y ESTADO ---
+  GoogleMapController? _mapController;
+  //final Completer<GoogleMapController> _controller = Completer();
+
+
+  Set<Marker> _markers = {};
+  Set<Polyline> _polylines = {};
+
+  bool _mapReady = false;
+  bool _isIconsLoaded = false;
+  bool _hasCenteredOnDriver = false;
+  bool _isUserInteracting = false;
+  bool _isSimulating = false;
+
+  // --- ICONOS ---
+  late BitmapDescriptor _driverIcon;
+  BitmapDescriptor? _originIcon;
+  BitmapDescriptor? _destinationIcon;
+
+  // --- CONFIGURACIÓN DE CÁMARA ---
+  double _currentZoom = 5.0; // Zoom lejano inicial (Colombia)
+  final double _activeLocationZoom = 14.0;
+  final LatLng _defaultLocation = const LatLng(4.709870566194833, -74.07554855445838);
+
+  // --- TIMERS ---
+  Timer? _movementTimer;
+  int _currentRouteIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCustomIcons();
+  }
+
+  @override
+  void didUpdateWidget(covariant DriverMapWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_mapReady) return;
+
+    final hasLocationNow = widget.driverLocation != null;
+    final locationChanged = widget.driverLocation != oldWidget.driverLocation;
+
+    if (hasLocationNow) {
+      // 1. Actualizar siempre el marcador
+      _updateDriverMarker(widget.driverLocation!);
+
+      if (!_hasCenteredOnDriver) {
+        _hasCenteredOnDriver = true;
+        _animateCamera(widget.driverLocation!, zoom: _activeLocationZoom);
+        // Mantenemos tu llamada original al conectar
+        widget.onDriverConnected?.call(widget.driverLocation!);
+      }
+      else if (!_isUserInteracting && locationChanged) {
+        _animateCamera(widget.driverLocation!);
+      }
+    }
+    if (widget.route != oldWidget.route || widget.driverToOriginRoute != oldWidget.driverToOriginRoute) {
+      _drawRoute();
+    }
+  }
+
+  // --- MÉTODOS DE CÁMARA ---
+
+Future<void> _animateCamera(LatLng target, {double? zoom}) async {
+    if (!_mapReady || _mapController == null || !mounted) return;
+
+    try {
+      await _mapController!.animateCamera(
+        zoom != null ? CameraUpdate.newLatLngZoom(target, zoom) : CameraUpdate.newLatLng(target),
+      );
+    } catch (_) {
+      // Evita crash por mapId temporal
+    }
+  }
+
+
+  // --- LÓGICA DE DIBUJO Y MARCADORES ---
+
+  void _updateDriverMarker(LatLng location, {double rotation = 0.0}) {
+    if (!_mapReady) return;
+
+    final driverMarker = Marker(
+      markerId: const MarkerId("driver_location"),
+      icon: _driverIcon,
+      position: location,
+      rotation: rotation,
+      flat: true,
+      anchor: const Offset(0.5, 0.5),
+      zIndex: 10,
+    );
+
+    setState(() {
+      _markers.removeWhere((m) => m.markerId.value == "driver_location");
+      _markers.add(driverMarker);
+    });
+  }
+
+  void _drawRoute() {
+    if (!_mapReady || !mounted || _mapController == null) return;
+
+    final newPolylines = <Polyline>{};
+    final newMarkers = <Marker>{};
+
+    // Polilíneas
+    if (widget.route.isNotEmpty) {
+      newPolylines.add(Polyline(
+        polylineId: const PolylineId('route'),
+        color: Colors.green,
+        width: 7,
+        points: widget.route,
+      ));
+
+      newMarkers.add(Marker(
+        markerId: const MarkerId('origin'),
+        position: widget.route.first,
+        icon: _originIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+      ));
+
+      newMarkers.add(Marker(
+        markerId: const MarkerId('destination'),
+        position: widget.route.last,
+        icon: _destinationIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+      ));
+    }
+
+    if (widget.driverToOriginRoute != null && widget.driverToOriginRoute!.isNotEmpty) {
+      newPolylines.add(Polyline(
+        polylineId: const PolylineId('driver_to_origin'),
+        color: Colors.orange,
+        width: 7,
+        points: widget.driverToOriginRoute!,
+      ));
+    }
+
+    if (mounted) {
+      setState(() {
+        _polylines = newPolylines;
+        _markers.removeWhere((m) => m.markerId.value != "driver_location");
+        _markers.addAll(newMarkers);
+      });
+    }
+
+    // Ajustar cámara para ver toda la ruta
+    _fitRouteBounds();
+  }
+
+  void _fitRouteBounds() {
+    final allPoints = [...widget.route, ...?widget.driverToOriginRoute];
+    if (allPoints.length < 2 || _isUserInteracting) return;
+
+    final bounds = _boundsFromLatLngList(allPoints);
+    _mapController?.animateCamera(CameraUpdate.newLatLngBounds(bounds, 110));
+  }
+
+  // --- GENERACIÓN DE ICONOS (TUS MÉTODOS ORIGINALES) ---
+
+  Future<void> _loadCustomIcons() async {
+    try {
+      _driverIcon = await _getMarkerFromIcon(Icons.navigation, Colors.black, size: 70.0);
+      _originIcon = await _getMarkerFromIconOriginToDestination(Icons.circle, Colors.green, size: 70.0);
+      _destinationIcon = await _getMarkerFromIconOriginToDestination(Icons.circle, Colors.blueAccent, size: 70.0);
+      _isIconsLoaded = true;
+      if (widget.driverLocation != null) _updateDriverMarker(widget.driverLocation!);
+      setState(() {});
+    } catch (e) {
+      _driverIcon = BitmapDescriptor.defaultMarker;
+    }
+  }
+
+  Future<BitmapDescriptor> _getMarkerFromIconOriginToDestination(IconData iconData, Color color, {double size = 80.0}) async {
+    final pictureRecorder = PictureRecorder();
+    final canvas = Canvas(pictureRecorder);
+    final textPainter = TextPainter(textDirection: TextDirection.ltr);
+    textPainter.text = TextSpan(
+      text: String.fromCharCode(iconData.codePoint),
+      style: TextStyle(fontSize: size * 0.8, fontFamily: iconData.fontFamily, color: color),
+    );
+    textPainter.layout();
+    textPainter.paint(canvas, Offset(size * 0.2, size * 0.1));
+    final image = await pictureRecorder.endRecording().toImage(size.toInt(), size.toInt());
+    final byteData = await image.toByteData(format: ImageByteFormat.png);
+    return BitmapDescriptor.fromBytes(byteData!.buffer.asUint8List());
+  }
+
+  Future<BitmapDescriptor> _getMarkerFromIcon(IconData iconData, Color fillColor, {double size = 80.0, Color borderColor = Colors.white, double borderWidth = 6.0}) async {
+    final pictureRecorder = PictureRecorder();
+    final canvas = Canvas(pictureRecorder);
+    final center = Offset(size / 2, size / 2);
+    final radius = size / 2;
+
+    canvas.drawCircle(center, radius, Paint()..color = borderColor);
+    canvas.drawCircle(center, radius - borderWidth, Paint()..color = fillColor);
+
+    final textPainter = TextPainter(textDirection: TextDirection.ltr);
+    textPainter.text = TextSpan(
+      text: String.fromCharCode(iconData.codePoint),
+      style: TextStyle(fontSize: size * 0.8, fontFamily: iconData.fontFamily, package: iconData.fontPackage, color: Colors.white),
+    );
+    textPainter.layout();
+    textPainter.paint(canvas, Offset(center.dx - (textPainter.width / 2), center.dy - (textPainter.height / 2)));
+
+    final image = await pictureRecorder.endRecording().toImage(size.toInt(), size.toInt());
+    final byteData = await image.toByteData(format: ImageByteFormat.png);
+    return BitmapDescriptor.fromBytes(byteData!.buffer.asUint8List());
+  }
+
+  // --- LÓGICA DE MOVIMIENTO Y SIMULACIÓN (TUS MÉTODOS ORIGINALES) ---
+
+  void _simulateDriverMovement(List<LatLng> routePoints, {int stepsPerSegment = 20, int stepDurationMs = 100}) {
+    if (_isSimulating || routePoints.length < 2) return;
+    _isSimulating = true;
+    _currentRouteIndex = 0;
+    LatLng start = routePoints[0];
+    LatLng end = routePoints[1];
+    double t = 0.0;
+    int step = 0;
+
+    _movementTimer = Timer.periodic(Duration(milliseconds: stepDurationMs), (timer) {
+      if (_currentRouteIndex >= routePoints.length - 1) {
+        timer.cancel();
+        _isSimulating = false;
+        return;
+      }
+      final interpolated = _interpolateLatLng(start, end, t);
+      _updateDriverMarker(interpolated, rotation: _getBearing(start, end));
+
+      _mapController!.animateCamera(CameraUpdate.newCameraPosition(
+        CameraPosition(target: interpolated, zoom: 17, tilt: 45.0),
+      ));
+
+      step++;
+      t = step / stepsPerSegment;
+      if (t >= 1.0) {
+        _currentRouteIndex++;
+        step = 0;
+        t = 0.0;
+        start = routePoints[_currentRouteIndex];
+        end = routePoints[_currentRouteIndex + 1];
+      }
+    });
+  }
+
+  LatLng _interpolateLatLng(LatLng start, LatLng end, double t) => LatLng(
+        start.latitude + (end.latitude - start.latitude) * t,
+        start.longitude + (end.longitude - start.longitude) * t,
+      );
+
+  double _getBearing(LatLng start, LatLng end) {
+    final lat1 = start.latitude * (math.pi / 180);
+    final lon1 = start.longitude * (math.pi / 180);
+    final lat2 = end.latitude * (math.pi / 180);
+    final lon2 = end.longitude * (math.pi / 180);
+    final dLon = lon2 - lon1;
+    final y = math.sin(dLon) * math.cos(lat2);
+    final x = math.cos(lat1) * math.sin(lat2) - math.sin(lat1) * math.cos(lat2) * math.cos(dLon);
+    return (math.atan2(y, x) * (180 / math.pi) + 360) % 360;
+  }
+
+  // --- UI ---
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        GoogleMap(
+          initialCameraPosition: CameraPosition(target: _defaultLocation, zoom: _currentZoom),
+          markers: _markers,
+          polylines: _polylines,
+          myLocationEnabled: false,
+          myLocationButtonEnabled: false,
+          onMapCreated: (controller) {
+            _mapController = controller;
+
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) return;
+
+              setState(() {
+                _mapReady = true;
+              });
+
+              if (widget.driverLocation != null) {
+                _updateDriverMarker(widget.driverLocation!);
+                _animateCamera(widget.driverLocation!, zoom: _activeLocationZoom);
+                _hasCenteredOnDriver = true;
+              }
+
+              if (widget.route.isNotEmpty) {
+                _drawRoute();
+              }
+            });
+          },
+
+          onCameraMove: (position) {
+            _currentZoom = position.zoom;
+            if (!_isUserInteracting) setState(() => _isUserInteracting = true);
+          },
+        ),
+        if (_isUserInteracting)
+          Positioned(
+            bottom: 20,
+            right: 20,
+            child: FloatingActionButton(
+              mini: true,
+              backgroundColor: Colors.white,
+              onPressed: () {
+                setState(() => _isUserInteracting = false);
+                if (widget.driverLocation != null) _animateCamera(widget.driverLocation!, zoom: _activeLocationZoom);
+              },
+              child: const Icon(Icons.my_location, color: Colors.black),
+            ),
+          ),
+        if (!_mapReady) const Center(child: CircularProgressIndicator(color: Colors.black)),
+      ],
+    );
+  }
+
+  LatLngBounds _boundsFromLatLngList(List<LatLng> list) {
+    double? x0, x1, y0, y1;
+    for (LatLng latLng in list) {
+      if (x0 == null) {
+        x0 = x1 = latLng.latitude;
+        y0 = y1 = latLng.longitude;
+      } else {
+        if (latLng.latitude > x1!) x1 = latLng.latitude;
+        if (latLng.latitude < x0) x0 = latLng.latitude;
+        if (latLng.longitude > y1!) y1 = latLng.longitude;
+        if (latLng.longitude < y0!) y0 = latLng.longitude;
+      }
+    }
+    return LatLngBounds(northeast: LatLng(x1!, y1!), southwest: LatLng(x0!, y0!));
+  }
+
+  @override
+  void dispose() {
+    _movementTimer?.cancel(); 
+    _mapController = null;
+    super.dispose();
   }
 }

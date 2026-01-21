@@ -154,7 +154,7 @@ class _HomeUserState extends State<HomeUserView> {
                         driverId: _currentActiveMoveData!['driverId'],
                         enrollVehicle: _currentActiveMoveData!['enrollVehicle']?.toString() ?? '',
                         driverImageUrl: _currentActiveMoveData!['driverImageUrl']?.toString() ?? '',
-                        vehicleImageUrl: 'assets/images/vehicle.png', // Esta es estática
+                        vehicleImageUrl: 'assets/images/vehicle.png', 
                         phone: _currentActiveMoveData!['driverPhone']?.toString() ?? '',
                         nameDriver: _currentActiveMoveData!['driverName']?.toString() ?? '',
                         vehicleType: _currentActiveMoveData!['vehicleType']?.toString() ?? '',
@@ -460,7 +460,8 @@ class _HomeUserState extends State<HomeUserView> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Text(
-                  formatPriceToHundreds(widget.calculatedPrice ?? '0'),
+                  widget.calculatedPrice!,
+                 // formatPriceToHundreds(widget.calculatedPrice ?? '0'),
                   style: const TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.w900,
@@ -470,7 +471,7 @@ class _HomeUserState extends State<HomeUserView> {
                 ),
                 // Divisa (más pequeña y secundaria)
                 const Text(
-                  ' ',
+                  ' COP ',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,

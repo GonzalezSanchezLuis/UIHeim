@@ -24,4 +24,4 @@ class FinishMoveViewmodel extends ChangeNotifier {
       return false;
     }
   }
-}
+} 

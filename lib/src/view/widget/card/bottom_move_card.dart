@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/enums/status_of_the_move.dart';
+import 'package:holi/src/core/helper/screen_helper.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:holi/src/service/location/background_location_service.dart';
 import 'package:holi/src/view/screens/move/moving_summary_view.dart';
 import 'package:holi/src/viewmodels/move/finish_move_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/update_status_move_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:slide_to_act/slide_to_act.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 class BottomMoveCard extends StatefulWidget {
   final int driverId;
@@ -92,6 +95,7 @@ class _BottomMoveCardState extends State<BottomMoveCard> {
                   if (!_isExpanded) return const SizedBox.shrink();
 
                   switch (_statusOfTheMove) {
+                    case StatusOfTheMove.ASSIGNED:
                     case StatusOfTheMove.DRIVER_ARRIVED:
                       return SlideAction(
                         onSubmit: () async {
@@ -130,15 +134,20 @@ class _BottomMoveCardState extends State<BottomMoveCard> {
 
                           final success = await finishMoveViewModel.finishMove(
                             widget.moveId,
-                             widget.driverId,
+                            widget.driverId,
                           );
+                          await BackgroundLocationService.stop();
+                          WakelockPlus.disable();
+                          await ScreenHelper.disableTravelMode();
 
                           if (success) {
                             Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => MovingSummaryView(moveId: widget.moveId,)));
+                                MaterialPageRoute(
+                                    builder: (context) => MovingSummaryView(
+                                          moveId: widget.moveId,
+                                        )));
                           }
-                          
                         },
                         text: 'Finalizar mudanza',
                         outerColor: AppTheme.warningcolor,

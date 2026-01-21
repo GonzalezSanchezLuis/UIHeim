@@ -38,15 +38,7 @@ class _HistoryMoveState extends State<HistoryMoveView> {
           "Todas mis mudanzas",
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: Colors.white,
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+      
       ),
       backgroundColor: AppTheme.colorbackgroundview,
       body: Padding(
@@ -56,10 +48,10 @@ class _HistoryMoveState extends State<HistoryMoveView> {
               return const Center(child: CircularProgressIndicator());
             } else if (viewmodel.errorMessage != null) {
               return Center(child: Text('Error: ${viewmodel.errorMessage}'));
-            } else if (viewmodel.movingHistory != null) {
+            } else if (viewmodel.movingHistory != null && viewmodel.movingHistory!.isNotEmpty) {
               return HistoryMoveList(moves: viewmodel.movingHistory!);
             } else {
-              return const Center(child: Text('No hay historial de mudanzas.'));
+              return const Center(child: Text('No hay historial de mudanzas.', style: TextStyle(color: Colors.black, fontSize: 20),));
             }
           })),
     );

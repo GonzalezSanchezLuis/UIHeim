@@ -21,8 +21,19 @@ class UpdateStatusMoveViewmodel extends ChangeNotifier {
   }
 
   Future<StatusOfTheMove> getCurrentStatus(int moveId) async {
-    final statusString = await _updateStatusMoveService.getStatus(moveId);
-    return StatusOfTheMove.values.firstWhere((e) => e.name == statusString,orElse: () => throw Exception("Estado desconocido recibido: $statusString"));
+    try {
+      final statusString = await _updateStatusMoveService.getStatus(moveId);
+      return StatusOfTheMove.values.firstWhere(
+        (e) => e.name.toUpperCase() == statusString.toUpperCase(),
+        orElse: () {
+          debugPrint("⚠️ Alerta: El estado '$statusString' no existe en el Enum.");
+          return StatusOfTheMove.ASSIGNED;
+        },
+      );
+    } catch (e) {
+      debugPrint("❌ Error en getCurrentStatus: $e");
+      return StatusOfTheMove.ASSIGNED;
+    }
   }
 
 }

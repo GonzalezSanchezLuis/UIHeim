@@ -13,19 +13,31 @@ class DriverInformationView extends StatefulWidget {
 }
 
 class _DriverDataViewState extends State<DriverInformationView> {
-  // --- DATOS ESTÁTICOS PARA VALIDACIÓN (MVP) ---
   final List<String> _securityChecks = ["Identidad Validada", "Antecedentes Judiciales Limpios", "Vehículo Inspeccionado", "Seguro de Carga Activo"];
 
-  @override
+ @override
   void initState() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<DriverDataViewmodel>(context, listen: false).loadDriverData(widget.driverId);
-    });
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<DriverDataViewmodel>().loadDriverData(widget.driverId);
+    });
   }
+
 
   @override
   Widget build(BuildContext context) {
+    final viewmodel = context.watch<DriverDataViewmodel>();
+     if (viewmodel.isLoading) {
+      return const Center(child: CircularProgressIndicator(color: Colors.black));
+    }
+    if (viewmodel.errorMessage != null) {
+      return Center(child: Text("Error: ${viewmodel.errorMessage}"));
+    }
+    if (viewmodel.driverDataModel == null) {
+      return const Center(child: Text("No se encontraron datos."));
+    }
+
+    final profile = viewmodel.driverDataModel!;
     return Scaffold(
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
@@ -37,20 +49,7 @@ class _DriverDataViewState extends State<DriverInformationView> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Consumer<DriverDataViewmodel>(builder: (context, viewmodel, child) {
-        if (viewmodel.isLoading) {
-          return const Center(child: CircularProgressIndicator(color: Colors.black));
-        }
-        if (viewmodel.errorMessage != null) {
-          return Center(child: Text("Error: ${viewmodel.errorMessage}"));
-        }
-        if (viewmodel.driverDataModel == null) {
-          return const Center(child: Text("No se encontraron datos."));
-        }
-
-        final profile = viewmodel.driverDataModel!;
-
-        return SingleChildScrollView(
+      body:  SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -76,8 +75,8 @@ class _DriverDataViewState extends State<DriverInformationView> {
               ],
             ),
           ),
-        );
-      }),
+        )
+      
     );
   }
 

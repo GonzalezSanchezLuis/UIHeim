@@ -46,6 +46,7 @@ class CalculatePriceService {
 
         return {
           'success': true,
+          'price':decoded['price'],
           'formattedPrice': decoded['formattedPrice'],
           'distanceKm': decoded['formattedDistance'],
           'timeMin': decoded['formattedDuration'],

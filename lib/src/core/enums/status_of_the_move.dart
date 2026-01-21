@@ -1,5 +1,7 @@
 enum StatusOfTheMove {
   // ignore: constant_identifier_names
+  ASSIGNED, 
+  // ignore: constant_identifier_names
   DRIVER_ARRIVED,
   // ignore: constant_identifier_names
   MOVING_STARTED, 
@@ -14,6 +16,8 @@ enum StatusOfTheMove {
 extension MoveTypeExtension on StatusOfTheMove {
   String get label {
     switch (this) {
+      case StatusOfTheMove.ASSIGNED:
+        return 'Asignada';
       case StatusOfTheMove.DRIVER_ARRIVED:
         return 'Pequeña';
       case StatusOfTheMove.MOVING_STARTED:

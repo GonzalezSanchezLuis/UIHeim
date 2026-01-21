@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/view/screens/move/driver_information_view.dart';
+import 'package:holi/src/viewmodels/driver/driver_data_viewmodel.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DriverInfoCard extends StatelessWidget {
@@ -72,12 +74,20 @@ class DriverInfoCard extends StatelessWidget {
               Expanded(
                 child: InkWell(
                   onTap: () {
-                   Navigator.push(
+                  Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) =>  DriverInformationView(driverId: driverId),
+                        builder: (_) => ChangeNotifierProvider(
+                          create: (_) => DriverDataViewmodel(),
+                          child: Builder(
+                            builder: (context) {
+                              return DriverInformationView(driverId: driverId);
+                            },
+                          ),
+                        ),
                       ),
                     );
+
                   },
                   child: Row(
                     mainAxisSize: MainAxisSize.min,

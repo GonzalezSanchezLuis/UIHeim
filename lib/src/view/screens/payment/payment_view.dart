@@ -40,9 +40,9 @@ class PaymentView extends StatelessWidget {
     String reducedDestination = partsDestination.take(2).join(',').trim();
 
     final dynamic amount = paymentData['amount'];
-    final double priceInPesos = (amount is num ? amount.toDouble() : 0.0) / 100;
+    final double priceValue = amount != null ? (amount is num ? amount.toDouble() : double.tryParse(amount.toString()) ?? 0) : 0;
 
-    String formattedPrice = formatPriceToHundredsDriver(priceInPesos.toString());
+    String formattedPrice = formatPriceMovingDetails(priceValue.toString());
 
     return Scaffold(
       backgroundColor: AppTheme.colorbackgroundview,
