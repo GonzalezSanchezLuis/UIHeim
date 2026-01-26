@@ -99,12 +99,12 @@ class MoveRequestCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Origen ${moveData['distance'] ?? "Cargando..."} ${moveData['estimatedTimeOfArrival'] ?? "..."}',
+                      '${moveData['distance'] ?? "Cargando..."} ${moveData['estimatedTimeOfArrival'] ?? "..."}',
                       style: const TextStyle(color: Colors.white, fontSize: 16),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      reducedOriginAddress,
+                     'Desde $reducedOriginAddress',
                       style: const TextStyle(color: Colors.grey, fontSize: 16),
                     ),
                   ],
@@ -124,11 +124,11 @@ class MoveRequestCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Destino ${moveData['distanceToDestination'] ?? "Cargando..."} ${moveData['timeToDestination'] ?? "..."}',
+                      '${moveData['distanceToDestination'] ?? "Cargando..."} ${moveData['timeToDestination'] ?? "..."}',
                       style: StyleFontsMove.paragraphStyleMove,
                     ),
                     Text(
-                      '${moveData['destination']}',
+                      'Hasta ${moveData['destination']}',
                       style: const TextStyle(color: Colors.grey, fontSize: 16),
                     ),
                   ],

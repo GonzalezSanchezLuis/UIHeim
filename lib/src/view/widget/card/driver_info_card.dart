@@ -94,7 +94,7 @@ class DriverInfoCard extends StatelessWidget {
                     children: [
                       Flexible(
                         child: Text(
-                          nameDriver,
+                          '$nameDriver ya va en camino',
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w500,

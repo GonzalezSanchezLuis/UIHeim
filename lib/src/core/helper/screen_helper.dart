@@ -3,7 +3,7 @@ import 'package:screen_brightness/screen_brightness.dart';
 class ScreenHelper {
   static double? _originalBrightness;
 
-  static Future<void> enableTravelMode({double reducedBrightness = 0.3}) async {
+  static Future<void> enableTravelMode({double reducedBrightness = 0.1}) async {
     try {
       if (_originalBrightness != null) {
         _originalBrightness = await ScreenBrightness().current;

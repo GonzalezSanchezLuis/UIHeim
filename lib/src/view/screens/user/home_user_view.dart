@@ -16,6 +16,7 @@ import 'package:holi/src/view/screens/payment/payment_view.dart';
 import 'package:holi/src/view/screens/user/user_view.dart';
 import 'package:holi/src/view/widget/button/button_card_home_widget.dart';
 import 'package:holi/src/view/widget/card/driver_info_card.dart';
+import 'package:holi/src/view/widget/card/floating_move_card_user.dart';
 import 'package:holi/src/view/widget/maps/user_maps_widget.dart';
 import 'package:holi/src/view/widget/navbar/custom_bottom_navbar.dart';
 import 'package:holi/src/view/widget/user/build_waiting_widget.dart';
@@ -138,10 +139,48 @@ class _HomeUserState extends State<HomeUserView> {
           ),
           Consumer<GetDriverLocationViewmodel>(
             builder: (context, driverVM, _) {
-              final moveDataFromViewModel = driverVM.moveData;
+        
               print('_currentActiveMoveData (nuestra fuente única): $_currentActiveMoveData');
-              if (currentPageIndex == 0 && driverIsAssigned) {
-                return Positioned(
+              if (currentPageIndex == 0 && driverIsAssigned ) {
+                return Stack(
+                  children: [
+                    Positioned(
+                      left: 5,
+                      right: 5,
+                      child: FloatingMoveCardUser(
+                        moveData: _currentActiveMoveData!,
+                      ),
+                    ),
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 30,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 5),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: AppTheme.primarycolor,
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          padding: const EdgeInsets.all(10),
+                          child: DriverInfoCard(
+                            driverId: _currentActiveMoveData!['driverId'],
+                            enrollVehicle: _currentActiveMoveData!['enrollVehicle'] ?? '',
+                            driverImageUrl: _currentActiveMoveData!['driverImageUrl'] ?? '',
+                            vehicleImageUrl: 'assets/images/vehicle.png',
+                            phone: _currentActiveMoveData!['driverPhone'] ?? '',
+                            nameDriver: _currentActiveMoveData!['driverName'] ?? '',
+                            vehicleType: _currentActiveMoveData!['vehicleType'] ?? '',
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }
+
+             /* if (currentPageIndex == 0 && driverIsAssigned) {         
+                 return Positioned(
                   left: 0,
                   right: 0,
                   bottom: 30,
@@ -154,7 +193,7 @@ class _HomeUserState extends State<HomeUserView> {
                         driverId: _currentActiveMoveData!['driverId'],
                         enrollVehicle: _currentActiveMoveData!['enrollVehicle']?.toString() ?? '',
                         driverImageUrl: _currentActiveMoveData!['driverImageUrl']?.toString() ?? '',
-                        vehicleImageUrl: 'assets/images/vehicle.png', 
+                        vehicleImageUrl: 'assets/images/vehicle.png',
                         phone: _currentActiveMoveData!['driverPhone']?.toString() ?? '',
                         nameDriver: _currentActiveMoveData!['driverName']?.toString() ?? '',
                         vehicleType: _currentActiveMoveData!['vehicleType']?.toString() ?? '',
@@ -164,8 +203,8 @@ class _HomeUserState extends State<HomeUserView> {
                       ), */
                     ),
                   ),
-                );
-              }
+                ); 
+              }*/
               return const SizedBox.shrink();
             },
           ),
@@ -461,7 +500,7 @@ class _HomeUserState extends State<HomeUserView> {
               children: [
                 Text(
                   widget.calculatedPrice!,
-                 // formatPriceToHundreds(widget.calculatedPrice ?? '0'),
+                  // formatPriceToHundreds(widget.calculatedPrice ?? '0'),
                   style: const TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.w900,

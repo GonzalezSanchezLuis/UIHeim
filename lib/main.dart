@@ -136,7 +136,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        Provider<RestoreMoveViewmodel>(create: (context) => RestoreMoveViewmodel()),
+         ChangeNotifierProvider(create: (_) => RestoreMoveViewmodel()),
         Provider<UpdateStatusMoveService>(create: (context) => UpdateStatusMoveService()),
         ChangeNotifierProvider(create: (context) => ProfileUserViewModel()),
         ChangeNotifierProvider(create: (context) => LocationViewModel()),

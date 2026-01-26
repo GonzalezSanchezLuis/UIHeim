@@ -72,6 +72,7 @@ class _UserMapWidgetState extends State<UserMapWidget> {
           zoomControlsEnabled: false,
           markers: _markers,
           polylines: _polylines,
+          padding: const EdgeInsets.only(bottom: 250, top: 0, right: 0, left: 0),
           onMapCreated: (controller) async {
             _mapController = controller;
             _controller.complete(controller);
@@ -167,10 +168,7 @@ class _UserMapWidgetState extends State<UserMapWidget> {
     pointsToInclude.add(widget.origin);
     pointsToInclude.add(widget.destination);
 
-    if (widget.driverLocation != null) {
-      pointsToInclude.add(widget.driverLocation!);
-      print("🎬 Incluyendo conductor en el encuadre: ${widget.driverLocation}");
-    }
+   if (widget.driverLocation != null) pointsToInclude.add(widget.driverLocation!);
 
     final Set<Marker> updatedMarkers = {
       Marker(markerId: const MarkerId('origin'), position: widget.origin, icon: _originIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen), anchor: const Offset(0.5, 0.5)),
@@ -230,7 +228,7 @@ class _UserMapWidgetState extends State<UserMapWidget> {
       final bounds = _calculateBounds(points);
 
       await _mapController!.animateCamera(
-        CameraUpdate.newLatLngBounds(bounds, 185),
+        CameraUpdate.newLatLngBounds(bounds, 100),
       );
     } catch (e) {
       print("🎯 Error centrando mapa: $e");
@@ -243,24 +241,7 @@ class _UserMapWidgetState extends State<UserMapWidget> {
     }
   }
 
-  /*LatLngBounds _calculateBounds(List<LatLng> points) {
-    double minLat = points.first.latitude;
-    double maxLat = points.first.latitude;
-    double minLng = points.first.longitude;
-    double maxLng = points.first.longitude;
-
-    for (var point in points) {
-      if (point.latitude < minLat) minLat = point.latitude;
-      if (point.latitude > maxLat) maxLat = point.latitude;
-      if (point.longitude < minLng) minLng = point.longitude;
-      if (point.longitude > maxLng) maxLng = point.longitude;
-    }
-
-    return LatLngBounds(
-      southwest: LatLng(minLat, minLng),
-      northeast: LatLng(maxLat, maxLng),
-    );
-  }*/
+ 
   LatLngBounds _calculateBounds(List<LatLng> points) {
     double minLat = points.first.latitude;
     double maxLat = points.first.latitude;

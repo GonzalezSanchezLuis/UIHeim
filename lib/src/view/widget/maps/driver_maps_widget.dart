@@ -821,6 +821,7 @@ class DriverMapWidget extends StatefulWidget {
   final List<LatLng> route;
   final List<LatLng>? driverToOriginRoute;
   final void Function(LatLng)? onDriverConnected;
+  
 
   const DriverMapWidget({super.key, required this.driverLocation, required this.route, this.driverToOriginRoute, this.onDriverConnected});
 
@@ -832,7 +833,6 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
   // --- CONTROLADORES Y ESTADO ---
   GoogleMapController? _mapController;
   //final Completer<GoogleMapController> _controller = Completer();
-
 
   Set<Marker> _markers = {};
   Set<Polyline> _polylines = {};
@@ -849,7 +849,7 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
   BitmapDescriptor? _destinationIcon;
 
   // --- CONFIGURACIÓN DE CÁMARA ---
-  double _currentZoom = 5.0; // Zoom lejano inicial (Colombia)
+  double _currentZoom = 5.0; 
   final double _activeLocationZoom = 14.0;
   final LatLng _defaultLocation = const LatLng(4.709870566194833, -74.07554855445838);
 
@@ -871,6 +871,20 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
     final hasLocationNow = widget.driverLocation != null;
     final locationChanged = widget.driverLocation != oldWidget.driverLocation;
 
+    final routeReceived = widget.route.isNotEmpty && oldWidget.route.isEmpty;
+    final driverToOriginReceived = widget.driverToOriginRoute != null && oldWidget.driverToOriginRoute == null;
+
+    if (routeReceived || driverToOriginReceived) {
+      _drawRoute(); // Esto llamará a _fitRouteBounds internamente
+    }
+
+    if (widget.driverLocation != null && widget.driverLocation != oldWidget.driverLocation) {
+      _updateDriverMarker(widget.driverLocation!);
+      if (!_isUserInteracting) {
+        _animateCamera(widget.driverLocation!);
+      }
+    }
+
     if (hasLocationNow) {
       // 1. Actualizar siempre el marcador
       _updateDriverMarker(widget.driverLocation!);
@@ -880,8 +894,7 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
         _animateCamera(widget.driverLocation!, zoom: _activeLocationZoom);
         // Mantenemos tu llamada original al conectar
         widget.onDriverConnected?.call(widget.driverLocation!);
-      }
-      else if (!_isUserInteracting && locationChanged) {
+      } else if (!_isUserInteracting && locationChanged) {
         _animateCamera(widget.driverLocation!);
       }
     }
@@ -892,7 +905,7 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
 
   // --- MÉTODOS DE CÁMARA ---
 
-Future<void> _animateCamera(LatLng target, {double? zoom}) async {
+  Future<void> _animateCamera(LatLng target, {double? zoom}) async {
     if (!_mapReady || _mapController == null || !mounted) return;
 
     try {
@@ -903,7 +916,6 @@ Future<void> _animateCamera(LatLng target, {double? zoom}) async {
       // Evita crash por mapId temporal
     }
   }
-
 
   // --- LÓGICA DE DIBUJO Y MARCADORES ---
 
@@ -971,18 +983,60 @@ Future<void> _animateCamera(LatLng target, {double? zoom}) async {
       });
     }
 
-    // Ajustar cámara para ver toda la ruta
     _fitRouteBounds();
   }
-
   void _fitRouteBounds() {
-    final allPoints = [...widget.route, ...?widget.driverToOriginRoute];
+    if (!_mapReady || _mapController == null) return;
+
+    final allPoints = [
+      ...widget.route,
+      ...?widget.driverToOriginRoute,
+      if (widget.driverLocation != null) widget.driverLocation!,
+    ];
+
+    if (allPoints.length < 2) return;
+
+    final bounds = _boundsFromLatLngList(allPoints);
+
+    // El padding del widget se encarga de que no se tape con la card
+    _mapController!.animateCamera(
+      CameraUpdate.newLatLngBounds(bounds, 80), // 80 es el margen de seguridad
+    );
+  }
+
+ /* void _fitRouteBounds() {
+    /* final allPoints = [...widget.route, ...?widget.driverToOriginRoute];
     if (allPoints.length < 2 || _isUserInteracting) return;
 
     final bounds = _boundsFromLatLngList(allPoints);
-    _mapController?.animateCamera(CameraUpdate.newLatLngBounds(bounds, 110));
-  }
+    _mapController?.animateCamera(CameraUpdate.newLatLngBounds(bounds, 110)); */
+    final allPoints = [...widget.route, ...?widget.driverToOriginRoute];
+    if (allPoints.isEmpty) return;
 
+    if (allPoints.length == 1) {
+      _mapController?.animateCamera(
+        CameraUpdate.newLatLngZoom(allPoints.first, _activeLocationZoom),
+      );
+      return;
+    }
+    final bounds = _boundsFromLatLngList(allPoints);
+
+    double centerLat = (bounds.northeast.latitude + bounds.southwest.latitude) / 2;
+    double centerLng = (bounds.northeast.longitude + bounds.southwest.longitude) / 2;
+    LatLng center = LatLng(centerLat, centerLng);
+
+    const double cardHeight = 150;
+    const double mapHeight = 600; 
+    final latOffset = (bounds.northeast.latitude - bounds.southwest.latitude) * (cardHeight / mapHeight) * 2.5;
+    centerLat -= latOffset;
+    center = LatLng(centerLat, centerLng);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_mapReady || _mapController == null) return;
+      _mapController!.animateCamera(CameraUpdate.newLatLngBounds(bounds, 110));
+        _mapController!.moveCamera(CameraUpdate.newLatLng(center));
+    });
+  }*/
   // --- GENERACIÓN DE ICONOS (TUS MÉTODOS ORIGINALES) ---
 
   Future<void> _loadCustomIcons() async {
@@ -1099,8 +1153,11 @@ Future<void> _animateCamera(LatLng target, {double? zoom}) async {
           polylines: _polylines,
           myLocationEnabled: false,
           myLocationButtonEnabled: false,
-          onMapCreated: (controller) {
+          zoomControlsEnabled: false,
+         padding: const EdgeInsets.only(bottom: 350, top: 0, right: 0, left: 0),
+          onMapCreated: (controller) async {
             _mapController = controller;
+            await Future.delayed(const Duration(microseconds: 300));
 
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (!mounted) return;
@@ -1108,6 +1165,7 @@ Future<void> _animateCamera(LatLng target, {double? zoom}) async {
               setState(() {
                 _mapReady = true;
               });
+                         
 
               if (widget.driverLocation != null) {
                 _updateDriverMarker(widget.driverLocation!);
@@ -1120,7 +1178,6 @@ Future<void> _animateCamera(LatLng target, {double? zoom}) async {
               }
             });
           },
-
           onCameraMove: (position) {
             _currentZoom = position.zoom;
             if (!_isUserInteracting) setState(() => _isUserInteracting = true);
@@ -1128,10 +1185,11 @@ Future<void> _animateCamera(LatLng target, {double? zoom}) async {
         ),
         if (_isUserInteracting)
           Positioned(
-            bottom: 20,
-            right: 20,
+           top: 60,
+           right: 20,
             child: FloatingActionButton(
               mini: true,
+              elevation: 4,
               backgroundColor: Colors.white,
               onPressed: () {
                 setState(() => _isUserInteracting = false);
@@ -1163,7 +1221,7 @@ Future<void> _animateCamera(LatLng target, {double? zoom}) async {
 
   @override
   void dispose() {
-    _movementTimer?.cancel(); 
+    _movementTimer?.cancel();
     _mapController = null;
     super.dispose();
   }

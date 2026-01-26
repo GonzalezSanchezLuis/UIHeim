@@ -1,2 +1,2 @@
  String environment = 'DEVELOPMENT';
-const String baseUrl = 'https://4c0b232b7635.ngrok-free.app/api/v1';
+const String baseUrl = 'https://ad5299d6b367.ngrok-free.app/api/v1';

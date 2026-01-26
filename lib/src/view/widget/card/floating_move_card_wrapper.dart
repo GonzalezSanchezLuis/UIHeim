@@ -125,7 +125,6 @@ class _FloatingMoveCardWrapperState extends State<FloatingMoveCardWrapper> with 
                 ),
               ],
             ),
-            const SizedBox(height: 15),
             const SizedBox(height: 10),
             Container(
               width: double.infinity,
