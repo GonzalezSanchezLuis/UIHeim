@@ -27,7 +27,7 @@ String formatPriceToHundredsDriver(String rawPrice) {
     decimalDigits: 0,
   );
 
-  return '\$ ${format.format(truncated)} COP';
+  return 'COP \$ ${format.format(truncated)}';
 }
 
 

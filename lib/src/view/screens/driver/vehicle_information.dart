@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:holi/src/core/theme/fonts/style_fonts_title.dart';
 import 'package:holi/src/viewmodels/driver/profile_driver_viewmodel.dart';
 import 'package:provider/provider.dart';
 
@@ -46,7 +47,7 @@ class _VehicleInformationState extends State<VehicleInformation> {
               backgroundColor: AppTheme.primarycolor,
               title: const Text(
                 "Información del vehículo",
-                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                style: StyleFontsTitle.titleStyle,
               ),
               leading: IconButton(
                 icon: const Icon(

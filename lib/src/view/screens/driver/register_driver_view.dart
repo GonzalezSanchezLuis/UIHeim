@@ -3,6 +3,7 @@ import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:holi/src/core/theme/fonts/style_fonts_title.dart';
 import 'package:holi/src/view/screens/driver/home_driver_view.dart';
 import 'package:holi/src/view/screens/tearm/privacy_policy_view.dart';
 import 'package:holi/src/view/screens/tearm/tearm_and_condition_view.dart';
@@ -18,6 +19,7 @@ class RegisterDriver extends StatefulWidget {
 }
 
 class _RegisterDriverState extends State<RegisterDriver> {
+  final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _documentController = TextEditingController();
   final TextEditingController _licenseController = TextEditingController();
   final TextEditingController _licenseCategoryController = TextEditingController();
@@ -37,7 +39,7 @@ class _RegisterDriverState extends State<RegisterDriver> {
         backgroundColor: AppTheme.primarycolor,
         title: const Text(
           "Registrarme como conductor",
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                style: StyleFontsTitle.titleStyle,
         ),
         leading: IconButton(
           icon: const Icon(
@@ -56,6 +58,25 @@ class _RegisterDriverState extends State<RegisterDriver> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const SizedBox(height: 20),
+                     TextFormField(
+                      controller: _phoneController,
+                      decoration: const InputDecoration(
+                          labelText: "Número de teléfono",
+                          border: OutlineInputBorder(),
+                          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 1.0)),
+                          floatingLabelStyle: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          )),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Este campo es obligatorio';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
                     TextFormField(
                       controller: _documentController,
                       decoration: const InputDecoration(
@@ -246,6 +267,7 @@ class _RegisterDriverState extends State<RegisterDriver> {
         final success = await registerDriverViewModel.registerDriver(
           userId,
           _documentController.text.trim(),
+          _phoneController.text.trim(),
           _licenseController.text.trim(),
           _licenseCategoryController.text.trim(),
           _typeVehicleController.text.trim(),

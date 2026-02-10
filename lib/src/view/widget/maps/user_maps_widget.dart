@@ -97,7 +97,7 @@ class _UserMapWidgetState extends State<UserMapWidget> {
           ),
         ),
         Positioned(
-          top: 20,
+          top: 140,
           right: 10,
           child: Column(
             children: [

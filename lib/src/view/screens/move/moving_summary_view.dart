@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:holi/src/core/theme/fonts/style_fonts_title.dart';
 import 'package:holi/src/utils/format_price.dart';
 import 'package:holi/src/view/screens/driver/home_driver_view.dart';
 import 'package:holi/src/viewmodels/move/moving_summary_viewmodel.dart';
@@ -55,7 +56,7 @@ class _MovingSummaryViewState extends State<MovingSummaryView> {
       appBar: AppBar(
         title: const Text(
           "Resumen del cambio de domicilio",
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          style: StyleFontsTitle.titleStyle,
         ),
     
         backgroundColor: Colors.black,
@@ -85,9 +86,7 @@ class _MovingSummaryViewState extends State<MovingSummaryView> {
             String reducedOrigin = partsOrigin.take(2).join(',').trim();
 
             List<String> partsDestination = summary.destination.split(',');
-            String reducedDestination = partsDestination.take(2).join(',').trim();
-
-          
+            String reducedDestination = partsDestination.take(2).join(',').trim();         
             String formattedPrice = formatPriceMovingDetails(summary.amount.toString());
 
             return Column(
@@ -162,7 +161,7 @@ class _MovingSummaryViewState extends State<MovingSummaryView> {
                                     border: Border.all(color: summary.paymentCompleted ? Colors.green : Colors.orange),
                                   ),
                                   child: Row(
-                                    mainAxisSize: MainAxisSize.min, // Ajusta el tamaño al contenido
+                                    mainAxisSize: MainAxisSize.min, 
                                     children: [
                                       Icon(summary.paymentCompleted ? Icons.check_circle : Icons.pending_actions, color: summary.paymentCompleted ? Colors.green : Colors.orange),
                                       const SizedBox(width: 8),
@@ -178,10 +177,6 @@ class _MovingSummaryViewState extends State<MovingSummaryView> {
                                     ],
                                   )
                                 
-                                
-                               
-                             /*   backgroundColor: summary.paymentCompleted ? AppTheme.confirmationscolor : Colors.orange,
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),*/
                               ),
                             ),
                           ],

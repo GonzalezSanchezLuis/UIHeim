@@ -16,7 +16,7 @@ import 'package:holi/src/view/screens/auth/login_view.dart';
 import 'package:holi/src/view/screens/driver/driver_view.dart';
 import 'package:holi/src/view/screens/driver/wallet_view.dart';
 import 'package:holi/src/view/screens/move/history_move_view.dart';
-import 'package:holi/src/view/screens/move/restore_move_viewmodel.dart';
+import 'package:holi/src/viewmodels/move/restore_move_viewmodel.dart';
 import 'package:holi/src/view/widget/button/button_card_home_widget.dart';
 import 'package:holi/src/view/widget/card/bottom_move_card.dart';
 import 'package:holi/src/view/widget/card/floating_move_card_wrapper.dart';
@@ -317,7 +317,7 @@ class _HomeDriverState extends State<HomeDriverView> {
                                           moveData: directionsViewModel.moveData!,
                                           onMoveAccepted: (data) async {
                                             directionsViewModel.stopTimerAndRemoveRequest();
-                                            //await BackgroundLocationService.start();
+                                           // await BackgroundLocationService.start();
                                             WakelockPlus.enable();
                                             await ScreenHelper.enableTravelMode();
                                             setState(() {
@@ -448,6 +448,7 @@ class _HomeDriverState extends State<HomeDriverView> {
           locationVM.startLocationUpdates(driverId);
         }),
       ],
+      
     );
   }
 

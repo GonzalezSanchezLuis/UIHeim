@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:holi/src/core/theme/fonts/style_fonts_title.dart';
 import 'package:holi/src/view/widget/button/button_widget.dart';
 
 class JoinDriver extends StatelessWidget {
@@ -12,7 +13,7 @@ class JoinDriver extends StatelessWidget {
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
            backgroundColor: AppTheme.primarycolor,
-        title: const Text("Nos gustaria trabajar contigo", style: TextStyle(fontWeight: FontWeight.bold, color:  Colors.white),),
+        title: const Text("Nos gustaria trabajar contigo", style: StyleFontsTitle.titleStyle,),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_rounded,color: Colors.white,),
           onPressed: () {

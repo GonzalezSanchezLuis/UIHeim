@@ -117,7 +117,6 @@ class _UserState extends State<User> {
                       size: 30,
                     ),
                     onTap: () => {
-                      // Navigator.push(context, MaterialPageRoute(builder: (context) => const MovingSummaryView(origin: 'origin', destination: 'destination', distance: 'distance', duration: 'duration', paymentMethod: 'paymentMethod', amount: 45.00, paymentCompleted: true)))
                       Navigator.push(context, MaterialPageRoute(builder: (context) => const ConfigurationUser()))
                     },
                   ),

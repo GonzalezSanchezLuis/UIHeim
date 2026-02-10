@@ -59,6 +59,8 @@ class _HomeUserState extends State<HomeUserView> {
   bool showPriceModal = false;
   bool showHomeButtons = true;
   bool isWaitingForDriver = false;
+  bool noDriverFound = false;
+  bool _paymentViewOpened = false;
   LatLng? userCurrentLocation;
   int? userId;
   Map<String, dynamic>? _currentMoveData;
@@ -130,21 +132,27 @@ class _HomeUserState extends State<HomeUserView> {
           IndexedStack(
             index: currentPageIndex,
             children: [
-              //  const  PaymentView(),
               _buildHomePage(context),
               const CalculatePrice(),
               const HistoryMoveView(),
               const User(),
             ],
           ),
+          if (currentPageIndex == 0 && !driverIsAssigned && !isWaitingForDriver)
+            Positioned(
+              top: 30,
+              left: 0,
+              right: 0,
+              child: _buildTopCoverageBanner(),
+            ),
           Consumer<GetDriverLocationViewmodel>(
             builder: (context, driverVM, _) {
-        
               print('_currentActiveMoveData (nuestra fuente única): $_currentActiveMoveData');
-              if (currentPageIndex == 0 && driverIsAssigned ) {
+              if (currentPageIndex == 0 && driverIsAssigned) {
                 return Stack(
                   children: [
                     Positioned(
+                      top: 20,
                       left: 5,
                       right: 5,
                       child: FloatingMoveCardUser(
@@ -178,33 +186,6 @@ class _HomeUserState extends State<HomeUserView> {
                   ],
                 );
               }
-
-             /* if (currentPageIndex == 0 && driverIsAssigned) {         
-                 return Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 30,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 5),
-                    child: Container(
-                      decoration: BoxDecoration(color: AppTheme.primarycolor, borderRadius: BorderRadius.circular(30)),
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                      child: DriverInfoCard(
-                        driverId: _currentActiveMoveData!['driverId'],
-                        enrollVehicle: _currentActiveMoveData!['enrollVehicle']?.toString() ?? '',
-                        driverImageUrl: _currentActiveMoveData!['driverImageUrl']?.toString() ?? '',
-                        vehicleImageUrl: 'assets/images/vehicle.png',
-                        phone: _currentActiveMoveData!['driverPhone']?.toString() ?? '',
-                        nameDriver: _currentActiveMoveData!['driverName']?.toString() ?? '',
-                        vehicleType: _currentActiveMoveData!['vehicleType']?.toString() ?? '',
-                      ),
-                      /*  child: DriverInfoCard(moveData: _incomingMoveData!,
-                        vehicleImageUrl: 'assets/images/vehicle.png',
-                      ), */
-                    ),
-                  ),
-                ); 
-              }*/
               return const SizedBox.shrink();
             },
           ),
@@ -260,16 +241,19 @@ class _HomeUserState extends State<HomeUserView> {
                               destinationLat: widget.destinationLat,
                               destinationLng: widget.destinationLng,
                               paymentMethod: _selectedPaymentMethod,
+                              buttonText: noDriverFound ? "Rintentar búsqueda" : "Confirmar y relajarme",
                               onConfirmed: () {
                                 setState(() {
                                   showPriceModal = false;
                                   isWaitingForDriver = true;
+                                  noDriverFound = false;
                                 });
-                                Future.delayed(const Duration(seconds: 10), () {
-                                  if (mounted) {
+                                Future.delayed(const Duration(seconds: 30), () {
+                                  if (mounted && _currentActiveMoveData == null) {
                                     setState(() {
                                       isWaitingForDriver = false;
                                       showPriceModal = true;
+                                      noDriverFound = true;
                                     });
                                   }
                                 });
@@ -286,6 +270,37 @@ class _HomeUserState extends State<HomeUserView> {
               },
             )
           : null,
+    );
+  }
+
+  Widget _buildTopCoverageBanner() {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1E24).withOpacity(0.9),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.map_outlined, color: Color(0xFF4ADE80), size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  " Aún somos pocos, gracias por tu paciencia si la búsqueda tarda.",
+                  style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 11),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -336,7 +351,6 @@ class _HomeUserState extends State<HomeUserView> {
                 child: Consumer<GetDriverLocationViewmodel>(
                   builder: (context, driverVM, _) {
                     final moveData = driverVM.moveData;
-
                     return Container(
                       decoration: BoxDecoration(
                         color: Colors.black,
@@ -356,7 +370,32 @@ class _HomeUserState extends State<HomeUserView> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const SizedBox(height: 20),
+                          if (noDriverFound) ...[
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(vertical: 5),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                color: const Color(0xFF1E1E24),
+                              ),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.auto_awesome, color: Color(0xFF4ADE80), size: 18),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    "No nos rendimos. ¿Buscamos de nuevo a tu conductor?",
+                                    style: TextStyle(
+                                      color: Colors.tealAccent,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                           if (showPriceModal) ...[
                             _buildDataMove(),
                           ],
@@ -379,6 +418,10 @@ class _HomeUserState extends State<HomeUserView> {
     if (_websocketFinishedMoveService == null) {
       _websocketFinishedMoveService = WebsocketFinishedMoveService(
           onMessage: (paymentData) {
+            if (_paymentViewOpened) return;
+            _paymentViewOpened = true;
+
+            if (!mounted) return;
             debugPrint("💰 Mensaje de pago recibido: $paymentData");
 
             Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentView(paymentData: paymentData)));

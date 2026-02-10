@@ -10,7 +10,6 @@ class WavaPaymentView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Definimos el controlador de la Webview
     final controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
@@ -18,9 +17,7 @@ class WavaPaymentView extends StatelessWidget {
           onPageStarted: (String url) {
             print('Navegación iniciada a: $url');
 
-            // 🚨 1. Monitorear la URL para el patrón de retorno de WAVA
             if (url.startsWith('heim://pay') || url.contains('status=')) {
-              // 2. Extraer los parámetros de la URL
               final uri = Uri.parse(url);
               final paymentStatus = uri.queryParameters['status'];
               if (paymentStatus == "SUCCES") {

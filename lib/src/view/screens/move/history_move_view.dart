@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:holi/src/core/theme/fonts/style_fonts_title.dart';
 import 'package:holi/src/view/widget/history_move_list_widget.dart';
 import 'package:holi/src/viewmodels/auth/sesion_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/moving_history_viewmodel.dart';
@@ -36,7 +37,7 @@ class _HistoryMoveState extends State<HistoryMoveView> {
         backgroundColor: AppTheme.primarycolor,
         title: const Text(
           "Todas mis mudanzas",
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          style: StyleFontsTitle.titleStyle,
         ),
       
       ),

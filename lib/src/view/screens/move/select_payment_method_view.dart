@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:holi/src/core/theme/fonts/style_fonts_title.dart';
 
 class SelectPaymentMethod extends StatefulWidget {
   final String initialMethod;
@@ -41,7 +42,7 @@ class _SelectPaymentMethodState extends State<SelectPaymentMethod> {
            const  SizedBox(height: 20,),
             const Text(
               "Selecciona tu método  de pago favorito.",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.grey),
+              style:  StyleFontsTitle.titleStyle,
             ),
                const SizedBox( height: 10,),
             _buildPaymentOption('Nequi', 'assets/images/nequi.png'),

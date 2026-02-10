@@ -80,7 +80,7 @@ class MoveRequestCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   formattedPrice,
-                  style: const TextStyle(color: Colors.white, fontSize: 23),
+                  style: const TextStyle(color: Colors.white, fontSize: 20),
                   textAlign: TextAlign.right,
                 ),
               ),

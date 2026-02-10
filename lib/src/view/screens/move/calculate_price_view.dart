@@ -4,6 +4,7 @@ import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/enums/move_type.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:holi/src/core/theme/fonts/style_fonts_title.dart';
 import 'package:holi/src/model/predictions/prediction_mdel.dart';
 import 'package:holi/src/service/location/location_service.dart';
 import 'package:holi/src/view/widget/validate_form/validate_dropdown_form_field.dart';
@@ -60,10 +61,7 @@ class _CalculatePriceState extends State<CalculatePrice> {
       appBar: AppBar(
         backgroundColor: AppTheme.primarycolor,
         title: const Text("A donde sera nuestro nuevo hogar?",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.white
-            )),
+            style: StyleFontsTitle.titleStyle),
       ),
       body: Padding(
         padding: const EdgeInsets.only(top: 10.0, left: 15.0, right: 15.0),

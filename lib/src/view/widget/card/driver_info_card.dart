@@ -37,7 +37,7 @@ class DriverInfoCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '$enrollVehicle • $vehicleType',
+                '${enrollVehicle.toUpperCase()} • ${vehicleType.toUpperCase()}',
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -74,7 +74,7 @@ class DriverInfoCard extends StatelessWidget {
               Expanded(
                 child: InkWell(
                   onTap: () {
-                  Navigator.push(
+                    Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (_) => ChangeNotifierProvider(
@@ -87,7 +87,6 @@ class DriverInfoCard extends StatelessWidget {
                         ),
                       ),
                     );
-
                   },
                   child: Row(
                     mainAxisSize: MainAxisSize.min,

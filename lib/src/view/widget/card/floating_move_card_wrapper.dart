@@ -82,7 +82,7 @@ class _FloatingMoveCardWrapperState extends State<FloatingMoveCardWrapper> with 
                   radius: 10,
                   backgroundColor: Colors.grey[800],
                   backgroundImage: (moveData['avatarProfile'] != null && moveData['avatarProfile'].toString().isNotEmpty) ? NetworkImage(moveData['avatarProfile']) : null,
-                  child: (moveData['avatarProfile'] == null || moveData['avatarProfile'].toString().isEmpty) ? const Icon(Icons.person, size: 30, color: Colors.white) : null,
+                  child: (moveData['avatarProfile'] == null || moveData['avatarProfile'].toString().isEmpty) ? const Icon(Icons.person, size: 15, color: Colors.white) : null,
                 ),
                 const SizedBox(width: 12),
                 Expanded(

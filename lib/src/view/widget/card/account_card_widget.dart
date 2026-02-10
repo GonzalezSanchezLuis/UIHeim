@@ -27,8 +27,8 @@ class AccountCard extends StatelessWidget {
             width: width,
             height: height,
             child: SizedBox(
-              width: width, // Asignar ancho
-              height: height, // Asignar alto
+              width: width, 
+              height: height, 
               child: Card(
                 color:AppTheme.colorcards,
                 shape: RoundedRectangleBorder(

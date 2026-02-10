@@ -112,9 +112,7 @@ class ConnectButton extends StatelessWidget {
     return Consumer<DriverStatusViewmodel>(
       builder: (context, provider, _) {
         // Determina el color del botón
-        final Color buttonBackgroundColor = provider.isLoading
-            ? AppTheme.confirmationscolor.withOpacity(0.6) 
-            : AppTheme.confirmationscolor; 
+        final Color buttonBackgroundColor = provider.isLoading ? AppTheme.confirmationscolor.withOpacity(0.6) : AppTheme.confirmationscolor;
 
         final Widget buttonChild = provider.isLoading
             ? const Row(
@@ -130,7 +128,7 @@ class ConnectButton extends StatelessWidget {
                   ),
                   SizedBox(width: 16),
                   Text(
-                    "Conectando...", 
+                    "Conectando...",
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 20,
@@ -163,7 +161,7 @@ class ConnectButton extends StatelessWidget {
           child: SizedBox(
             height: 40,
             child: Center(
-              child: buttonChild, 
+              child: buttonChild,
             ),
           ),
         );
@@ -183,9 +181,7 @@ class DisconnectButton extends StatelessWidget {
           return const SizedBox.shrink();
         }
 
-        final Color buttonBackgroundColor = provider.isLoading
-            ? AppTheme.warningcolor.withOpacity(0.6) 
-            : AppTheme.warningcolor; 
+        final Color buttonBackgroundColor = provider.isLoading ? AppTheme.warningcolor.withOpacity(0.6) : AppTheme.warningcolor;
 
         return ElevatedButton(
           onPressed: () {
@@ -194,7 +190,7 @@ class DisconnectButton extends StatelessWidget {
             }
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: buttonBackgroundColor, 
+            backgroundColor: buttonBackgroundColor,
             minimumSize: Size(MediaQuery.of(context).size.width * 0.7, 60),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(30),
@@ -242,8 +238,6 @@ class DisconnectButton extends StatelessWidget {
   }
 }
 
-
-
 class ConfirmButton extends StatelessWidget {
   final String calculatedPrice;
   final String distanceKm;
@@ -259,6 +253,7 @@ class ConfirmButton extends StatelessWidget {
   final String? destinationAddressText;
   final String? paymentMethod;
   final int userId;
+  final String? buttonText;
 
   const ConfirmButton({
     required this.calculatedPrice,
@@ -275,51 +270,48 @@ class ConfirmButton extends StatelessWidget {
     this.originAddressText,
     this.destinationAddressText,
     this.paymentMethod,
+    this.buttonText,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<ConfirmMoveViewModel>(context, listen: false);
-   return SizedBox(
-    width: MediaQuery.of(context).size.width * 0.9,
-    height: 100,
-      child: ElevatedButton(
-      onPressed: viewModel.isLoading
-          ? null
-          : () async {
-              final result = viewModel.confirmMove(
-                  context: context,
-                  typeOfMove: typeOfMove!,
-                  calculatedPrice: calculatedPrice,
-                  distanceKm: distanceKm,
-                  duration: duration,
-                  estimatedTime: estimatedTime,
-                  route: route,
-                  locationViewModel: locationViewModel,
-                  destinationLat: destinationLat,
-                  destinationLng: destinationLng,
-                  originAddressText: viewModel.originAddressText,
-                  destinationAddressText: viewModel.destinationAddressText,
-                  paymentMethod: paymentMethod,
-                  userId: userId);
+    return SizedBox(
+        width: MediaQuery.of(context).size.width * 0.9,
+        height: 100,
+        child: ElevatedButton(
+          onPressed: viewModel.isLoading
+              ? null
+              : () async {
+                  final result = viewModel.confirmMove(
+                      context: context,
+                      typeOfMove: typeOfMove!,
+                      calculatedPrice: calculatedPrice,
+                      distanceKm: distanceKm,
+                      duration: duration,
+                      estimatedTime: estimatedTime,
+                      route: route,
+                      locationViewModel: locationViewModel,
+                      destinationLat: destinationLat,
+                      destinationLng: destinationLng,
+                      originAddressText: viewModel.originAddressText,
+                      destinationAddressText: viewModel.destinationAddressText,
+                      paymentMethod: paymentMethod,
+                      userId: userId);
 
-              onConfirmed();
-            },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppTheme.confirmationscolor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30),
-        ),
-      ),
-      child: viewModel.isLoading
-          ? const CircularProgressIndicator(
-              color: Colors.black,
-            )
-          : const Text(
-              "Confirmar y relajarme",
-              style: TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
+                  onConfirmed();
+                },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppTheme.confirmationscolor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
             ),
-    ));
+          ),
+          child: viewModel.isLoading
+              ? const CircularProgressIndicator(color: Colors.black)
+              : Text(buttonText ?? "Confirmar y relajarme", style: const TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+        ));
   }
 }

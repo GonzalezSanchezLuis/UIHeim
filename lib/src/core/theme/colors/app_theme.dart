@@ -11,7 +11,7 @@ class AppTheme {
   static const Color greenColors = Color(0XFF2ecc71);
 
   
-  static const Color colorcards = Color.fromARGB(255, 196, 213, 231);
+  static const Color colorcards = Colors.white;
   static const TextStyle paragraph = TextStyle(
     fontSize: 16,
     color: Colors.black,

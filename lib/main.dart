@@ -8,7 +8,7 @@ import 'package:holi/src/service/location/background_location_service.dart';
 import 'package:holi/src/service/moves/accept_move_service.dart';
 import 'package:holi/src/service/moves/update_status_move_service.dart';
 import 'package:holi/src/view/screens/driver/home_driver_view.dart';
-import 'package:holi/src/view/screens/move/restore_move_viewmodel.dart';
+import 'package:holi/src/viewmodels/move/restore_move_viewmodel.dart';
 import 'package:holi/src/view/screens/user/home_user_view.dart';
 import 'package:holi/src/view/screens/welcome/wrapper_view.dart';
 import 'package:holi/src/viewmodels/auth/auth_viewmodel.dart';

@@ -7,7 +7,7 @@ import 'package:holi/src/view/screens/driver/home_driver_view.dart';
 import 'package:holi/src/view/screens/support/support_view.dart';
 import 'package:holi/src/view/screens/user/home_user_view.dart';
 import 'package:holi/src/view/widget/button/button_account_widget.dart';
-import 'package:holi/src/core/theme/fonts/style_fonts_account.dart';
+import 'package:holi/src/core/theme/fonts/style_fonts_title.dart';
 import 'package:holi/src/viewmodels/auth/password_reset_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -54,7 +54,7 @@ class _LoginState extends State<LoginView> {
                             const Text(
                               "Ingresar a mi cuenta de Heim",
                               textAlign: TextAlign.center,
-                              style: StyleFontsAccount.titleStyle,
+                              style:  TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
                             ),
                             const SizedBox(height: 20),
                           ],

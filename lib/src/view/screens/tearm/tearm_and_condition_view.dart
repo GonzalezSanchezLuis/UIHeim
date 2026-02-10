@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:holi/src/core/theme/fonts/style_fonts_title.dart';
 
 class TearmAndCondition extends StatelessWidget {
   const TearmAndCondition({super.key});
@@ -10,7 +11,7 @@ class TearmAndCondition extends StatelessWidget {
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
         backgroundColor: AppTheme.primarycolor,
-        title: const Text("Terminos y condiciones", style: TextStyle(color: Colors.white),),
+        title: const Text("Terminos y condiciones", style:  StyleFontsTitle.titleStyle),
         leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white,), onPressed: () => {Navigator.pop(context)}),
       ),
       body: const SingleChildScrollView(

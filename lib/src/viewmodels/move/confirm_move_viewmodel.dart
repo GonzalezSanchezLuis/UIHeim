@@ -11,6 +11,9 @@ class ConfirmMoveViewModel with ChangeNotifier {
   String? destinationAddressText;
 
   bool _isLoading = false;
+  bool _hasErrorSearching = false;
+  bool get hasErrorSearching => _hasErrorSearching;
+
   String? _errorMessage;
   Map<String, dynamic>? _response;
 
@@ -28,7 +31,7 @@ class ConfirmMoveViewModel with ChangeNotifier {
     required List<LatLng> route,
     required int userId,
     required LocationViewModel locationViewModel,
-    double? destinationLat, 
+    double? destinationLat,
     double? destinationLng,
     String? originAddressText,
     String? destinationAddressText,
@@ -40,7 +43,6 @@ class ConfirmMoveViewModel with ChangeNotifier {
     notifyListeners();
 
     try {
-   
       // 🧭 Obtener ubicación actual
       final position = await locationViewModel.updateLocation(context);
       if (position == null) {
@@ -53,23 +55,21 @@ class ConfirmMoveViewModel with ChangeNotifier {
       final double userLat = position.latitude;
       final double userLng = position.longitude;
 
-  
       final result = await _service.confirmMove(
-        calculatedPrice: calculatedPrice,
-        distanceKm: distanceKm,
-        duration: duration,
-        typeOfMove: typeOfMove,
-        estimatedTime: estimatedTime,
-        route: route,
-        userLat: userLat,
-        userLng: userLng,
-        destinationLat: destinationLat, 
-        destinationLng: destinationLng,
-        originAddressText: originAddressText,
-        destinationAddressText: destinationAddressText,
-        paymentMethod: paymentMethod,
-        userId: userId
-      );
+          calculatedPrice: calculatedPrice,
+          distanceKm: distanceKm,
+          duration: duration,
+          typeOfMove: typeOfMove,
+          estimatedTime: estimatedTime,
+          route: route,
+          userLat: userLat,
+          userLng: userLng,
+          destinationLat: destinationLat,
+          destinationLng: destinationLng,
+          originAddressText: originAddressText,
+          destinationAddressText: destinationAddressText,
+          paymentMethod: paymentMethod,
+          userId: userId);
 
       if (result != null) {
         _response = result;
@@ -84,8 +84,12 @@ class ConfirmMoveViewModel with ChangeNotifier {
     notifyListeners();
   }
 
+  void setHasErrorSearching(bool value) {
+    _hasErrorSearching = value;
+    notifyListeners();
+  }
 
-    void setAddresses({required String origin, required String destination}) {
+  void setAddresses({required String origin, required String destination}) {
     originAddressText = origin;
     destinationAddressText = destination;
     // notifyListeners(); // Para notificar cambios si lo necesitas

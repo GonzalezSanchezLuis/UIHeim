@@ -43,6 +43,7 @@ class PaymentView extends StatelessWidget {
     final double priceValue = amount != null ? (amount is num ? amount.toDouble() : double.tryParse(amount.toString()) ?? 0) : 0;
 
     String formattedPrice = formatPriceMovingDetails(priceValue.toString());
+    bool _openingPayment = false;
 
     return Scaffold(
       backgroundColor: AppTheme.colorbackgroundview,
@@ -131,22 +132,9 @@ class PaymentView extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
               onPressed: () async {
+                if (_openingPayment) return;
+                _openingPayment = true;
                 startPayment(context, paymentURL);
-                /* try {
-                  final Uri uri = Uri.parse(paymentURL);
-                  print("URL DE PAGO $uri");
-                  if (await canLaunchUrl(uri)) {
-                    await launchUrl(uri);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("No se pudo abrir el enlace de pago.")),
-                    );
-                  }
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Error al procesar el enlace de pago.")),
-                  );
-                } */
               },
               icon: const Icon(Icons.payment, color: Colors.white),
               label: Text(

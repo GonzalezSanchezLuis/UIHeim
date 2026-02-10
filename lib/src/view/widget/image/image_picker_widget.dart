@@ -61,11 +61,13 @@ class ImagePickerWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ImageProvider? imageProvider;
-    if (selectedImage != null) {
-      imageProvider = FileImage(selectedImage!);
-    } else if (imageUrl != null && imageUrl!.isNotEmpty) {
-      imageProvider = NetworkImage(imageUrl!);
-    }
+  if (selectedImage != null) {
+    imageProvider = FileImage(selectedImage!);
+  } 
+  // 2. Segunda opción: URL de internet (Validamos que sea real)
+  else if (imageUrl != null && imageUrl!.startsWith('http')) {
+    imageProvider = NetworkImage(imageUrl!);
+  }
 
     return GestureDetector(
       onTap: () => _showImageSourceDialog(context),
@@ -73,9 +75,8 @@ class ImagePickerWidget extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 40,
-            backgroundColor: AppTheme.colorcards,
             backgroundImage: imageProvider,
-            child: imageProvider == null ? const Icon(Icons.person, size: 40, color: Colors.white) : null,
+            child: imageProvider == null ? const Icon(Icons.person, size: 40, color: Colors.black) : null,
           ),
           const SizedBox(width: 16),
           const Expanded(

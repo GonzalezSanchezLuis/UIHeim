@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:holi/src/core/theme/fonts/style_fonts_title.dart';
 import 'package:holi/src/utils/format_price.dart';
 import 'package:holi/src/view/screens/payment/payment_account_driver_view.dart';
 import 'package:holi/src/viewmodels/auth/sesion_viewmodel.dart';
@@ -41,7 +42,7 @@ class _WalletViewState extends State<WalletView> {
       appBar: AppBar(
         title: const Text(
           "Ganancias",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: StyleFontsTitle.titleStyle,
         ),
         backgroundColor: Colors.black,
         leading: IconButton(

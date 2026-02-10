@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:holi/src/core/theme/fonts/style_fonts_title.dart';
 import 'package:holi/src/view/screens/welcome/logo_view.dart';
 import 'package:holi/src/view/widget/button/button_widget.dart';
 import 'package:holi/src/view/widget/image/image_picker_widget.dart';
@@ -48,7 +49,7 @@ class _ProfileViewState extends State<ProfileView> {
           backgroundColor: AppTheme.primarycolor,
           title: const Text(
             "Mi cuenta",
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white,fontSize: 18),
+            style:  StyleFontsTitle.titleStyle,
           ),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white),

@@ -43,7 +43,7 @@ class _CreateAccountState extends State<CreateAccount> {
         backgroundColor: _isLoading ? Colors.black : AppTheme.colorbackgroundview,
         title: const Text(
           "Atras",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold,color: Colors.black),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),

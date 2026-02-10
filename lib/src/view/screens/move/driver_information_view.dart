@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:holi/src/core/theme/fonts/style_fonts_title.dart';
 import 'package:holi/src/viewmodels/driver/driver_data_viewmodel.dart';
 import 'package:provider/provider.dart';
 
@@ -15,7 +16,7 @@ class DriverInformationView extends StatefulWidget {
 class _DriverDataViewState extends State<DriverInformationView> {
   final List<String> _securityChecks = ["Identidad Validada", "Antecedentes Judiciales Limpios", "Vehículo Inspeccionado", "Seguro de Carga Activo"];
 
- @override
+  @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -23,11 +24,10 @@ class _DriverDataViewState extends State<DriverInformationView> {
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
     final viewmodel = context.watch<DriverDataViewmodel>();
-     if (viewmodel.isLoading) {
+    if (viewmodel.isLoading) {
       return const Center(child: CircularProgressIndicator(color: Colors.black));
     }
     if (viewmodel.errorMessage != null) {
@@ -36,33 +36,29 @@ class _DriverDataViewState extends State<DriverInformationView> {
     if (viewmodel.driverDataModel == null) {
       return const Center(child: Text("No se encontraron datos."));
     }
-
     final profile = viewmodel.driverDataModel!;
+   
     return Scaffold(
-      backgroundColor: AppTheme.colorbackgroundview,
-      appBar: AppBar(
-        title: const Text("Perfil del Conductor", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.black,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+        backgroundColor: AppTheme.colorbackgroundview,
+        appBar: AppBar(
+          title: const Text("Perfil del Conductor", style: StyleFontsTitle.titleStyle),
+          backgroundColor: Colors.black,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white),
+            onPressed: () => Navigator.pop(context),
+          ),
         ),
-      ),
-      body:  SingleChildScrollView(
+        body: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                // 1. TARJETA PRINCIPAL (Identidad)
                 _buildProfileHeader(profile),
 
                 const SizedBox(height: 24),
-
-                // 2. INFORMACIÓN DEL VEHÍCULO (Simulada para MVP)
-                //_buildSectionTitle("Información del Vehículo"),
                 const SizedBox(height: 12),
-              //  _buildVehicleCard("Foton Turbo 2.5", "PLACA: JKL-987"),
+                //  _buildVehicleCard("Foton Turbo 2.5", "PLACA: JKL-987"),
 
                 const SizedBox(height: 24),
 
@@ -75,12 +71,15 @@ class _DriverDataViewState extends State<DriverInformationView> {
               ],
             ),
           ),
-        )
-      
-    );
+        ));
   }
 
   Widget _buildProfileHeader(dynamic profile) {
+    final String avatarUrl = profile.urlAvatar ?? "";
+    final bool hasValidAvatar = avatarUrl.isNotEmpty && avatarUrl.startsWith('http');
+
+    final String displayPhone = (profile.phone == null || profile.phone.isEmpty) ? "Teléfono no disponible" : profile.phone;
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -100,12 +99,13 @@ class _DriverDataViewState extends State<DriverInformationView> {
               backgroundColor: AppTheme.primarycolor,
               child: CircleAvatar(
                 radius: 50,
-                backgroundImage: NetworkImage(profile.urlAvatar),
+                backgroundColor: const Color(0xFF1E1E24),
+                backgroundImage: hasValidAvatar ? NetworkImage(avatarUrl) : null, child: !hasValidAvatar ? const Icon(Icons.person, size: 50, color: Colors.white,) : null,
               ),
             ),
             const SizedBox(height: 16),
             Text(profile.name, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            Text(profile.phone, style: const TextStyle(fontSize: 15, color: Colors.grey)),
+            Text(displayPhone, style: const TextStyle(fontSize: 15, color: Colors.grey)),
             const SizedBox(height: 16),
 
             // Calificación con RichText (Negrita parcial)
@@ -122,7 +122,7 @@ class _DriverDataViewState extends State<DriverInformationView> {
                   const SizedBox(width: 6),
                   RichText(
                     text: const TextSpan(
-                      text: '3.9 ', // Dato simulado
+                      text: '3.9 ',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
                       children: [
                         TextSpan(

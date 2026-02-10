@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:holi/src/core/enums/payment_status.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:holi/src/core/theme/fonts/style_fonts_title.dart';
 import 'package:holi/src/utils/format_date.dart';
 import 'package:holi/src/utils/format_price.dart';
 import 'package:holi/src/utils/reduced_address.dart';
@@ -31,7 +33,7 @@ class _MoveDetailsState extends State<MoveDetailsView> {
         backgroundColor: Colors.black,
         title: const Text(
           "Detalles del cambio de domicilio",
-          style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
+          style: StyleFontsTitle.titleStyle,
         ),
         leading: IconButton(
           icon: const Icon(
@@ -79,6 +81,15 @@ class _MoveDetailsState extends State<MoveDetailsView> {
           final driverName = moveData['driverName'] ?? 'N/A';
           final typeOfVehicle = moveData['typeOfVehicle'] ?? 'N/A';
           final typeOfMove = moveData['typeOfMove'] ?? 'N/A';
+           final transactionalNumber = moveData['transactionalNumber'] ?? 'N/A';
+           final statusStr = moveData['paymentStatus'] ?? 'FALIED';
+           
+           final status = PaymentStatus.values.firstWhere(
+            (e) => e.value == statusStr,
+            orElse: () => PaymentStatus.PAID,
+          );
+          final bool isApproved = status == PaymentStatus.PAID;
+
 
           final reducedOrigin = reducedAddress(origin);
           final reducedDestination = reducedAddress(destination);
@@ -96,13 +107,14 @@ class _MoveDetailsState extends State<MoveDetailsView> {
               _buildDivider(),
               _buildSectionHeader('Fecha'),
               _buildRow(format, ""),
+              _buildRowTansaction("Referencia de pago N°", transactionalNumber),
               _buildDivider(),
               _buildSectionHeader('Resumen de pago'),
               _buildRow('Costo del servicio', price),
               _buildRow('Subtotal', priceSubtotal),
               _buildRow('Total a pagar', priceTotalAmount, isBold: true),
               _buildRow('Metodo de pago', paymentMethod),
-              _buildRowIsApproved("Pago", true),
+              _buildRowIsApproved("Estado del pago", isApproved),
               // _buildRow('Pago', 'aprobado'),
               _buildDivider(),
               _buildSectionHeader('Otros'),
@@ -138,6 +150,22 @@ Widget _buildRow(String label, String value, {bool isBold = false}) {
         Text(label, style: const TextStyle(fontSize: 16)),
         Text(
           value,
+          style: TextStyle(fontSize: 15, fontWeight: isBold ? FontWeight.bold : FontWeight.normal),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget _buildRowTansaction(String label, int value, {bool isBold = false}) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 4.0),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 16)),
+        Text(
+          value.toString(),
           style: TextStyle(fontSize: 15, fontWeight: isBold ? FontWeight.bold : FontWeight.normal),
         ),
       ],

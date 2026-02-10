@@ -2,6 +2,7 @@ import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:holi/src/core/theme/fonts/style_fonts_title.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class Support extends StatelessWidget {
@@ -15,7 +16,7 @@ class Support extends StatelessWidget {
         backgroundColor: AppTheme.primarycolor,
         title: const Text(
           "Atras",
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          style:  StyleFontsTitle.titleStyle,
         ),
         leading: IconButton(
           icon: const Icon(
@@ -98,20 +99,17 @@ Future<void> _sendEmail(BuildContext context) async {
       _showFlushbar(context, 'No se encontró una aplicación de correo instalada.', AppTheme.warningcolor);
     }
   } catch (e) {
-   debugPrint("Error abriendo el email $e");
+    debugPrint("Error abriendo el email $e");
     _showFlushbar(context, 'No se pudo abrir el correo.', AppTheme.warningcolor);
   }
-     
-  }
-  
-  
+}
 
-  void _showFlushbar(BuildContext context, String message, Color color) {
+void _showFlushbar(BuildContext context, String message, Color color) {
   Flushbar(
     message: message,
     backgroundColor: color,
     duration: const Duration(seconds: 3),
-    flushbarPosition: FlushbarPosition.TOP, 
+    flushbarPosition: FlushbarPosition.TOP,
     borderRadius: BorderRadius.circular(8),
     margin: const EdgeInsets.all(8),
     icon: Icon(
@@ -120,6 +118,3 @@ Future<void> _sendEmail(BuildContext context) async {
     ),
   ).show(context);
 }
-
-
-

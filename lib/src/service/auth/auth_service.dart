@@ -19,6 +19,7 @@ class AuthService {
 
   Future<Map<String, dynamic>?> registerDriver({
     required int userId,
+    required String phoneNumber,
     required String document,
     required String licenseCategory,
     required String licenseNumber,
@@ -27,13 +28,14 @@ class AuthService {
   }) async {
     return _register("/drivers/register", {
       'userId': userId,
+      'phone': phoneNumber,
       'document' :document,
       'licenseCategory' : licenseCategory,
       'licenseNumber': licenseNumber,
       'vehicleType': vehicleType,
       'enrollVehicle': enrollVehicle,
     });
-  }
+  } 
 
   Future<Map<String, dynamic>?> _register(String endpoint, Map<String, dynamic> body) async {
     try {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:holi/src/core/theme/fonts/style_fonts_title.dart';
 import 'package:holi/src/view/screens/tearm/privacy_policy_view.dart';
 import 'package:holi/src/view/screens/tearm/tearm_and_condition_view.dart';
 
@@ -12,7 +13,7 @@ class Legal extends StatelessWidget {
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
         backgroundColor: AppTheme.primarycolor,
-        title: const Text("Centro de privacidad",style: TextStyle(color: Colors.white),),
+        title: const Text("Centro de privacidad",style:  StyleFontsTitle.titleStyle,),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white,),
           onPressed: () {

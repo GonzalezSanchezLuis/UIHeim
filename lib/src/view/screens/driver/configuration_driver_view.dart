@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:holi/src/core/theme/fonts/style_fonts_title.dart';
 import 'package:holi/src/service/auth/auth_service.dart';
 import 'package:holi/src/view/screens/about/about_view.dart';
 import 'package:holi/src/view/screens/auth/login_view.dart';
@@ -29,7 +30,7 @@ class _ConfigurationDriverState extends State<ConfigurationDriver> {
          backgroundColor: AppTheme.primarycolor,
         title: const Text(
           "Configuración",
-          style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white),
+          style: StyleFontsTitle.titleStyle,
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded,color: Colors.white,),

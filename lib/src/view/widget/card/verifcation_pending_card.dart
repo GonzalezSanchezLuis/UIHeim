@@ -8,21 +8,21 @@ class VerifcationPendingCard  extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05), // Un toque sutil sobre el fondo negro
+        color: const Color(0xFF1E1E24), 
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.orange.withOpacity(0.3)),
+        border: Border.all(color: Colors.blue.withOpacity(0.1)),
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.orange.withOpacity(0.2),
+              color: Colors.blue.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
-              Icons.verified_user_outlined,
-              color: Colors.orange,
+              Icons.auto_awesome,
+              color: Color(0xFF60A5FA),
               size: 24,
             ),
           ),
@@ -33,7 +33,7 @@ class VerifcationPendingCard  extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
-                  "Cuenta en verificación",
+                  "Tu perfil está en buenas manos.",
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -41,10 +41,11 @@ class VerifcationPendingCard  extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  "Te notificaremos al habilitarte",
+                  "Estamos revisando tus datos para asegurar la mejor experiencia . Te avisaremos pronto.",
                   style: TextStyle(
-                    color: Colors.orange.shade300,
-                    fontSize: 11,
+                    color: Colors.white.withOpacity(0.6),
+                    fontSize: 12,
+                    height: 1.3
                   ),
                 ),
               ],

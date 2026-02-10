@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:holi/src/core/theme/fonts/style_fonts_title.dart';
 
 class PrivacyPolicyView extends StatelessWidget {
   const PrivacyPolicyView({super.key});
@@ -10,7 +11,7 @@ class PrivacyPolicyView extends StatelessWidget {
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
         backgroundColor: AppTheme.primarycolor,
-        title: const Text("Política de Privacidad", style: TextStyle(color: Colors.white),),
+        title: const Text("Política de Privacidad", style:  StyleFontsTitle.titleStyle,),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white,),
           onPressed: () {

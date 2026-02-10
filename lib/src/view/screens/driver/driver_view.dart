@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:holi/src/core/theme/fonts/style_fonts_title.dart';
 import 'package:holi/src/service/drivers/driver_profile_service.dart';
 import 'package:holi/src/view/screens/driver/configuration_driver_view.dart';
 import 'package:holi/src/view/widget/card/account_card_widget.dart';
@@ -29,7 +30,8 @@ class _DriverState extends State<Driver> {
       print("Datos del usuario: $driverData");
       setState(() {
         name = driverData['fullName'] ?? 'Nombre no disponible';
-        avatarUrl = driverData['urlAvatarProfile'] ?? 'Nombre no disponible';
+        String? url = driverData['urlAvatarProfile'];
+        avatarUrl = (url != null && url.startsWith('http')) ? url : null;
 
       });
     } else {
@@ -48,7 +50,7 @@ class _DriverState extends State<Driver> {
          backgroundColor: AppTheme.primarycolor,
         title: const Text(
           "Mi cuenta",
-          style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
+          style: StyleFontsTitle.titleStyle,
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white,),
@@ -70,7 +72,7 @@ class _DriverState extends State<Driver> {
                     padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white,
+                      color: Colors.black,
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.2),
@@ -86,8 +88,7 @@ class _DriverState extends State<Driver> {
                           )
                         : const CircleAvatar(
                             radius: 35,
-                            backgroundColor: Colors.grey,
-                            child: Icon(Icons.person, size: 35, color: Colors.white),
+                            child: Icon(Icons.person, size: 36, color: Colors.black),
                           ),
                   ),
                   const SizedBox(width: 10.0),
@@ -124,17 +125,6 @@ class _DriverState extends State<Driver> {
               icon: const Icon(Icons.settings),
               onTap: () => {Navigator.push(context, MaterialPageRoute(builder: (context) => const ConfigurationDriver()))},
             ),
-            /*AccountCard(
-              title: "Otros",
-              subtitle: "Realiza mudanzas con Holi",
-              width: 450,
-              height: 130,
-              icon: const Icon(Icons.fire_truck),
-              onTap: () => {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const JoinDriver()))
-              },
-            ), */
           ],
         ),
       ),
