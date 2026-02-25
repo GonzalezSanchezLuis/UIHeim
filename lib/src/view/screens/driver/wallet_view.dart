@@ -54,7 +54,7 @@ class _WalletViewState extends State<WalletView> {
         if (viewModel.isLoading) {
           return const Center(child: CircularProgressIndicator());
         }
-
+ 
         if (viewModel.errorMessage != null) {
           return Center(child: Text('Error: ${viewModel.errorMessage}'));
         }
@@ -80,6 +80,11 @@ class _WalletViewState extends State<WalletView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                if(wallets.promotionalMovesLeft > 0 )
+                  _buildPromoBanner(wallets.promotionalMovesLeft),
+                  const SizedBox(height: 10),
+
+                
                 // 1. 💳 TARJETA PRINCIPAL CON TODOS LOS SALDOS Y FECHAS
                 _buildMainBalanceCard(
                   rawTotal: rawTotal,
@@ -265,6 +270,38 @@ Widget _buildActionCard({
           ],
         ),
       ),
+    ),
+  );
+}
+
+Widget _buildPromoBanner(int tripsLeft) {
+  return Container(
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: AppTheme.confirmationscolor.withOpacity(0.2),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: AppTheme.confirmationscolor.withOpacity(0.1)),
+    ),
+    child: Row(
+      children: [
+        Icon(Icons.auto_awesome, color: AppTheme.greenColors, size: 24),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "¡ERES UN PIONERO!",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              Text(
+                "Por ser de los primeros, tus próximos $tripsLeft viajes son  100% para ti. Gracias por confiar en Heim.",
+                style: const TextStyle(fontSize: 14, color: Colors.black87),
+              ),
+            ],
+          ),
+        ),
+      ],
     ),
   );
 }

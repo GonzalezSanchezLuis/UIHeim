@@ -9,7 +9,6 @@ import 'package:holi/src/core/helper/screen_helper.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/service/auth/auth_service.dart';
 import 'package:holi/src/service/location/background_location_service.dart';
-import 'package:holi/src/service/moves/restore_move_service.dart';
 import 'package:holi/src/service/websocket/websocket_driver_service.dart';
 import 'package:holi/src/utils/format_price.dart';
 import 'package:holi/src/view/screens/auth/login_view.dart';
@@ -63,6 +62,7 @@ class _HomeDriverState extends State<HomeDriverView> {
     super.initState();
     initializeStatusFromPrefs();
     BackgroundLocationService.initService();
+   
 
     final routeDriverViewmodel = Provider.of<RouteDriverViewmodel>(context, listen: false);
     final moveNotificationVM = Provider.of<MoveNotificationDriverViewmodel>(context, listen: false);
@@ -91,6 +91,7 @@ class _HomeDriverState extends State<HomeDriverView> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<WalletViewmodel>(context, listen: false).loadWallet(driverId);
       Provider.of<RestoreMoveViewmodel>(context, listen: false).restoreMoveIfExists(driverId);
+       Provider.of<ProfileDriverViewModel>(context, listen: false).fetchDriverData();
     });
 
     _socketService = WebSocketDriverService(

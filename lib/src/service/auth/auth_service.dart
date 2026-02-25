@@ -104,7 +104,7 @@ class AuthService {
       }
     } on Exception catch (e) {
       print("ERROR DE COPNEXION $e.toString()");
-      throw Exception("Error de conexión: ${e.toString()}");
+      throw Exception("Error de conexión: $e");
     }
   }
 

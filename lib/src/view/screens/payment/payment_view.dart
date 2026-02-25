@@ -7,7 +7,191 @@ import 'package:holi/src/view/screens/payment/wava_payment_vew.dart';
 import 'package:holi/src/view/screens/user/home_user_view.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class PaymentView extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // Importante para ocultar botones
+import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:holi/src/utils/format_price.dart';
+import 'package:holi/src/view/screens/payment/wava_payment_vew.dart';
+
+class PaymentView extends StatefulWidget {
+  final Map<String, dynamic> paymentData;
+
+  const PaymentView({super.key, required this.paymentData});
+
+  @override
+  State<PaymentView> createState() => _PaymentViewState();
+}
+
+class _PaymentViewState extends State<PaymentView> {
+  bool _openingPayment = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // 1. Ocultar botones de navegación del sistema por seguridad
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  }
+
+  @override
+  void dispose() {
+    // 2. Restaurar botones al salir (muy importante)
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    super.dispose();
+  }
+
+  Color _getPaymentColor() {
+    final String paymentMethod = (widget.paymentData['paymentMethod'] ?? "nequi").toString().toLowerCase();
+    if (paymentMethod == "nequi") {
+      return const Color(0xFF7B1FA2);
+    } else if (paymentMethod == "daviplata") {
+      return const Color(0xFFE53935);
+    }
+    return Colors.orange;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final String paymentMethod = widget.paymentData['paymentMethod'] ?? "N/A";
+    final String paymentURL = widget.paymentData['paymentURL'] ?? "";
+    final String origin = widget.paymentData['origin'] ?? "";
+    final String destination = widget.paymentData['destination'] ?? "";
+    final String distanceKm = widget.paymentData['distanceKm'] ?? "";
+    final String durationMin = widget.paymentData['durationMin'] ?? "";
+
+    // Lógica de limpieza de strings
+    List<String> partsOrigin = origin.split(',');
+    String reducedOrigin = partsOrigin.take(2).join(',').trim();
+    List<String> partsDestination = destination.split(',');
+    String reducedDestination = partsDestination.take(2).join(',').trim();
+
+    final dynamic amount = widget.paymentData['amount'];
+    final double priceValue = amount != null ? (amount is num ? amount.toDouble() : double.tryParse(amount.toString()) ?? 0) : 0;
+    String formattedPrice = formatPriceMovingDetails(priceValue.toString());
+
+    // 3. PopScope para bloquear el botón físico de atrás
+    return PopScope(
+      canPop: false, 
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Por seguridad, completa el pago para finalizar."),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      },
+      child: Scaffold(
+        backgroundColor: AppTheme.colorbackgroundview,
+        appBar: AppBar(
+          title: const Text(
+            "Finalizar Trasteo", // Un título más directo
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          ),
+          backgroundColor: Colors.black,
+          elevation: 0,
+          automaticallyImplyLeading: false, 
+        ),
+        body: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Card(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(Icons.check_circle, color: Colors.green, size: 28),
+                            SizedBox(width: 8),
+                            Text(
+                              "¡Mudanza finalizada!",
+                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Text("Origen: $reducedOrigin", style: const TextStyle(fontSize: 16)),
+                        Text("Destino: $reducedDestination", style: const TextStyle(fontSize: 16)),
+                        const SizedBox(height: 8),
+                        Text(
+                          "Distancia: $distanceKm  | Tiempo: $durationMin ",
+                          style: const TextStyle(fontSize: 15, color: Colors.grey),
+                        ),
+                        const Divider(height: 30),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text("Total a pagar:", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                            Text(
+                              formattedPrice,
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text("Método de pago:", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                            Row(
+                              children: [
+                                Image.asset(
+                                  paymentMethod.toLowerCase() == "daviplata" ? 'assets/images/daviplata.png' : 'assets/images/nequi.png',
+                                  width: 50,
+                                  height: 50,
+                                  // Solo aplicar filtro si no es imagen real a color
+                                ),
+                                const SizedBox(width: 5),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(16),
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _getPaymentColor(),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                onPressed: () {
+                  if (_openingPayment) return;
+                  setState(() => _openingPayment = true);
+                  startPayment(context, paymentURL);
+                },
+                icon: const Icon(Icons.payment, color: Colors.white),
+                label: Text(
+                  "Pagar con $paymentMethod",
+                  style: const TextStyle(fontSize: 18, color: Colors.white),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void startPayment(BuildContext context, String paymentUrl) {
+    Navigator.push(
+      context, 
+      MaterialPageRoute(builder: (_) => WavaPaymentView(paymentUrl: paymentUrl))
+    ).then((_) => setState(() => _openingPayment = false));
+  }
+}
+
+/*class PaymentView extends StatelessWidget {
   final Map<String, dynamic> paymentData;
 
   const PaymentView({super.key, required this.paymentData});
@@ -155,4 +339,4 @@ class PaymentView extends StatelessWidget {
       print("ERROR DURANTE EL PROCESO DE PAGO: $e");
     }
   }
-}
+} */

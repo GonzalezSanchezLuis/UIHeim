@@ -1,24 +1,19 @@
 class WalletModel {
   final int driverId;
-  final double availableBalance; 
+  final double availableBalance;
   final double pendingBalance;
   final DateTime? lastPaymentDate;
   final DateTime nextPaymentDate;
+  final int promotionalMovesLeft;
 
-  WalletModel({
-    required this.driverId,
-    required this.availableBalance, 
-    required this.pendingBalance,
-    this.lastPaymentDate,
-    required this.nextPaymentDate,
-  });
+  WalletModel({required this.driverId, required this.availableBalance, required this.pendingBalance, this.lastPaymentDate, required this.nextPaymentDate, required this.promotionalMovesLeft});
 
   factory WalletModel.fromJson(Map<String, dynamic> json) {
     final String? lastDateStr = json['lastPaymentDate'];
 
-   
-    final rawAvailableBalance = json['availableBalance']; 
+    final rawAvailableBalance = json['availableBalance'];
     final rawPendingBalance = json['pendingBalance'];
+    final promotionalMovesLeft = json['promotionalMovesLeft'];
 
     double parsedAvailableBalance = 0.00;
     if (rawAvailableBalance is num) {
@@ -36,10 +31,11 @@ class WalletModel {
 
     return WalletModel(
       driverId: json['driverId'] as int,
-      availableBalance: parsedAvailableBalance, 
-      pendingBalance: parsedPendingBalance, 
+      availableBalance: parsedAvailableBalance,
+      pendingBalance: parsedPendingBalance,
       lastPaymentDate: lastDateStr != null ? DateTime.parse(lastDateStr) : null,
       nextPaymentDate: DateTime.parse(json['nextPaymentDate']),
+      promotionalMovesLeft: promotionalMovesLeft ?? 0
     );
   }
 }

@@ -106,7 +106,9 @@ class AuthViewModel extends ChangeNotifier {
     return true;
   }
 
-  Future<bool> registerDriver(int userId, String phone,  String document, String licenseCategory, licenseNumber, String vehicleType, String enrollVehicle) async {
+  Future<bool> registerDriver({
+ required int userId, required String phone, required String document, required String licenseCategory, required licenseNumber, required String vehicleType, required String enrollVehicle
+  }) async {
     isLoading = true;
     errorMessage = null;
     notifyListeners();

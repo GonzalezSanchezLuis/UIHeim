@@ -14,6 +14,10 @@ class WalletService {
         url,
         // No necesitas headers si no envías un body, pero puedes dejarlos para autenticación futura
         // headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer YOUR_TOKEN_HERE'},
+        headers: {'Content-Type': 'application/json', 
+          'ngrok-skip-browser-warning': 'true'
+        
+        }
       );
 
       if (response.statusCode == 200) {

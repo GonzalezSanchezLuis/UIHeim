@@ -227,8 +227,10 @@ class _CreateAccountState extends State<CreateAccount> {
           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeUserView()));
 
           if (userId != null && role != null) {
-            final fcmViewModel = FcmViewModel();
-            await fcmViewModel.initFcm(userId, role);
+           final fcmViewModel = FcmViewModel();
+           await fcmViewModel.initFcm(userId, role).catchError((e){
+            print("Error en registro de token (pero el usuario ya entró): $e");
+           });
           }
         } else {
           if (mounted) setState(() => _isLoading = false);

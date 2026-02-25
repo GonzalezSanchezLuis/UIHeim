@@ -125,7 +125,11 @@ class _HomeUserState extends State<HomeUserView> {
   @override
   Widget build(BuildContext context) {
     final bool driverIsAssigned = _currentActiveMoveData != null;
-    return Scaffold(
+    return PopScope(canPop: !driverIsAssigned,
+      onPopInvokedWithResult: (didPop, result){
+        if(didPop) return;
+      },
+      child: Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
         children: [
@@ -270,7 +274,9 @@ class _HomeUserState extends State<HomeUserView> {
               },
             )
           : null,
+    ) ,
     );
+     
   }
 
   Widget _buildTopCoverageBanner() {
@@ -305,7 +311,8 @@ class _HomeUserState extends State<HomeUserView> {
   }
 
   Widget _buildHomePage(BuildContext context) {
-    final bool driverIsAssigned = _currentActiveMoveData != null;
+   // final bool driverIsAssigned = _currentActiveMoveData != null;
+   final bool driverIsAssigned = _currentActiveMoveData != null && _currentActiveMoveData!.isNotEmpty;
 
     final LatLng origin = (widget.route != null && widget.route!.isNotEmpty) ? widget.route!.first : const LatLng(3.3784759685695906, -72.95412998954771);
     final LatLng destination = (widget.route != null && widget.route!.isNotEmpty) ? widget.route!.last : const LatLng(3.3784759685695906, -72.95412998954771);
@@ -332,8 +339,10 @@ class _HomeUserState extends State<HomeUserView> {
               child: Consumer<GetDriverLocationViewmodel>(builder: (context, getDriverLocation, _) {
                 return UserMapWidget(
                   route: _realRoute,
-                  origin: origin,
-                  destination: destination,
+               //   origin: origin,
+                 // destination: destination,             
+                  origin: origin ?? const LatLng(4.709870566194833, -74.07554855445838), 
+                  destination: destination ?? const LatLng(4.709870566194833, -74.07554855445838),
                   driverLocation: getDriverLocation.driverLocation,
                   onLocationUpdated: (location) => {
                     setState(() {
@@ -424,7 +433,14 @@ class _HomeUserState extends State<HomeUserView> {
             if (!mounted) return;
             debugPrint("💰 Mensaje de pago recibido: $paymentData");
 
-            Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentView(paymentData: paymentData)));
+            _resetMoveState();
+
+           // Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentView(paymentData: paymentData));
+           Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => PaymentView(paymentData: paymentData)),
+              (route) => false, 
+            );
             setState(() {
               // Por ejemplo, aquí podrías actualizar una variable de estado
               // para mostrar el modal de pago
@@ -673,5 +689,21 @@ class _HomeUserState extends State<HomeUserView> {
         ],
       ),
     );
+  }
+
+  void _resetMoveState() {
+    setState(() {
+      _currentActiveMoveData = null;
+      _currentMoveData = null;
+      isWaitingForDriver = false;
+      showPriceModal = false;
+      showHomeButtons = true;
+      _paymentViewOpened = false;
+      _realRoute = [];
+
+      final driverVM = Provider.of<GetDriverLocationViewmodel>(context, listen: false);
+      driverVM.setMoveData({}); // Limpia los datos del conductor
+
+    });
   }
 }
