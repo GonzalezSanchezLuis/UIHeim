@@ -1,3 +1,3 @@
  String environment = 'DEVELOPMENT';
-const String baseUrl = 'https://ad97-2800-484-3981-2300-fd5b-320d-c797-9f3b.ngrok-free.app/api/v1';
+const String baseUrl = 'https://e0eb-2800-484-3981-2300-f96a-4c74-4884-2ff9.ngrok-free.app/api/v1';
 

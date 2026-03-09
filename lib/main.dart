@@ -50,8 +50,11 @@ void main() async {
  // FlutterForegroundTask.initCommunicationPort();
 //BackgroundLocationService.initService();
 
-  const String env = String.fromEnvironment('FLUTTER_ENV', defaultValue: 'DEVELOPMENT');
+ const String env = kReleaseMode ? 'PRODUCTION' : 'DEVELOPMENT';
   configureApp(env);
+
+  print("🌎 ENVIRONMENT: $currentEnvironment");
+  print("🔗 API BASE URL: $apiBaseUrl");
 
   final sessionVM = SessionViewModel();
   await sessionVM.loadSession();

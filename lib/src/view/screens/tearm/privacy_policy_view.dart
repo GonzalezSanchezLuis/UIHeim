@@ -25,7 +25,7 @@ class PrivacyPolicyView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Política de Privacidad",
+              "Política de Privacidad de Heim",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 16),

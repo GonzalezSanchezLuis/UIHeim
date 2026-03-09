@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:holi/config/development.dart' as development;
 import 'package:holi/config/production.dart' as production;
 
@@ -6,12 +5,13 @@ String apiBaseUrl = '';
 String currentEnvironment = '';
 
 void configureApp(String env) {
+  print("🌎 ENVIRONMENT: $currentEnvironment");
+  print("🔗 API BASE URL: $apiBaseUrl");
+  
   switch (env) {
     case 'DEVELOPMENT':
-      if (kDebugMode) {
-        currentEnvironment = development.environment;
-        apiBaseUrl = development.baseUrl;
-      }
+      currentEnvironment = development.environment;
+      apiBaseUrl = development.baseUrl;
       break;
 
     case 'PRODUCTION':

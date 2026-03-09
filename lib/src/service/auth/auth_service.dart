@@ -40,6 +40,9 @@ class AuthService {
   Future<Map<String, dynamic>?> _register(String endpoint, Map<String, dynamic> body) async {
     try {
       final url = Uri.parse("$apiBaseUrl$endpoint");
+      if (apiBaseUrl.isEmpty) {
+        throw Exception("API BASE URL no configurada");
+      }
       log("URL QUE SE ENVIA AL SERVIDOR $url");
 
       log("📦 Datos enviados al servidor: ${jsonEncode(body)}");
@@ -67,6 +70,9 @@ class AuthService {
   Future<Map<String, dynamic>?> login(String email, String password) async {
     try {
       final url = Uri.parse("$apiBaseUrl/auth/auth");
+      if (apiBaseUrl.isEmpty) {
+        throw Exception("API BASE URL no configurada");
+      }
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
