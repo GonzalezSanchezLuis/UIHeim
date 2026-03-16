@@ -43,7 +43,7 @@ class ButtonRegisterDriver extends StatelessWidget {
         ),
       ),
       child: const Text(
-        "Registrarme",
+        "Quiero ser parte de la tribu Heim",
         style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:holi/config/app_config.dart';
 import 'package:holi/src/service/auth/auth_service.dart';
 import 'package:holi/src/service/fcm/firebase_messaging_service.dart';
@@ -46,11 +47,11 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
- // FlutterForegroundTask.initCommunicationPort();
+
+  // FlutterForegroundTask.initCommunicationPort();
 //BackgroundLocationService.initService();
 
- const String env = kReleaseMode ? 'PRODUCTION' : 'DEVELOPMENT';
+  const String env = kReleaseMode ? 'PRODUCTION' : 'DEVELOPMENT';
   configureApp(env);
 
   print("🌎 ENVIRONMENT: $currentEnvironment");
@@ -137,60 +138,69 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-         ChangeNotifierProvider(create: (_) => RestoreMoveViewmodel()),
-        Provider<UpdateStatusMoveService>(create: (context) => UpdateStatusMoveService()),
-        ChangeNotifierProvider(create: (context) => ProfileUserViewModel()),
-        ChangeNotifierProvider(create: (context) => LocationViewModel()),
-        ChangeNotifierProvider(create: (context) => ConfirmMoveViewModel()),
-        ChangeNotifierProvider(create: (context) => DriverStatusViewmodel()),
-        // ChangeNotifierProvider(create: (context) => RouteDriverViewmodel()),
-        ChangeNotifierProvider(create: (context) => DriverLocationViewmodel()),
-        ChangeNotifierProvider(create: (context) => AcceptMoveViewmodel(AcceptMoveService())),
-        ChangeNotifierProvider(create: (context) => GetDriverLocationViewmodel()),
-        ChangeNotifierProvider(create: (context) => UpdateStatusMoveViewmodel()),
-        ChangeNotifierProvider(create: (context) => AuthViewModel(AuthService())),
-        ChangeNotifierProvider(create: (context) => CalculatePriceViewmodel()),
-        ChangeNotifierProvider(create: (context) => PasswordResetViewmodel()),
-        ChangeNotifierProvider(create: (context) => RouteUserViewmodel()),
-        ChangeNotifierProvider(create: (_) => ProfileDriverViewModel()..fetchDriverData()),
-        ChangeNotifierProvider(create: (context) => PaymentViewmodel()),
-        //  ChangeNotifierProvider(create: (context) => MoveNotificationDriverViewmodel()),
-        ChangeNotifierProvider(create: (context) => MovingSummaryViewmodel()),
-        ChangeNotifierProvider(create: (context) => MovingHistoryViewmodel()),
-        ChangeNotifierProvider(create: (context) => MovingDetailsViewmodel()),
-        ChangeNotifierProvider(create: (context) => DriverDataViewmodel()),
-        ChangeNotifierProvider(create: (context) => WalletViewmodel()),
-        ChangeNotifierProvider(create: (context) => MoveNotificationDriverViewmodel()),
-        ChangeNotifierProvider(create: (context) => PaymentDriverAccountViewmodel()),
-        ChangeNotifierProxyProvider<MoveNotificationDriverViewmodel, RouteDriverViewmodel>(
-          create: (context) => RouteDriverViewmodel(),
-          update: (context, notificationVM, routeDriverVM) {
-            if (notificationVM.latestMoveData != null) {
-              routeDriverVM!.handleIncomingMove(notificationVM.latestMoveData!);
-              notificationVM.clearLatestMoveData();
-            }
+    return ScreenUtilInit(
+      designSize: const Size(360, 690),
+      minTextAdapt: true,
+      splitScreenMode: true,
+      builder: (context, child) {
+            return MultiProvider(
+          providers: [
+            ChangeNotifierProvider(create: (_) => RestoreMoveViewmodel()),
+            Provider<UpdateStatusMoveService>(create: (context) => UpdateStatusMoveService()),
+            ChangeNotifierProvider(create: (context) => ProfileUserViewModel()),
+            ChangeNotifierProvider(create: (context) => LocationViewModel()),
+            ChangeNotifierProvider(create: (context) => ConfirmMoveViewModel()),
+            ChangeNotifierProvider(create: (context) => DriverStatusViewmodel()),
+            // ChangeNotifierProvider(create: (context) => RouteDriverViewmodel()),
+            ChangeNotifierProvider(create: (context) => DriverLocationViewmodel()),
+            ChangeNotifierProvider(create: (context) => AcceptMoveViewmodel(AcceptMoveService())),
+            ChangeNotifierProvider(create: (context) => GetDriverLocationViewmodel()),
+            ChangeNotifierProvider(create: (context) => UpdateStatusMoveViewmodel()),
+            ChangeNotifierProvider(create: (context) => AuthViewModel(AuthService())),
+            ChangeNotifierProvider(create: (context) => CalculatePriceViewmodel()),
+            ChangeNotifierProvider(create: (context) => PasswordResetViewmodel()),
+            ChangeNotifierProvider(create: (context) => RouteUserViewmodel()),
+            ChangeNotifierProvider(create: (_) => ProfileDriverViewModel()..fetchDriverData()),
+            ChangeNotifierProvider(create: (context) => PaymentViewmodel()),
+            //  ChangeNotifierProvider(create: (context) => MoveNotificationDriverViewmodel()),
+            ChangeNotifierProvider(create: (context) => MovingSummaryViewmodel()),
+            ChangeNotifierProvider(create: (context) => MovingHistoryViewmodel()),
+            ChangeNotifierProvider(create: (context) => MovingDetailsViewmodel()),
+            ChangeNotifierProvider(create: (context) => DriverDataViewmodel()),
+            ChangeNotifierProvider(create: (context) => WalletViewmodel()),
+            ChangeNotifierProvider(create: (context) => MoveNotificationDriverViewmodel()),
+            ChangeNotifierProvider(create: (context) => PaymentDriverAccountViewmodel()),
+            ChangeNotifierProxyProvider<MoveNotificationDriverViewmodel, RouteDriverViewmodel>(
+              create: (context) => RouteDriverViewmodel(),
+              update: (context, notificationVM, routeDriverVM) {
+                if (notificationVM.latestMoveData != null) {
+                  routeDriverVM!.handleIncomingMove(notificationVM.latestMoveData!);
+                  notificationVM.clearLatestMoveData();
+                }
 
-            return routeDriverVM!;
-          },
-        ),
-        ChangeNotifierProvider(
-            create: (context) => FinishMoveViewmodel(
-                  Provider.of<UpdateStatusMoveService>(context, listen: false),
-                  Provider.of<RouteDriverViewmodel>(context, listen: false),
-                )),
-      ],
-      child: MaterialApp(
-          navigatorKey: navigatorKey,
-          theme: ThemeData(
-            textTheme: GoogleFonts.latoTextTheme(Theme.of(context).textTheme).copyWith(
-              bodyMedium: GoogleFonts.ubuntu(textStyle: Theme.of(context).textTheme.bodyMedium),
+                return routeDriverVM!;
+              },
             ),
-          ),
-          debugShowCheckedModeBanner: false,
-          // home: const WrapperView(),
-          home: const WrapperView()),
+            ChangeNotifierProvider(
+                create: (context) => FinishMoveViewmodel(
+                      Provider.of<UpdateStatusMoveService>(context, listen: false),
+                      Provider.of<RouteDriverViewmodel>(context, listen: false),
+                    )),
+          ],
+          child: MaterialApp(
+              navigatorKey: navigatorKey,
+              theme: ThemeData(
+                textTheme: GoogleFonts.latoTextTheme(Theme.of(context).textTheme).copyWith(
+                  bodyMedium: GoogleFonts.ubuntu(textStyle: Theme.of(context).textTheme.bodyMedium),
+                ),
+              ),
+              debugShowCheckedModeBanner: false,
+              // home: const WrapperView(),
+              home: const WrapperView()),
+        );
+      },
     );
+
+
   }
 }

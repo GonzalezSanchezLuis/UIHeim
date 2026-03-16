@@ -7,10 +7,10 @@ import 'package:holi/src/view/screens/driver/home_driver_view.dart';
 import 'package:holi/src/view/screens/support/support_view.dart';
 import 'package:holi/src/view/screens/user/home_user_view.dart';
 import 'package:holi/src/view/widget/button/button_account_widget.dart';
-import 'package:holi/src/core/theme/fonts/style_fonts_title.dart';
 import 'package:holi/src/viewmodels/auth/password_reset_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -43,7 +43,7 @@ class _LoginState extends State<LoginView> {
                 Positioned.fill(
                   child: SingleChildScrollView(
                     physics: isKeyboardOpen ? const ClampingScrollPhysics() : const NeverScrollableScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 200),
+                    padding:  EdgeInsets.symmetric(horizontal: 20.w, vertical: 200.h),
                     child: Form(
                       key: _formKey,
                       child: Column(
@@ -51,41 +51,49 @@ class _LoginState extends State<LoginView> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           if (!isKeyboardOpen) ...[
-                            const Text(
+                             Text(
                               "Ingresar a mi cuenta de Heim",
                               textAlign: TextAlign.center,
-                              style:  TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
+                              style:  TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold, color: Colors.black),
                             ),
-                            const SizedBox(height: 20),
+                             SizedBox(height: 20.h),
                           ],
                           TextFormField(
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
-                            decoration: const InputDecoration(
+                            decoration:  InputDecoration(
                               labelText: "Ingresa tu correo electrónico",
-                              border: OutlineInputBorder(),
+                              labelStyle: TextStyle(fontSize: 14.sp),
+                               fillColor: Colors.white,
+                                filled: true,
+                              border: const  OutlineInputBorder(),
                               enabledBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: Colors.black87, width: 2.0),
+                                 borderRadius: BorderRadius.circular(12.r),
+                                borderSide: const BorderSide(color: Colors.black87, width: 2.0),
                               ),
-                              focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 2.0)),
-                              floatingLabelStyle: TextStyle(
+                              focusedBorder: const  OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 2.0)),
+                              floatingLabelStyle: const TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
-                          const SizedBox(height: 20),
+                           SizedBox(height: 20.h),
                           TextFormField(
                             controller: _passwordController,
                             obscureText: !_isPasswordVisible,
                             decoration: InputDecoration(
                               labelText: "Ingresa tu contraseña",
+                              labelStyle: TextStyle(fontSize: 14.sp),
+                               fillColor: Colors.white,
+                              filled: true,
                               border: const OutlineInputBorder(),
-                              focusedBorder: const OutlineInputBorder(
-                                borderSide: BorderSide(color: Colors.black87, width: 2.0),
+                              focusedBorder:  const OutlineInputBorder(                               
+                                borderSide:  BorderSide(color: Colors.black87, width: 2.0),
                               ),
-                              enabledBorder: const OutlineInputBorder(
-                                borderSide: BorderSide(color: Colors.black87, width: 2.0),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12.r),
+                                borderSide: const BorderSide(color: Colors.black87, width: 2.0),
                               ),
                               floatingLabelStyle: const TextStyle(
                                 color: Colors.black,
@@ -101,7 +109,7 @@ class _LoginState extends State<LoginView> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 20), 
+                           SizedBox(height: 30.h), 
                           ButtonAuth(formKey: _formKey, onPressed: _handleLogin),
                         ],
                       ),
@@ -109,9 +117,9 @@ class _LoginState extends State<LoginView> {
                   ),
                 ),
                 Positioned(
-                  top: 16,
-                  left: 16,
-                  right: 16,
+                  top: 10.h,
+                  left: 16.w,
+                  right: 16.w,
                   child: SafeArea(
                     child: Row(
                       children: [
@@ -124,8 +132,8 @@ class _LoginState extends State<LoginView> {
                           },
                           child: Image.asset(
                             'assets/images/support.png',
-                            width: 30,
-                            height: 30,
+                            width: 30.w,
+                            height: 30.w,
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -218,9 +226,9 @@ class _LoginState extends State<LoginView> {
                               },
                             );
                           },
-                          child: const Text(
+                          child:  Text(
                             '¿Olvidaste tu contraseña?',
-                            style: TextStyle(color: Colors.black, fontSize: 14),
+                            style: TextStyle(color: Colors.black, fontSize: 14.sp),
                           ),
                         )
                       ],

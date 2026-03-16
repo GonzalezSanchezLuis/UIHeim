@@ -13,6 +13,7 @@ import 'package:holi/src/viewmodels/move/calculate_price_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/confirm_move_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:holi/src/viewmodels/location/location_viewmodel.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CalculatePrice extends StatefulWidget {
   const CalculatePrice({super.key});
@@ -60,35 +61,33 @@ class _CalculatePriceState extends State<CalculatePrice> {
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
         backgroundColor: AppTheme.primarycolor,
-        title: const Text("A donde sera nuestro nuevo hogar?",
-            style: StyleFontsTitle.titleStyle),
+        title: const Text("A donde sera nuestro nuevo hogar?", style: StyleFontsTitle.titleStyle),
       ),
-      body: Padding(
-        padding: const EdgeInsets.only(top: 10.0, left: 15.0, right: 15.0),
-        child: Stack(
-          // Usamos Stack para manejar la posición absoluta
-          children: [
-            Positioned(
-              top: _numberOfRoomsYOffset,
-              left: 10,
-              right: 10,
+      body: SafeArea(
+        child: GestureDetector(
+            onTap: () => FocusScope.of(context).unfocus(),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 35.w),
               child: Form(
                 key: _formKey,
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                     ValidatedDropdownFormField(
+                    ValidatedDropdownFormField(
                       value: _selectedMovingType,
-                      label: "Tipo de mudanza",
-                      items: const  ["Pequeña", "Mediana", "Grande"],
-                        onChanged: (value) => setState(() => _selectedMovingType = value),
+                      label: "¿Qué tan grande es tu mudanza?",
+                      items: const ["Pequeña 1 hab.", "Mediana 2-3 hab.", "Grande 4+ hab."],
+                      onChanged: (value) => setState(() => _selectedMovingType = value),
                       validator: (value) => value == null ? 'Selecciona un tipo de mudanza' : null,
                     ),
-                    const SizedBox(height: 20),
+
+                    SizedBox(height: 15.h),
+
                     ValidatedTextFormField(
                       controller: _numberOfRoomsController,
                       label: "Número de habitaciones",
+                     // keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Este campo es obligatorio';
@@ -96,7 +95,8 @@ class _CalculatePriceState extends State<CalculatePrice> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 20),
+                     SizedBox(height: 15.h),
+
                     ValidatedTextFormField(
                       controller: _originAddressController,
                       label: "Dirección de origen",
@@ -106,15 +106,15 @@ class _CalculatePriceState extends State<CalculatePrice> {
                       },
                       suffixIcon: IconButton(
                         icon: locationViewModel.isLoading
-                            ? const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.5,
+                            ? SizedBox(
+                                width: 20.w,
+                                height: 20.w,
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 2,
                                   valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
                                 ),
                               )
-                            : const Icon(Icons.location_searching_rounded),
+                            : Icon(Icons.location_searching_rounded, size: 22.w),
                         onPressed: locationViewModel.isLoading
                             ? null
                             : () async {
@@ -125,7 +125,8 @@ class _CalculatePriceState extends State<CalculatePrice> {
                               },
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 15.w),
+
                     ValidatedTextFormField(
                       controller: _destinationAddressController,
                       label: "Dirección de destino",
@@ -139,15 +140,13 @@ class _CalculatePriceState extends State<CalculatePrice> {
                         _updateSuggestions(value);
                       },
                     ),
-
                     _buildSuggestionList(),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 15.w),
+
                     Consumer<CalculatePriceViewmodel>(
                       builder: (context, viewmodel, _) {
                         return ElevatedButton(
-                          onPressed: viewmodel.isLoading
-                              ? null
-                              : () async {
+                          onPressed: viewmodel.isLoading ? null: () async {
                                   final formValid = _formKey.currentState?.validate() ?? false;
 
                                   final allEmpity = _numberOfRoomsController.text.trim().isEmpty && _originAddressController.text.trim().isEmpty && _destinationAddressController.text.trim().isEmpty && _selectedMovingType == null;
@@ -185,27 +184,33 @@ class _CalculatePriceState extends State<CalculatePrice> {
                                   );
                                 },
                           style: ElevatedButton.styleFrom(
-                            minimumSize: ui.Size(MediaQuery.of(context).size.width * 0.9, 60),
+                            minimumSize: Size(double.infinity, 50.h),
                             backgroundColor: Colors.black,
+                            elevation: 0,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
+                              borderRadius: BorderRadius.circular(30.r),
                             ),
                           ),
                           child: viewmodel.isLoading
-                              ? const CircularProgressIndicator(color: Colors.white)
-                              : const Text(
+                              ? SizedBox(height: 20.h, width: 20.h, child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                              :  Text(
                                   "Continuar",
-                                  style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                                  style: TextStyle(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.bold),
                                 ),
                         );
                       },
                     ),
+                    SizedBox(height: MediaQuery.of(context).viewInsets.bottom > 0 ? 100.h : 20.h),
                   ],
                 ),
               ),
+            )
+
+            /*  top: _numberOfRoomsYOffset,
+              left: 10,
+              right: 10, */
+
             ),
-          ],
-        ),
       ),
     );
   }
@@ -214,13 +219,18 @@ class _CalculatePriceState extends State<CalculatePrice> {
     return _suggestions.isEmpty
         ? const SizedBox()
         : Container(
-            height: 150,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(5),
-            ),
+            height: 150.h,
+            margin: EdgeInsets.only(top: 5.h),
+            decoration: BoxDecoration(color: Colors.white, border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(8.r), boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              )
+            ]),
             child: ListView.builder(
+              shrinkWrap: true,
+              padding: EdgeInsets.zero,
               itemCount: _suggestions.length,
               itemBuilder: (context, index) {
                 final prediction = _suggestions[index];
@@ -228,13 +238,19 @@ class _CalculatePriceState extends State<CalculatePrice> {
                 return Column(
                   children: [
                     ListTile(
-                      leading: const Icon(
+                      dense: true,
+                      leading: Icon(
                         Icons.location_on,
                         color: Colors.black,
-                        size: 16,
+                        size: 18.w,
                       ),
-                      title: Text(prediction.description),
-                      horizontalTitleGap: -8.0,
+                      title: Text(
+                        prediction.description,
+                        style: TextStyle(fontSize: 13.sp, color: Colors.black87),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      horizontalTitleGap: 0,
                       onTap: () async {
                         final coords = await locationService.getCoordinatesFromPlaceId(prediction.placeId);
                         if (coords != null) {
@@ -247,19 +263,113 @@ class _CalculatePriceState extends State<CalculatePrice> {
                           _destinationAddressController.text = prediction.description;
                           _suggestions = []; // Oculta las sugerencias después de la selección
                         });
+                        FocusScope.of(context).unfocus();
                       },
                     ),
                     if (index < _suggestions.length - 1)
-                      const Divider(
+                      Divider(
                         height: 1,
-                        thickness: 1,
-                        color: Colors.grey,
+                        thickness: 0.5,
+                        color: Colors.grey.shade300,
+                        indent: 40.w,
                       ),
                   ],
                 );
               },
             ),
           );
+  }
+
+  Widget _buildMovingTypeSelector() {
+    return FormField<MoveType>(
+      initialValue: _selectedMovingType,
+      validator: (value) => value == null ? 'Por favor, selecciona un tipo de mudanza' : null,
+      builder: (FormFieldState<MoveType> state) {
+        final options = [
+          {
+            'label': 'Pequeña',
+            'value': MoveType.PEQUENA, // <--- Tu valor de Enum
+            'icon': Icons.inventory_2_outlined,
+            'desc': '1-2 hab.'
+          },
+          {
+            'label': 'Mediana',
+            'value': MoveType.MEDIANA, // <--- Tu valor de Enum
+            'icon': Icons.local_shipping_outlined,
+            'desc': '3-4 hab.'
+          },
+          {
+            'label': 'Grande',
+            'value': MoveType.GRANDE, // <--- Tu valor de Enum
+            'icon': Icons.local_shipping,
+            'desc': '5+ hab.'
+          },
+        ];
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "¿Qué tan grande es tu mudanza?",
+              style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold, color: Colors.grey.shade700),
+            ),
+            SizedBox(height: 10.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: options.map((opt) {
+                final MoveType val = opt['value'] as MoveType;
+                bool isSelected = _selectedMovingType == val;
+
+                return GestureDetector(
+                  onTap: () {
+                    setState(() => _selectedMovingType = val);
+                    state.didChange(val); // <--- ESTO le avisa al Form que ya hay valor
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    width: 100.w,
+                    padding: EdgeInsets.symmetric(vertical: 12.h),
+                    decoration: BoxDecoration(
+                      color: isSelected ? AppTheme.primarycolor : Colors.white,
+                      borderRadius: BorderRadius.circular(12.r),
+                      border: Border.all(
+                        color: isSelected ? AppTheme.primarycolor : Colors.grey.shade300,
+                        width: 2,
+                      ),
+                      boxShadow: isSelected ? [BoxShadow(color: AppTheme.primarycolor.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))] : [],
+                    ),
+                    child: Column(
+                      children: [
+                        Icon(
+                          opt['icon'] as IconData,
+                          color: isSelected ? Colors.white : Colors.grey.shade600,
+                          size: 24.w,
+                        ),
+                        SizedBox(height: 5.h),
+                        Text(
+                          opt['label'] as String,
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12.sp,
+                          ),
+                        ),
+                        Text(
+                          opt['desc'] as String,
+                          style: TextStyle(
+                            color: isSelected ? Colors.white70 : Colors.grey,
+                            fontSize: 10.sp,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override

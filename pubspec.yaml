@@ -66,6 +66,7 @@ dependencies:
   flutter_foreground_task: ^9.2.0
   wakelock_plus: ^1.4.0
   screen_brightness: ^2.1.7
+  flutter_screenutil: ^5.9.3
 
 
   # The following adds the Cupertino Icons font to your application.

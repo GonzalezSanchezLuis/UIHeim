@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/core/theme/fonts/style_fonts_title.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class Support extends StatelessWidget {
   const Support({super.key});
@@ -32,21 +33,21 @@ class Support extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 30),
-              const Text(
+               SizedBox(height: 30.sp),
+               Text(
                 "Bienvenido a soporte",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.sp),
               ),
-              const Text(
+               Text(
                 "¿En qué podemos ayudarte hoy?",
-                style: TextStyle(fontSize: 14, color: Color.fromARGB(255, 155, 149, 149)),
+                style: TextStyle(fontSize: 14.sp, color: Color.fromARGB(255, 155, 149, 149)),
               ),
-              const SizedBox(height: 20),
+               SizedBox(height: 20.h),
               _buildPaymentOption("assets/images/whatsapp.svg", "Envianos un mensaje por WhatsApp", context),
               _buildPaymentOption("assets/images/email.svg", "Dejanos un email", context),
-              const SizedBox(height: 30),
+               SizedBox(height: 30.h),
               const Divider(thickness: 1),
-              const SizedBox(height: 20),
+               SizedBox(height: 20.h),
             ],
           ),
         ),
@@ -57,10 +58,10 @@ class Support extends StatelessWidget {
   Widget _buildPaymentOption(String imagePath, String method, BuildContext context) {
     return Card(
       elevation: 2,
-      margin: const EdgeInsets.symmetric(vertical: 8),
+      margin:  EdgeInsets.symmetric(vertical: 8.h),
       child: ListTile(
-          leading: SvgPicture.asset(imagePath, width: 25, height: 25),
-          title: Text(method),
+          leading: SvgPicture.asset(imagePath, width: 30.w, height: 30.w),
+          title: Text(method,style: TextStyle(fontSize: 15.sp),),
           onTap: () {
             if (method == "Envianos un mensaje por WhatsApp") {
               _openWhatsApp(context);
@@ -73,7 +74,10 @@ class Support extends StatelessWidget {
 }
 
 Future<void> _openWhatsApp(BuildContext context) async {
-  final whatsappUrl = Uri.parse("whatsapp://send?phone=3217181031&text=Hola");
+  String mensaje = "Hola equipo Heim, estoy listo para mover mi hogar. ¿Me dan una mano con unos detalles?";
+  String encodedMensaje = Uri.encodeComponent(mensaje);
+
+  final whatsappUrl = Uri.parse("whatsapp://send?phone=3337603630&text=$encodedMensaje");
   final whatsappWeb = Uri.parse("https://wa.me/3227603630");
 
   try {
@@ -90,7 +94,7 @@ Future<void> _openWhatsApp(BuildContext context) async {
 }
 
 Future<void> _sendEmail(BuildContext context) async {
-  final Uri emailUri = Uri(scheme: 'mailto', path: 'luisrbn10@outlook.es', queryParameters: {'subject': 'Soporte con'});
+  final Uri emailUri = Uri(scheme: 'mailto', path: 'hola@heimapp.com.co', queryParameters: {'subject': 'Soporte con'});
 
   try {
     bool launched = await launchUrl(emailUri, mode: LaunchMode.externalApplication);

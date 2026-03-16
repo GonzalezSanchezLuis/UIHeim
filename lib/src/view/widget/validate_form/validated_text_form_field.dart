@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class ValidatedTextFormField extends StatefulWidget {
   final TextEditingController controller;
@@ -54,18 +55,25 @@ class _ValidatedTextFormFieldState extends State<ValidatedTextFormField> {
       decoration: InputDecoration(
         labelText: widget.label,
         suffixIcon: widget.suffixIcon,
+        contentPadding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 12.h),
+        filled: true,
+        fillColor: Colors.white,
         border: OutlineInputBorder(
+           borderRadius: BorderRadius.circular(12.r),
           borderSide: BorderSide(color: getBorderColor(), width: 2),
         ),
         focusedBorder: OutlineInputBorder(
+           borderRadius: BorderRadius.circular(12.r),
           borderSide: BorderSide(color: getBorderColor(), width: 2),
         ),
         enabledBorder: OutlineInputBorder(
+           borderRadius: BorderRadius.circular(12.r),
           borderSide: BorderSide(color: getBorderColor(), width: 2),
         ),
-        floatingLabelStyle: const TextStyle(
+        floatingLabelStyle:  TextStyle(
           color: Colors.black,
           fontWeight: FontWeight.bold,
+          fontSize: 14.sp,
         ),
       ),
     );

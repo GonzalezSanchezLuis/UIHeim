@@ -27,6 +27,7 @@ import 'package:holi/src/viewmodels/user/get_driver_location_viewmodel.dart';
 import 'package:holi/src/viewmodels/user/route_user_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class HomeUserView extends StatefulWidget {
   final String? calculatedPrice;
@@ -125,158 +126,159 @@ class _HomeUserState extends State<HomeUserView> {
   @override
   Widget build(BuildContext context) {
     final bool driverIsAssigned = _currentActiveMoveData != null;
-    return PopScope(canPop: !driverIsAssigned,
-      onPopInvokedWithResult: (didPop, result){
-        if(didPop) return;
+    return PopScope(
+      canPop: !driverIsAssigned,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
       },
       child: Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          IndexedStack(
-            index: currentPageIndex,
-            children: [
-              _buildHomePage(context),
-              const CalculatePrice(),
-              const HistoryMoveView(),
-              const User(),
-            ],
-          ),
-          if (currentPageIndex == 0 && !driverIsAssigned && !isWaitingForDriver)
-            Positioned(
-              top: 30,
-              left: 0,
-              right: 0,
-              child: _buildTopCoverageBanner(),
+        resizeToAvoidBottomInset: false,
+        backgroundColor: Colors.black,
+        body: Stack(
+          children: [
+            IndexedStack(
+              index: currentPageIndex,
+              children: [
+                _buildHomePage(context),
+                const CalculatePrice(),
+                const HistoryMoveView(),
+                const User(),
+              ],
             ),
-          Consumer<GetDriverLocationViewmodel>(
-            builder: (context, driverVM, _) {
-              print('_currentActiveMoveData (nuestra fuente única): $_currentActiveMoveData');
-              if (currentPageIndex == 0 && driverIsAssigned) {
-                return Stack(
-                  children: [
-                    Positioned(
-                      top: 20,
-                      left: 5,
-                      right: 5,
-                      child: FloatingMoveCardUser(
-                        moveData: _currentActiveMoveData!,
-                      ),
-                    ),
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: 30,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 5),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: AppTheme.primarycolor,
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          padding: const EdgeInsets.all(10),
-                          child: DriverInfoCard(
-                            driverId: _currentActiveMoveData!['driverId'],
-                            enrollVehicle: _currentActiveMoveData!['enrollVehicle'] ?? '',
-                            driverImageUrl: _currentActiveMoveData!['driverImageUrl'] ?? '',
-                            vehicleImageUrl: 'assets/images/vehicle.png',
-                            phone: _currentActiveMoveData!['driverPhone'] ?? '',
-                            nameDriver: _currentActiveMoveData!['driverName'] ?? '',
-                            vehicleType: _currentActiveMoveData!['vehicleType'] ?? '',
-                          ),
+            if (currentPageIndex == 0 && !driverIsAssigned && !isWaitingForDriver)
+              Positioned(
+                top: 30,
+                left: 0,
+                right: 0,
+                child: _buildTopCoverageBanner(),
+              ),
+            Consumer<GetDriverLocationViewmodel>(
+              builder: (context, driverVM, _) {
+                print('_currentActiveMoveData (nuestra fuente única): $_currentActiveMoveData');
+                if (currentPageIndex == 0 && driverIsAssigned) {
+                  return Stack(
+                    children: [
+                      Positioned(
+                        top: 20,
+                        left: 5,
+                        right: 5,
+                        child: FloatingMoveCardUser(
+                          moveData: _currentActiveMoveData!,
                         ),
                       ),
-                    ),
-                  ],
-                );
-              }
-              return const SizedBox.shrink();
-            },
-          ),
-          Positioned(
-            left: 16,
-            right: 16,
-            bottom: 30,
-            child: Consumer<GetDriverLocationViewmodel>(
-              builder: (context, driverVM, _) {
-                final moveData = driverVM.moveData;
-                if (currentPageIndex == 0 && (driverIsAssigned || showPriceModal || isWaitingForDriver)) {
-                  return const SizedBox.shrink();
-                }
-
-                return CustomBottomNavBar(
-                  currentIndex: currentPageIndex,
-                  onTap: (index) {
-                    setState(() {
-                      currentPageIndex = index;
-                    });
-                  },
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: currentPageIndex == 0
-          ? Consumer<GetDriverLocationViewmodel>(
-              builder: (context, driverVM, _) {
-                final moveData = driverVM.moveData;
-
-                if (driverIsAssigned) {
-                  return const SizedBox.shrink();
-                }
-                if (showPriceModal) {
-                  return Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: SizedBox(
-                            height: 50,
-                            child: ConfirmButton(
-                              typeOfMove: widget.typeOfMove!,
-                              calculatedPrice: widget.calculatedPrice ?? '',
-                              distanceKm: widget.distanceKm ?? '',
-                              duration: widget.duration ?? '',
-                              estimatedTime: widget.estimatedTime ?? '',
-                              route: widget.route ?? [],
-                              locationViewModel: locationViewModel,
-                              userId: userId ?? 0,
-                              destinationLat: widget.destinationLat,
-                              destinationLng: widget.destinationLng,
-                              paymentMethod: _selectedPaymentMethod,
-                              buttonText: noDriverFound ? "Rintentar búsqueda" : "Confirmar y relajarme",
-                              onConfirmed: () {
-                                setState(() {
-                                  showPriceModal = false;
-                                  isWaitingForDriver = true;
-                                  noDriverFound = false;
-                                });
-                                Future.delayed(const Duration(seconds: 30), () {
-                                  if (mounted && _currentActiveMoveData == null) {
-                                    setState(() {
-                                      isWaitingForDriver = false;
-                                      showPriceModal = true;
-                                      noDriverFound = true;
-                                    });
-                                  }
-                                });
-                              },
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 30,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 5),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: AppTheme.primarycolor,
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            padding: const EdgeInsets.all(10),
+                            child: DriverInfoCard(
+                              driverId: _currentActiveMoveData!['driverId'],
+                              enrollVehicle: _currentActiveMoveData!['enrollVehicle'] ?? '',
+                              driverImageUrl: _currentActiveMoveData!['driverImageUrl'] ?? '',
+                              vehicleImageUrl: 'assets/images/vehicle.png',
+                              phone: _currentActiveMoveData!['driverPhone'] ?? '',
+                              nameDriver: _currentActiveMoveData!['driverName'] ?? '',
+                              vehicleType: _currentActiveMoveData!['vehicleType'] ?? '',
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   );
                 }
-
                 return const SizedBox.shrink();
               },
-            )
-          : null,
-    ) ,
+            ),
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: 30,
+              child: Consumer<GetDriverLocationViewmodel>(
+                builder: (context, driverVM, _) {
+                  final moveData = driverVM.moveData;
+                  if (currentPageIndex == 0 && (driverIsAssigned || showPriceModal || isWaitingForDriver)) {
+                    return const SizedBox.shrink();
+                  }
+
+                  return CustomBottomNavBar(
+                    currentIndex: currentPageIndex,
+                    onTap: (index) {
+                      setState(() {
+                        currentPageIndex = index;
+                      });
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+        bottomNavigationBar: currentPageIndex == 0
+            ? Consumer<GetDriverLocationViewmodel>(
+                builder: (context, driverVM, _) {
+                  final moveData = driverVM.moveData;
+
+                  if (driverIsAssigned) {
+                    return const SizedBox.shrink();
+                  }
+                  if (showPriceModal) {
+                    return Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: SizedBox(
+                              height: 50,
+                              child: ConfirmButton(
+                                typeOfMove: widget.typeOfMove!,
+                                calculatedPrice: widget.calculatedPrice ?? '',
+                                distanceKm: widget.distanceKm ?? '',
+                                duration: widget.duration ?? '',
+                                estimatedTime: widget.estimatedTime ?? '',
+                                route: widget.route ?? [],
+                                locationViewModel: locationViewModel,
+                                userId: userId ?? 0,
+                                destinationLat: widget.destinationLat,
+                                destinationLng: widget.destinationLng,
+                                paymentMethod: _selectedPaymentMethod,
+                                buttonText: noDriverFound ? "Rintentar búsqueda" : "Confirmar y relajarme",
+                                onConfirmed: () {
+                                  setState(() {
+                                    showPriceModal = false;
+                                    isWaitingForDriver = true;
+                                    noDriverFound = false;
+                                  });
+                                  Future.delayed(const Duration(seconds: 30), () {
+                                    if (mounted && _currentActiveMoveData == null) {
+                                      setState(() {
+                                        isWaitingForDriver = false;
+                                        showPriceModal = true;
+                                        noDriverFound = true;
+                                      });
+                                    }
+                                  });
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return const SizedBox.shrink();
+                },
+              )
+            : null,
+      ),
     );
-     
   }
 
   Widget _buildTopCoverageBanner() {
@@ -311,25 +313,26 @@ class _HomeUserState extends State<HomeUserView> {
   }
 
   Widget _buildHomePage(BuildContext context) {
-   // final bool driverIsAssigned = _currentActiveMoveData != null;
-   final bool driverIsAssigned = _currentActiveMoveData != null && _currentActiveMoveData!.isNotEmpty;
+    // final bool driverIsAssigned = _currentActiveMoveData != null;
+    final bool driverIsAssigned = _currentActiveMoveData != null && _currentActiveMoveData!.isNotEmpty;
 
     final LatLng origin = (widget.route != null && widget.route!.isNotEmpty) ? widget.route!.first : const LatLng(3.3784759685695906, -72.95412998954771);
     final LatLng destination = (widget.route != null && widget.route!.isNotEmpty) ? widget.route!.last : const LatLng(3.3784759685695906, -72.95412998954771);
 
     return LayoutBuilder(
       builder: (context, constraints) {
+        
         final routeVM = Provider.of<RouteUserViewmodel>(context, listen: false);
         final double containerHeight;
-
+        
         if (driverIsAssigned) {
           containerHeight = 0;
         } else if (showPriceModal) {
-          containerHeight = constraints.maxHeight * 0.25;
+          containerHeight = constraints.maxHeight * 0.35;
         } else if (showHomeButtons) {
           containerHeight = constraints.maxHeight * 0.28;
         } else if (isWaitingForDriver) {
-          containerHeight = constraints.maxHeight * 0.20;
+          containerHeight = constraints.maxHeight * 0.22;
         } else {
           containerHeight = constraints.maxHeight * 0.20;
         }
@@ -339,9 +342,9 @@ class _HomeUserState extends State<HomeUserView> {
               child: Consumer<GetDriverLocationViewmodel>(builder: (context, getDriverLocation, _) {
                 return UserMapWidget(
                   route: _realRoute,
-               //   origin: origin,
-                 // destination: destination,             
-                  origin: origin ?? const LatLng(4.709870566194833, -74.07554855445838), 
+                  //   origin: origin,
+                  // destination: destination,
+                  origin: origin ?? const LatLng(4.709870566194833, -74.07554855445838),
                   destination: destination ?? const LatLng(4.709870566194833, -74.07554855445838),
                   driverLocation: getDriverLocation.driverLocation,
                   onLocationUpdated: (location) => {
@@ -361,6 +364,7 @@ class _HomeUserState extends State<HomeUserView> {
                   builder: (context, driverVM, _) {
                     final moveData = driverVM.moveData;
                     return Container(
+                      height: containerHeight,
                       decoration: BoxDecoration(
                         color: Colors.black,
                         borderRadius: const BorderRadius.only(
@@ -435,11 +439,11 @@ class _HomeUserState extends State<HomeUserView> {
 
             _resetMoveState();
 
-           // Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentView(paymentData: paymentData));
-           Navigator.pushAndRemoveUntil(
+            // Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentView(paymentData: paymentData));
+            Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (context) => PaymentView(paymentData: paymentData)),
-              (route) => false, 
+              (route) => false,
             );
             setState(() {
               // Por ejemplo, aquí podrías actualizar una variable de estado
@@ -703,7 +707,6 @@ class _HomeUserState extends State<HomeUserView> {
 
       final driverVM = Provider.of<GetDriverLocationViewmodel>(context, listen: false);
       driverVM.setMoveData({}); // Limpia los datos del conductor
-
     });
   }
 }

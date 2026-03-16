@@ -30,7 +30,12 @@ class PrivacyPolicyView extends StatelessWidget {
             ),
             SizedBox(height: 16),
             Text(
-              "1. Información que Recopilamos",
+              "Última actualización: 2026",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 16),
+            Text(
+              "1 . Información que Recopilamos",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             Text(
@@ -43,7 +48,7 @@ class PrivacyPolicyView extends StatelessWidget {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             Text(
-              "Usamos tu información para brindar nuestros servicios, comunicarnos contigo y mejorar la experiencia del usuario.",
+              "Usamos tu información para gestionar los servicios de transporte de carga, procesar pagos, y garantizar la seguridad del usuario durante el servicio.",
             ),
             SizedBox(height: 16),
             Text(
@@ -54,23 +59,26 @@ class PrivacyPolicyView extends StatelessWidget {
               "Podemos compartir tus datos con:\n"
               "- Proveedores de servicios de mudanza.\n"
               "- Autoridades legales cuando sea requerido.\n"
-              "- Plataformas de pago para procesar transacciones.",
+              "- Plataformas de pago para procesar transacciones.\n"
+              "- Compartimos datos con los conductores asignados para completar el servicio y con plataformas de pago. No vendemos sus datos a terceros."
             ),
             SizedBox(height: 16),
             Text(
-              "4. Seguridad",
+              "4. Datos de Ubicación Precisos",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             Text(
-              "Implementamos medidas de seguridad para proteger tus datos, aunque no podemos garantizar seguridad absoluta.",
+              "Recopilamos datos de ubicación exacta de su dispositivo para facilitar el servicio de acarreos, permitiendo que conductores y usuarios se localicen mutuamente.",
             ),
             SizedBox(height: 16),
             Text(
               "5. Tus Derechos",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
+               SizedBox(height: 16), 
             Text(
-              "Puedes solicitar el acceso, corrección o eliminación de tus datos personales en cualquier momento.",
+              "Puedes solicitar el acceso, corrección o eliminación de tus datos personales en cualquier momento.  \n"
+              "Los usuarios pueden solicitar la eliminación de su cuenta y datos personales en cualquier momento a través de la configuración de la aplicación o enviando un correo a info@heimapp.com.co."
             ),
             SizedBox(height: 16),
             Text(
@@ -79,6 +87,15 @@ class PrivacyPolicyView extends StatelessWidget {
             ),
             Text(
               "Nos reservamos el derecho de actualizar esta política. Te notificaremos sobre cambios importantes.",
+            ),
+
+            SizedBox(height: 16),
+            Text(
+              "7. Contacto",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              "Si tiene dudas, contáctenos en: legal@heimapp.com.co",
             ),
           ],
         ),
