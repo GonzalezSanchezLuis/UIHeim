@@ -41,7 +41,7 @@ class _DriverDataViewState extends State<DriverInformationView> {
     return Scaffold(
         backgroundColor: AppTheme.colorbackgroundview,
         appBar: AppBar(
-          title: const Text("Perfil del Conductor", style: StyleFontsTitle.titleStyle),
+          title:  Text("Perfil del Conductor", style: StyleFontsTitle.titleStyle),
           backgroundColor: Colors.black,
           elevation: 0,
           leading: IconButton(

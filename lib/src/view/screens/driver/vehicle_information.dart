@@ -3,6 +3,7 @@ import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/core/theme/fonts/style_fonts_title.dart';
 import 'package:holi/src/viewmodels/driver/profile_driver_viewmodel.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class VehicleInformation extends StatefulWidget {
   const VehicleInformation({super.key});
@@ -16,16 +17,38 @@ class _VehicleInformationState extends State<VehicleInformation> {
   late final ProfileDriverViewModel viewModelDriver;
   bool _isInitialized = false;
 
+final TextEditingController licenseController = TextEditingController();
+  final TextEditingController typeController = TextEditingController();
+  final TextEditingController enrollController = TextEditingController();
+
+
   @override
   void initState() {
     super.initState();
     viewModelDriver = ProfileDriverViewModel();
+
+  
     viewModelDriver.fetchDriverData().then((_) {
+      final p = viewModelDriver.profile;
+      licenseController.text = p.licenseNumber ?? '';
+      typeController.text = p.vehicleType  ?? '';
+      enrollController.text = p.enrollVehicle ?? '';
+
       setState(() {
         _isInitialized = true;
       });
     });
   }
+
+@override
+  void dispose() {
+    licenseController.dispose();
+    typeController.dispose();
+    enrollController.dispose();
+    super.dispose();
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -45,14 +68,15 @@ class _VehicleInformationState extends State<VehicleInformation> {
             backgroundColor: AppTheme.colorbackgroundview,
             appBar: AppBar(
               backgroundColor: AppTheme.primarycolor,
-              title: const Text(
+              title: Text(
                 "Información del vehículo",
                 style: StyleFontsTitle.titleStyle,
               ),
               leading: IconButton(
-                icon: const Icon(
+                icon: Icon(
                   Icons.arrow_back_ios_new_rounded,
                   color: Colors.white,
+                  size: 20.w,
                 ),
                 onPressed: () {
                   Navigator.pop(context);
@@ -63,32 +87,28 @@ class _VehicleInformationState extends State<VehicleInformation> {
               if (viewModel.isLoading) {
                 return const Center(child: CircularProgressIndicator());
               }
-              final profile = viewModel.profile;
-              final licenseNumberController = TextEditingController(text: profile.licenseNumber);
-              final vehicleTypeController = TextEditingController(text: profile.vehicleType);
-              final enrollVehicleController = TextEditingController(text: profile.enrollVehicle);
 
               return SingleChildScrollView(
                 child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    padding:  EdgeInsets.symmetric(horizontal: 12.w),
                     child: Form(
                       key: _formKey,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          const SizedBox(height: 24),
                           Card(
-                            color: Colors.white,
+                            color: Colors.red,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10.0),
+                              borderRadius: BorderRadius.circular(12.r),
                             ),
-                            margin: const EdgeInsets.symmetric(vertical: 16.0),
+                            margin: EdgeInsets.symmetric(vertical: 12.w),
                           ),
 
-                          const SizedBox(height: 20.0),
-                          _buildFieldCard("Licencia número", "Ingresa tu número", licenseNumberController, readOnlyCondition: true, isRequired: true),
-                          _buildFieldCard("Tipo de vehículo", "Ingresa el tipo de vehículo", vehicleTypeController, readOnlyCondition: true, isRequired: true),
-                          _buildFieldCard("Matricula  del vehículo", "Ingresa la matricula de vehículo", enrollVehicleController, readOnlyCondition: true, isRequired: true),
+                          SizedBox(height: 20.h),
+
+                          _buildFieldCard("Licencia número", "N° de licencia", licenseController),
+                          _buildFieldCard("Tipo de vehículo", "Ej: NPR, NHR", typeController),
+                          _buildFieldCard("Matrícula", "Placa del vehículo", enrollController),
                         ],
                       ),
                     )),
@@ -97,52 +117,41 @@ class _VehicleInformationState extends State<VehicleInformation> {
   }
 }
 
-Widget _buildFieldCard(String label, String hintText, TextEditingController controller, {bool readOnlyCondition = false, bool isRequired = false, bool obscure = false}) {
-  return Card(
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(10.0),
-    ),
-    elevation: 2,
-    margin: const EdgeInsets.symmetric(vertical: 8.0),
-    child: Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 2,
-            child: Text(
-              label,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-            ),
-          ),
-          Expanded(
-            flex: 3,
-            child: TextFormField(
-              controller: controller,
-              obscureText: obscure,
-              validator: isRequired
-                  ? (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Este campo es obligatorio';
-                      }
-                      return null;
-                    }
-                  : null,
-              decoration: InputDecoration(
-                hintText: hintText,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                focusedBorder: const OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.black87, width: 2.0),
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12.0),
-              ),
-              readOnly: readOnlyCondition && controller.text.isNotEmpty,
-            ),
-          ),
+
+Widget _buildFieldCard(String label, String hint, TextEditingController controller) {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 8.h),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.r),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))
         ],
       ),
-    ),
-  );
-}
+      child: Padding(
+        padding: EdgeInsets.all(12.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold, color: Colors.black54),
+            ),
+            SizedBox(height: 8.h),
+            TextFormField(
+              controller: controller,
+              style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
+              decoration: InputDecoration(
+                hintText: hint,
+                isDense: true, 
+                contentPadding: EdgeInsets.symmetric(vertical: 8.h),
+                border: InputBorder.none, 
+              ),
+              readOnly: true,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+

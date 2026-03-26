@@ -187,7 +187,7 @@ class App extends StatelessWidget {
                       Provider.of<RouteDriverViewmodel>(context, listen: false),
                     )),
           ],
-          child: MaterialApp(
+            child: MaterialApp(
               navigatorKey: navigatorKey,
               theme: ThemeData(
                 textTheme: GoogleFonts.latoTextTheme(Theme.of(context).textTheme).copyWith(

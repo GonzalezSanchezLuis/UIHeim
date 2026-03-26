@@ -32,6 +32,7 @@ import 'package:holi/src/viewmodels/payment/wallet_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class HomeDriverView extends StatefulWidget {
   const HomeDriverView({super.key});
@@ -62,7 +63,6 @@ class _HomeDriverState extends State<HomeDriverView> {
     super.initState();
     initializeStatusFromPrefs();
     BackgroundLocationService.initService();
-   
 
     final routeDriverViewmodel = Provider.of<RouteDriverViewmodel>(context, listen: false);
     final moveNotificationVM = Provider.of<MoveNotificationDriverViewmodel>(context, listen: false);
@@ -91,7 +91,7 @@ class _HomeDriverState extends State<HomeDriverView> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<WalletViewmodel>(context, listen: false).loadWallet(driverId);
       Provider.of<RestoreMoveViewmodel>(context, listen: false).restoreMoveIfExists(driverId);
-       Provider.of<ProfileDriverViewModel>(context, listen: false).fetchDriverData();
+      Provider.of<ProfileDriverViewModel>(context, listen: false).fetchDriverData();
     });
 
     _socketService = WebSocketDriverService(
@@ -167,116 +167,106 @@ class _HomeDriverState extends State<HomeDriverView> {
             }),
             if (!isMoveDataPresent)
               Positioned(
-                top: 50,
-                left: 20,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: AppTheme.primarycolor,
-                    borderRadius: BorderRadius.circular(40),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 6,
-                        offset: const Offset(2, 2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const Driver()),
-                          );
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: AppTheme.primarycolor,
-                              width: 3,
+                top: 50.h,
+                left: 15.w,
+                child: SafeArea(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppTheme.primarycolor,
+                      borderRadius: BorderRadius.circular(40.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.15),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const Driver()),
+                            );
+                          },
+                          child: Container(
+                            padding: EdgeInsets.all(3.w),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppTheme.primarycolor,
+                                width: 2.w,
+                              ),
+                            ),
+                            child: CircleAvatar(
+                              radius: 26.r,
+                              backgroundImage: profile.urlAvatarProfile != null && profile.urlAvatarProfile!.isNotEmpty ? NetworkImage(profile.urlAvatarProfile!) : null,
+                              child: profile.urlAvatarProfile == null || profile.urlAvatarProfile!.isEmpty ? Icon(Icons.person, size: 30.sp) : null,
                             ),
                           ),
-                          child: CircleAvatar(
-                            radius: 28,
-                            backgroundImage: profile.urlAvatarProfile != null && profile.urlAvatarProfile!.isNotEmpty ? NetworkImage(profile.urlAvatarProfile!) : null,
-                            child: profile.urlAvatarProfile == null || profile.urlAvatarProfile!.isEmpty ? const Icon(Icons.person, size: 36) : null,
-                          ),
                         ),
-                      ),
-                      Container(
-                        width: 1,
-                        height: 50,
-                        color: Colors.grey.withOpacity(0.3),
-                        margin: const EdgeInsets.symmetric(horizontal: 8),
-                      ),
-                      Consumer<WalletViewmodel>(builder: (context, walletViewModel, _) {
-                        if (walletViewModel.isLoading) {
-                          return const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            child: SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
-                          );
-                        }
+                        Container(
+                          width: 1.w,
+                          height: 35.h,
+                          color: Colors.grey.withOpacity(0.3),
+                          margin: EdgeInsets.symmetric(horizontal: 5.w),
+                        ),
+                        Consumer<WalletViewmodel>(builder: (context, walletViewModel, _) {
+                          if (walletViewModel.isLoading) {
+                            return Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 20.w),
+                              child: SizedBox(height: 18.h, width: 18.h, child: const CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
+                            );
+                          }
 
-                        final double available = walletViewModel.wallet?.availableBalance ?? 0.00;
-                        final double pending = walletViewModel.wallet?.pendingBalance ?? 0.00;
+                          final double available = walletViewModel.wallet?.availableBalance ?? 0.00;
+                          final double pending = walletViewModel.wallet?.pendingBalance ?? 0.00;
 
-                        final double totalBalance = available + pending;
+                          final double totalBalance = available + pending;
 
-                        final String formattedBalance = totalBalance.toStringAsFixed(2);
-                        final String raw = formatPriceMovingDetails(formattedBalance);
+                          final String formattedBalance = totalBalance.toStringAsFixed(2);
+                          final String raw = formatPriceMovingDetails(formattedBalance);
 
-                        return SizedBox(
-                          width: 150,
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => const WalletView()),
-                              );
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          return GestureDetector(
+                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const WalletView())),
+                            child: Container(
+                              constraints: BoxConstraints(maxWidth: 160.w),
+                              padding: EdgeInsets.only(left: 8.w, right: 15.w, top: 10.h, bottom: 10.h),
                               child: Row(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Expanded(
-                                      child: FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    alignment: Alignment.centerLeft,
+                                  Flexible(
                                     child: Text(
                                       raw,
-                                      style: const TextStyle(
-                                        fontSize: 20,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 18.sp,
                                         fontWeight: FontWeight.bold,
                                         color: Colors.white,
                                       ),
                                     ),
-                                  )),
-                                  const SizedBox(width: 6),
-                                  const Icon(
-                                    Icons.arrow_forward_ios,
-                                    size: 16,
-                                    color: Colors.white,
                                   ),
+                                  SizedBox(width: 8.w),
+                                  Icon(Icons.arrow_forward_ios, size: 14.sp, color: Colors.white70),
                                 ],
                               ),
                             ),
-                          ),
-                        );
-                      }),
-                    ],
+                          );
+                        }),
+                      ],
+                    ),
                   ),
                 ),
               ),
 
             if (_currentMoveData != null)
               Positioned(
-                top: 40,
-                left: 5,
-                right: 5,
+                top: 50.h,
+                left: 5.w,
+                right: 5.w,
                 child: FloatingMoveCardWrapper(moveData: _currentMoveData!),
               ),
 
@@ -289,15 +279,16 @@ class _HomeDriverState extends State<HomeDriverView> {
                     child: Consumer2<RouteDriverViewmodel, DriverStatusViewmodel>(
                       builder: (context, directionsViewModel, driverViewModel, child) {
                         final bool hasMoveData = directionsViewModel.moveData != null && directionsViewModel.moveData!.isNotEmpty && _currentMoveData == null;
-                        // final bool hasMoveData = (_incomingMoveData != null || (directionsViewModel.moveData != null && directionsViewModel.moveData!.isNotEmpty)) && _currentMoveData == null;
+
                         return AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
+                          duration: const Duration(milliseconds: 400),
+                          curve: Curves.fastOutSlowIn,
                           height: hasMoveData ? MediaQuery.of(context).size.height * 0.47 : MediaQuery.of(context).size.height * 0.16,
                           decoration: BoxDecoration(
                             color: Colors.black,
-                            borderRadius: const BorderRadius.only(
-                              topRight: Radius.circular(20),
-                              topLeft: Radius.circular(20),
+                            borderRadius:  BorderRadius.only(
+                              topRight: Radius.circular(20.r),
+                              topLeft: Radius.circular(20.r),
                             ),
                             boxShadow: [
                               BoxShadow(
@@ -307,7 +298,7 @@ class _HomeDriverState extends State<HomeDriverView> {
                             ],
                           ),
                           child: Padding(
-                              padding: const EdgeInsets.all(16.0),
+                              padding: EdgeInsets.all(15.w),
                               child: driverViewModel.connectionStatus == null
                                   ? const Center(
                                       child: CircularProgressIndicator(
@@ -318,7 +309,7 @@ class _HomeDriverState extends State<HomeDriverView> {
                                           moveData: directionsViewModel.moveData!,
                                           onMoveAccepted: (data) async {
                                             directionsViewModel.stopTimerAndRemoveRequest();
-                                           // await BackgroundLocationService.start();
+                                            // await BackgroundLocationService.start();
                                             WakelockPlus.enable();
                                             await ScreenHelper.enableTravelMode();
                                             setState(() {
@@ -334,7 +325,8 @@ class _HomeDriverState extends State<HomeDriverView> {
                                                   Expanded(
                                                     child: driverViewModel.connectionStatus!.isConnected ? _buildDisconnectCard() : _buildConnectCard(),
                                                   ),
-                                                  const SizedBox(width: 8),
+
+                                                   SizedBox(width: 10.w),
                                                   _buildHistoryButton(),
                                                 ] else
                                                   const Expanded(
@@ -429,58 +421,57 @@ class _HomeDriverState extends State<HomeDriverView> {
   }
 
   Widget _buildConnectCard() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        ConnectButton(onConnected: (LatLng location) {
-          final locationVM = Provider.of<DriverLocationViewmodel>(context, listen: false);
-          locationVM.setManualLocation(location);
-          /*  setState(() {
-            _isConnected = true;
-            driverStatus = ConnectionStatus.CONNECTED;
-          });*/
-          /* setState(() {
-            _currentDriverLocation = location;
-            _isConnected = true;
-            driverStatus = ConnectionStatus.CONNECTED;
-          }); */
-          final sessionVM = Provider.of<SessionViewModel>(context, listen: false);
-          final driverId = int.tryParse(sessionVM.userId?.toString() ?? '0') ?? 0;
-          locationVM.startLocationUpdates(driverId);
-        }),
-      ],
-      
+    return Container(
+      height: 70.h,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Expanded(child:  ConnectButton(onConnected: (LatLng location) {
+            final locationVM = Provider.of<DriverLocationViewmodel>(context, listen: false);
+            locationVM.setManualLocation(location);
+            final sessionVM = Provider.of<SessionViewModel>(context, listen: false);
+            final driverId = int.tryParse(sessionVM.userId?.toString() ?? '0') ?? 0;
+            locationVM.startLocationUpdates(driverId);
+          })
+         ),
+        ],
+      ),
     );
   }
 
   Widget _buildDisconnectCard() {
-    return const Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Container(
+      height: 70.h,
+      child: const Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         DisconnectButton(),
       ],
+    )
     );
+ 
   }
 
   Widget _buildHistoryButton() {
     return Container(
-      width: 60,
-      height: 60,
+      width: 56.w,
+      height: 56.w,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 5,
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 6,
+            offset: const Offset(0, 2)
           ),
         ],
       ),
       child: IconButton(
-        icon: const Icon(
+        icon: Icon(
           Icons.keyboard_arrow_up_rounded,
           color: Colors.black,
-          size: 30,
+          size: 32.sp,
         ),
         onPressed: () {
           _showMoveHistoryModal();
@@ -494,91 +485,101 @@ class _HomeDriverState extends State<HomeDriverView> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      sheetAnimationStyle: const AnimationStyle(
+        duration: Duration(milliseconds: 400),
+        curve: Curves.easeOutQuart,
+      ),
       builder: (context) {
-        return FractionallySizedBox(
-          heightFactor: 0.50,
-          child: ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
-            ),
-            child: Scaffold(
-              backgroundColor: Colors.white,
-              appBar: const PreferredSize(
-                preferredSize: Size.fromHeight(40),
-                child: Padding(
-                  padding: EdgeInsets.only(top: 8.0),
-                  child: Center(
-                    child: Text(
-                      "Historial de Mudanzas",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
+        return Container(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).padding.bottom + 20.h,
+            left: 20.w,
+            right: 20.w,
+            top: 15.h,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(25.r)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Indicador visual superior (Barrita gris)
+              Center(
+                child: Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: Colors.grey,
+                    borderRadius: BorderRadius.circular(10.r),
                   ),
                 ),
               ),
-              body: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 16),
-                    OutlinedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const HistoryMoveView(),
-                          ),
-                        );
-                      },
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.black,
-                        side: const BorderSide(color: Colors.black, width: 1.5),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text(
-                        'Historial de mudanzas',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    OutlinedButton(
-                      onPressed: () async {
-                        final isLoggedOut = await _authService.logout();
-                        if (mounted) {
-                          Navigator.pop(context);
+              SizedBox(height: 20.h),
 
-                          if (isLoggedOut) {
-                            Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(builder: (context) => const LoginView()),
-                              (route) => false,
-                            );
-                          }
-                        }
-                      },
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.black,
-                        side: const BorderSide(color: Colors.red, width: 1.5),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text(
-                        'Cerrar sesion',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ],
+              Text(
+                "Opciones de cuenta",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+
+              SizedBox(height: 25.h),
+
+              // BOTÓN: IR AL HISTORIAL
+              OutlinedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const HistoryMoveView()),
+                  );
+                },
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  side: BorderSide(color: Colors.white, width: 1.5.w),
+                  padding: EdgeInsets.symmetric(vertical: 12.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+                child: Text(
+                  'Ver historial de mudanzas',
+                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
                 ),
               ),
-            ),
+
+              SizedBox(height: 15.h),
+
+              // BOTÓN: CERRAR SESIÓN
+              OutlinedButton(
+                onPressed: () async {
+                  final isLoggedOut = await _authService.logout();
+                  if (mounted) {
+                    Navigator.pop(context);
+                    if (isLoggedOut) {
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (context) => const LoginView()),
+                        (route) => false,
+                      );
+                    }
+                  }
+                },
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.red,
+                  side: BorderSide(color: Colors.red, width: 1.5.w),
+                  padding: EdgeInsets.symmetric(vertical: 12.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+                child: Text(
+                  'Cerrar sesión',
+                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
           ),
         );
       },

@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'package:another_flushbar/flushbar.dart';
+import 'package:holi/src/view/screens/welcome/introducction_view.dart';
 import 'package:holi/src/viewmodels/auth/auth_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
@@ -29,215 +30,241 @@ class _LoginState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
     final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
     final passwordVM = Provider.of<PasswordResetViewmodel>(context);
-
     return Scaffold(
-        resizeToAvoidBottomInset: true,
-        backgroundColor: _isLoading ? Colors.black : AppTheme.colorbackgroundview,
-        body: GestureDetector(
-            onTap: () => FocusScope.of(context).unfocus(),
-            child: Stack(children: [
-              if (!_isLoading) ...[
-                Positioned.fill(
-                  child: SingleChildScrollView(
-                    physics: isKeyboardOpen ? const ClampingScrollPhysics() : const NeverScrollableScrollPhysics(),
-                    padding:  EdgeInsets.symmetric(horizontal: 20.w, vertical: 200.h),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          if (!isKeyboardOpen) ...[
-                             Text(
-                              "Ingresar a mi cuenta de Heim",
-                              textAlign: TextAlign.center,
-                              style:  TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold, color: Colors.black),
-                            ),
-                             SizedBox(height: 20.h),
-                          ],
-                          TextFormField(
-                            controller: _emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            decoration:  InputDecoration(
-                              labelText: "Ingresa tu correo electrónico",
-                              labelStyle: TextStyle(fontSize: 14.sp),
-                               fillColor: Colors.white,
-                                filled: true,
-                              border: const  OutlineInputBorder(),
-                              enabledBorder: OutlineInputBorder(
-                                 borderRadius: BorderRadius.circular(12.r),
-                                borderSide: const BorderSide(color: Colors.black87, width: 2.0),
-                              ),
-                              focusedBorder: const  OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 2.0)),
-                              floatingLabelStyle: const TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                           SizedBox(height: 20.h),
-                          TextFormField(
-                            controller: _passwordController,
-                            obscureText: !_isPasswordVisible,
-                            decoration: InputDecoration(
-                              labelText: "Ingresa tu contraseña",
-                              labelStyle: TextStyle(fontSize: 14.sp),
-                               fillColor: Colors.white,
-                              filled: true,
-                              border: const OutlineInputBorder(),
-                              focusedBorder:  const OutlineInputBorder(                               
-                                borderSide:  BorderSide(color: Colors.black87, width: 2.0),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.r),
-                                borderSide: const BorderSide(color: Colors.black87, width: 2.0),
-                              ),
-                              floatingLabelStyle: const TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              suffixIcon: IconButton(
-                                icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off),
-                                onPressed: () {
-                                  setState(() {
-                                    _isPasswordVisible = !_isPasswordVisible;
-                                  });
-                                },
-                              ),
-                            ),
-                          ),
-                           SizedBox(height: 30.h), 
-                          ButtonAuth(formKey: _formKey, onPressed: _handleLogin),
-                        ],
+      resizeToAvoidBottomInset: true,
+      backgroundColor: _isLoading ? Colors.black : AppTheme.colorbackgroundview,
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Stack(
+          children: [
+            if (!_isLoading) ...[
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
                       ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: 10.h,
-                  left: 16.w,
-                  right: 16.w,
-                  child: SafeArea(
-                    child: Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const Support()),
-                            );
-                          },
-                          child: Image.asset(
-                            'assets/images/support.png',
-                            width: 30.w,
-                            height: 30.w,
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 25.w),
+                        child: IntrinsicHeight(
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              children: [
+                                AnimatedContainer(
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.fastOutSlowIn,
+                                  height: isKeyboardOpen ? 100.h : 120.h,
+                                  child: const SizedBox.shrink(),
+                                ),
+                                AnimatedOpacity(
+                                  duration: const Duration(milliseconds: 250),
+                                  opacity: isKeyboardOpen ? 0.0 : 1.0,
+                                  child: isKeyboardOpen
+                                      ? const SizedBox.shrink()
+                                      : Column(
+                                          children: [
+                                            Text(
+                                              "Ingresar a mi cuenta de Heim",
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                fontSize: 22.sp,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                            SizedBox(height: 30.h),
+                                          ],
+                                        ),
+                                ),
+                                TextFormField(
+                                  controller: _emailController,
+                                  keyboardType: TextInputType.emailAddress,
+                                  style: TextStyle(fontSize: 15.sp),
+                                  decoration: InputDecoration(
+                                    labelText: "Ingresa tu correo electrónico",
+                                    labelStyle: TextStyle(fontSize: 13.sp),
+                                    fillColor: Colors.white,
+                                    filled: true,
+                                    contentPadding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12.r),
+                                      borderSide: const BorderSide(color: Colors.black87, width: 1.5),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12.r),
+                                      borderSide: const BorderSide(color: Colors.black, width: 2.0),
+                                    ),
+                                    floatingLabelStyle: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+
+                                SizedBox(height: 20.h),
+
+                                // CAMPO: CONTRASEÑA
+                                TextFormField(
+                                  controller: _passwordController,
+                                  obscureText: !_isPasswordVisible,
+                                  style: TextStyle(fontSize: 15.sp),
+                                  decoration: InputDecoration(
+                                    labelText: "Ingresa tu contraseña",
+                                    labelStyle: TextStyle(fontSize: 13.sp),
+                                    fillColor: Colors.white,
+                                    filled: true,
+                                    contentPadding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12.r),
+                                      borderSide: const BorderSide(color: Colors.black87, width: 1.5),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12.r),
+                                      borderSide: const BorderSide(color: Colors.black, width: 2.0),
+                                    ),
+                                    floatingLabelStyle: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                                    suffixIcon: IconButton(
+                                      icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off, size: 20.sp),
+                                      onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
+                                    ),
+                                  ),
+                                ),
+
+                                SizedBox(height: 35.h),
+                                ButtonAuth(formKey: _formKey, onPressed: _handleLogin),
+                                const Spacer(flex: 3),
+                                SizedBox(height: 20.h),
+                              ],
+                            ),
                           ),
                         ),
-                        const SizedBox(width: 10),
-                      GestureDetector(
-                          onTap: () {
-                            final TextEditingController emailController = TextEditingController();
-                            showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                              ),
-                              backgroundColor: Colors.black,
-                              builder: (BuildContext context) {
-                                final passwordVM = Provider.of<PasswordResetViewmodel>(context);
-                                return SafeArea(child: 
-                                 Padding(
-                                  padding: EdgeInsets.only(
-                                    bottom: MediaQuery.of(context).viewInsets.bottom,
-                                    left: 20,
-                                    right: 20,
-                                    top: 20,
-                                  ),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Text(
-                                        'Recuperar contraseña',
-                                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      TextFormField(
-                                        controller: emailController,
-                                        decoration: const InputDecoration(
-                                          labelText: 'Ingresa tu correo electrónico',
-                                          border: OutlineInputBorder(),
-                                          focusedBorder:  OutlineInputBorder(
-                                            borderSide: BorderSide(color: Colors.white, width: 2.0),
-                                          ),
-                                          enabledBorder:  OutlineInputBorder(
-                                            borderSide: BorderSide(color: Colors.white, width: 2.0),
-                                          ),
-                                          floatingLabelStyle:  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                                        ),
-                                        style: const TextStyle(color: Colors.white),
-                                        keyboardType: TextInputType.emailAddress,
-                                      ),
-                                      const SizedBox(height: 20),
-                                      SizedBox(
-                                        width: double.infinity,
-                                        child: ElevatedButton(
-                                          onPressed: passwordVM.isLoading
-                                              ? null
-                                              : () async {
-                                                  String email = emailController.text.trim();
-                                                  if (email.isEmpty || !email.contains('@')) {
-                                                    _showFlushbar(context, "Por favor ingresa un correo válido", Colors.orange);
-                                                    return;
-                                                  }
-                                                  await passwordVM.resetPassword(email);
-                                                  if (passwordVM.successMessage != null) {
-                                                    if (context.mounted) {
-                                                      Navigator.pop(context);
-                                                      _showFlushbar(context, passwordVM.successMessage!, AppTheme.confirmationscolor);
-                                                    }
-                                                  } else if (passwordVM.errorMessage != null) {
-                                                    _showFlushbar(context, passwordVM.errorMessage!, Colors.red);
-                                                  }
-                                                },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: AppTheme.confirmationscolor,
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                                            padding: const EdgeInsets.symmetric(vertical: 18),
-                                          ),
-                                          child: passwordVM.isLoading
-                                              ? const SizedBox(
-                                                  height: 20,
-                                                  width: 20,
-                                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                                                )
-                                              : const Text('Enviar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 22)),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 20),
-                                    ],
-                                  ),
-                                )
-                                );
-                                
-                              },
-                            );
-                          },
-                          child:  Text(
+                      ),
+                    ),
+                  );
+                },
+              ),
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: SafeArea(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        GestureDetector(
+                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const Support())),
+                          child: Image.asset('assets/images/support.png', width: 28.w, height: 28.w),
+                        ),
+                        GestureDetector(
+                          onTap: () => _showForgotPasswordModal(context), // El modal que adaptamos antes
+                          child: Text(
                             '¿Olvidaste tu contraseña?',
-                            style: TextStyle(color: Colors.black, fontSize: 14.sp),
+                            style: TextStyle(color: Colors.black, fontSize: 13.sp, fontWeight: FontWeight.w600),
                           ),
                         )
                       ],
                     ),
                   ),
                 ),
-              ],
-              if (_isLoading) const Center(child: CircularProgressIndicator(color: Colors.white)),
-            ])));
+              ),
+            ],
+            if (_isLoading) const Center(child: CircularProgressIndicator(color: Colors.white)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showForgotPasswordModal(BuildContext context) {
+    final emailController = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      sheetAnimationStyle: const AnimationStyle(
+        duration: Duration(milliseconds: 500),
+        curve: Curves.easeOutQuart,
+      ),
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(25.r)),
+        ),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom + 20.h,
+          left: 20.w,
+          right: 20.w,
+          top: 20.h,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(width: 40.w, height: 4.h, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(10.r))),
+            SizedBox(height: 20.h),
+            Text(
+              'Recuperar contraseña',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.sp, color: Colors.white),
+            ),
+            SizedBox(height: 20.h),
+            TextFormField(
+              controller: emailController,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: 'Ingresa tu correo',
+                labelStyle: const TextStyle(color: Colors.white70),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                  borderSide: const BorderSide(color: Colors.white38),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                  borderSide: const BorderSide(color: Colors.white),
+                ),
+              ),
+            ),
+            SizedBox(height: 25.h),
+            Consumer<PasswordResetViewmodel>(
+              builder: (context, passwordVM, _) => SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: passwordVM.isLoading
+                      ? null
+                      : () async {
+                          String email = emailController.text.trim();
+                          if (email.isEmpty || !email.contains('@')) {
+                            _showFlushbar(context, "Por favor ingresa un correo válido", Colors.orange);
+                            return;
+                          }
+                          await passwordVM.resetPassword(email);
+                          if (passwordVM.successMessage != null) {
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                              _showFlushbar(context, passwordVM.successMessage!, AppTheme.confirmationscolor);
+                            }
+                          } else if (passwordVM.errorMessage != null) {
+                            _showFlushbar(context, passwordVM.errorMessage!, Colors.red);
+                          }
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: passwordVM.isLoading ? Colors.grey.shade700 : AppTheme.confirmationscolor,
+                    disabledBackgroundColor: Colors.grey.shade800,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.r)),
+                    padding: EdgeInsets.symmetric(vertical: 15.h),
+                    elevation: passwordVM.isLoading ? 0 : 2,
+                  ),
+                  child: passwordVM.isLoading ? SizedBox(height: 20.h, width: 20.h, child: const CircularProgressIndicator(color: Colors.white)) : Text('Enviar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18.sp)),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _handleLogin() async {
@@ -267,10 +294,10 @@ class _LoginState extends State<LoginView> {
     final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
 
     try {
-       if (mounted) setState(() => _isLoading = true);
+      if (mounted) setState(() => _isLoading = true);
       final response = await authViewModel.login(email, password);
 
-     // if (mounted) setState(() => _isLoading = true);
+      // if (mounted) setState(() => _isLoading = true);
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('intro_view', true);
@@ -301,8 +328,8 @@ class _LoginState extends State<LoginView> {
         duration: const Duration(seconds: 3),
         flushbarPosition: FlushbarPosition.TOP,
       ).show(context);
-    } 
-   /* finally {
+    }
+    /* finally {
       if (mounted) setState(() => _isLoading = false);
     }*/
   }
@@ -320,7 +347,7 @@ void _showFlushbar(BuildContext context, String message, Color color) {
     message: message,
     backgroundColor: color,
     duration: const Duration(seconds: 3),
-    flushbarPosition: FlushbarPosition.TOP, 
+    flushbarPosition: FlushbarPosition.TOP,
     borderRadius: BorderRadius.circular(8),
     margin: const EdgeInsets.all(8),
     icon: Icon(

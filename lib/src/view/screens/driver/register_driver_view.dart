@@ -10,6 +10,7 @@ import 'package:holi/src/view/screens/tearm/tearm_and_condition_view.dart';
 import 'package:holi/src/viewmodels/auth/auth_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class RegisterDriver extends StatefulWidget {
   const RegisterDriver({super.key});
@@ -37,14 +38,15 @@ class _RegisterDriverState extends State<RegisterDriver> {
         backgroundColor: AppTheme.colorbackgroundview,
         appBar: AppBar(
           backgroundColor: AppTheme.primarycolor,
-          title: const Text(
-            "Registrarme como conductor",
+          title:  Text(
+            "Únete a la tribu de conductores",
             style: StyleFontsTitle.titleStyle,
           ),
           leading: IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.arrow_back_ios_new_rounded,
               color: Colors.white,
+              size: 22.sp,
             ),
             onPressed: () => {Navigator.pop(context)},
           ),
@@ -58,123 +60,93 @@ class _RegisterDriverState extends State<RegisterDriver> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: _phoneController,
-                    decoration: const InputDecoration(
-                        labelText: "Número de teléfono",
-                        border: OutlineInputBorder(),
-                        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 1.0)),
-                        floatingLabelStyle: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                        )),
+                  SizedBox(height: 10.h),
+                  _buildField(
+                      controller: _phoneController,
+                      label: "Número de teléfono",
+                      keyboardType: TextInputType.phone,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) return 'El teléfono es obligatorio';
+                        if(!RegExp(r'^3[0-9]{9}$').hasMatch(value)) return 'Ingresa un celular válido (10 dígitos)';
+                      }),
+                  SizedBox(height: 20.h),
+                  _buildField(
+                    controller:_documentController, 
+                    label:  "Número de documento",
+                    keyboardType: TextInputType.number,
                     validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Este campo es obligatorio';
-                      }
+                      if (value == null || value.isEmpty) return 'El documento es obligatorio';
+                      if (!RegExp(r'^[0-9]{7,10}$').hasMatch(value)) return 'Documento inválido';
                       return null;
                     },
-                  ),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: _documentController,
-                    decoration: const InputDecoration(
-                        labelText: "Número de documento",
-                        border: OutlineInputBorder(),
-                        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 1.0)),
-                        floatingLabelStyle: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                        )),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Este campo es obligatorio';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  TextFormField(
+                    ),
+                  SizedBox(height: 20.h),
+
+                  _buildField(
                     controller: _licenseController,
-                    decoration: const InputDecoration(
-                        labelText: "Licencia de conducir",
-                        border: OutlineInputBorder(),
-                        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 1.0)),
-                        floatingLabelStyle: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                        )),
+                    label: "Licencia de conducir",
+                    keyboardType: TextInputType.visiblePassword, // Permite letras y números
                     validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Este campo es obligatorio';
+                      if (value == null || value.trim().isEmpty) return 'La licencia es obligatoria';
+                      if (value.length < 5) return 'Número de licencia demasiado corto';
+                      if (!RegExp(r'^[a-zA-Z0-9]+$').hasMatch(value.trim())) {
+                        return 'No uses puntos, comas ni espacios';
                       }
                       return null;
                     },
                   ),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                      controller: _licenseCategoryController,
-                      decoration: const InputDecoration(
-                        labelText: "Categoria autorizada de licencia",
-                        border: OutlineInputBorder(),
-                        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 1.0)),
-                        floatingLabelStyle: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Este campo es obligatorio';
+
+                  SizedBox(height: 20.h),
+                  _buildField(
+                    controller: _licenseCategoryController,
+                    label: "Categoría (Ej: C2, B2)",
+                    textCapitalization: TextCapitalization.characters, // Forzamos mayúsculas
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) return 'La categoría es obligatoria';
+                      // RegEx para formatos como A1, B2, C3, etc.
+                      if (!RegExp(r'^[ABC][1-3]$').hasMatch(value.trim().toUpperCase())) {
+                        return 'Formato inválido (Ej: C1, C2)';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 20.h),
+                  _buildField(
+                    controller: _typeVehicleController,
+                    label: "Tipo de vehículo (Ej: Turbo, NHR)",
+                    textCapitalization: TextCapitalization.words, // Primera letra mayúscula
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) return 'El tipo de vehículo es obligatorio';
+                      if (value.length < 3) return 'Ingresa una descripción válida';
+                      // Evitamos que solo metan números
+                      if (RegExp(r'^[0-9]+$').hasMatch(value.trim())) {
+                        return 'Escribe el nombre del tipo de vehículo';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 20.h),
+                  _buildField(
+                    controller :_enrollVehicleController,
+                    label: "Placas del vehículo",
+                    validator: (value){
+                      if (value == null || value.isEmpty) return 'La placa es obligatoria';
+                        // RegEx para placas colombianas comunes
+                        if (!RegExp(r'^[A-Z]{3}[0-9]{3}$|^[A-Z]{3}[0-9]{2}[A-Z]{1}$').hasMatch(value.toUpperCase())) {
+                          return 'Formato inválido (Ej: ABC123)';
                         }
                         return null;
-                      }),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                      controller: _typeVehicleController,
-                      decoration: const InputDecoration(
-                        labelText: "Tipo de vehículo",
-                        border: OutlineInputBorder(),
-                        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 1.0)),
-                        floatingLabelStyle: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Este campo es obligatorio';
-                        }
-                        return null;
-                      }),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                      controller: _enrollVehicleController,
-                      decoration: const InputDecoration(
-                          labelText: "Placas del vehículo",
-                          border: OutlineInputBorder(),
-                          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 1.0)),
-                          floatingLabelStyle: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                          )),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Este campo es obligatorio';
-                        }
-                        return null;
-                      }),
-                  const SizedBox(height: 20),
+                    }),
+                  SizedBox(height: 30.h),
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
                         child: Text.rich(
                           TextSpan(
-                            text: "Al registrarte como conductor aceptas nuestros ",
-                            style: const TextStyle(fontSize: 13, color: Colors.black54),
+                            text: "Al registrarte, aceptas nuestras reglas de juego ",
+                            style: TextStyle(fontSize: 11.sp, color: Colors.black54),
                             children: [
                               TextSpan(
                                 text: "Términos y Condiciones",
@@ -192,7 +164,7 @@ class _RegisterDriverState extends State<RegisterDriver> {
                               ),
                               const TextSpan(text: " y "),
                               TextSpan(
-                                text: "Política de Privacidad",
+                                text: "cómo cuidamos tu información",
                                 style: const TextStyle(
                                   color: Colors.black,
                                   decoration: TextDecoration.underline,
@@ -205,34 +177,36 @@ class _RegisterDriverState extends State<RegisterDriver> {
                                     // Aquí pones tu Navigator.push o launchUrl
                                   },
                               ),
-                              const TextSpan(text: ". La validación de tu cuenta y antecedentes puede tardar hasta 5 días hábiles. Recibirás una notificación cuando tu perfil esté activo."),
+                              const TextSpan(
+                                text: ".En Heim no solo movemos cajas, movemos la confianza de la gente. Por eso, nos tomamos hasta 5 días para validar que eres el aliado que nuestra tribu necesita. Te avisaremos en cuanto estés listo para rodar.",
+                              ),
                             ],
                           ),
                           textAlign: TextAlign.center,
                         ),
                       ),
-                      const SizedBox(height: 15),
+                      SizedBox(height: 20.w),
                       ElevatedButton(
                         onPressed: _isLoading ? null : _handleRegisterDriver,
                         style: ElevatedButton.styleFrom(
-                          minimumSize: Size(MediaQuery.of(context).size.width * 0.9, 60),
+                          minimumSize: Size(double.infinity, 60.h),
                           backgroundColor: Colors.black,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
+                            borderRadius: BorderRadius.circular(30.r),
                           ),
                         ),
                         child: _isLoading
-                            ? const SizedBox(
-                                height: 24,
-                                width: 24,
-                                child: CircularProgressIndicator(
+                            ? SizedBox(
+                                height: 24.h,
+                                width: 24.h,
+                                child: const CircularProgressIndicator(
                                   color: Colors.white,
                                   strokeWidth: 2,
                                 ),
                               )
-                            : const Text(
-                                "Enviar mis datos",
-                                style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                            : Text(
+                                "Empezar a ser un aliado",
+                                style: TextStyle(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.bold),
                               ),
                       ),
                     ],
@@ -242,6 +216,44 @@ class _RegisterDriverState extends State<RegisterDriver> {
             ),
           ),
         ));
+  }
+
+  Widget _buildField({
+    required TextEditingController controller,
+    required String label,
+    String? Function(String?)? validator,
+    TextInputType keyboardType = TextInputType.text,
+    TextCapitalization textCapitalization = TextCapitalization.none,
+  }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      textCapitalization: textCapitalization,
+      style: TextStyle(fontSize: 15.sp),
+      decoration: InputDecoration(
+        labelText: label,
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 12.h),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.r),
+          borderSide: const BorderSide(color: Colors.black87, width: 1.5),
+        ),
+        floatingLabelStyle: TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.bold,
+          fontSize: 14.sp,
+        ),
+      ),
+      validator: validator ??
+          (value) {
+            if (value == null || value.trim().isEmpty) {
+              return 'Este campo es obligatorio';
+            }
+            return null;
+          },
+    );
   }
 
   void _handleRegisterDriver() async {
@@ -264,56 +276,43 @@ class _RegisterDriverState extends State<RegisterDriver> {
         }
 
         final success = await registerDriverViewModel.registerDriver(
-           userId:  userId,
-           document:  _documentController.text.trim(),
-           phone:  _phoneController.text.trim(),
-           licenseNumber:  _licenseController.text.trim(),
-           licenseCategory:  _licenseCategoryController.text.trim(),
-           vehicleType:   _typeVehicleController.text.trim(),
-          enrollVehicle:   _enrollVehicleController.text.trim(),
+          userId: userId,
+          document: _documentController.text.trim(),
+          phone: _phoneController.text.trim(),
+          licenseNumber: _licenseController.text.trim(),
+          licenseCategory: _licenseCategoryController.text.trim(),
+          vehicleType: _typeVehicleController.text.trim(),
+          enrollVehicle: _enrollVehicleController.text.trim(),
         );
 
         setState(() => _isLoading = false);
 
         if (success) {
-          Flushbar(
-            title: 'Todo salio bien',
-            message: 'Hemos registrado tus datos con éxito.',
-            backgroundColor: AppTheme.confirmationscolor,
-            icon: const Icon(
-              Icons.check_circle_outline,
-              size: 28.0,
-              color: Colors.white,
-            ),
-            borderRadius: BorderRadius.circular(8),
-            margin: const EdgeInsets.all(8),
-            duration: const Duration(seconds: 3),
-            flushbarPosition: FlushbarPosition.TOP,
-          ).show(context);
+          _showFlushbar('Todo salio bien', 'Hemos registrado tus datos con éxito.', AppTheme.confirmationscolor, Icons.check_circle_outline);
           setState(() => _isLoading = false);
           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeDriverView()));
         } else {
           setState(() => _isLoading = false);
           final error = registerDriverViewModel.errorMessage ?? "Algo salió mal";
-          Flushbar(
-            title: 'Hubo un error',
-            message: error,
-            backgroundColor: AppTheme.warningcolor,
-            icon: const Icon(
-              Icons.error_outline,
-              size: 28.0,
-              color: Colors.white,
-            ),
-            borderRadius: BorderRadius.circular(8),
-            margin: const EdgeInsets.all(8),
-            duration: const Duration(seconds: 3),
-            flushbarPosition: FlushbarPosition.TOP,
-          ).show(context);
+          _showFlushbar('Hubo un error', error, AppTheme.warningcolor, Icons.error_outline);
         }
       } catch (e) {
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  void _showFlushbar(String title, String message, Color color, IconData icon) {
+    Flushbar(
+      title: title,
+      message: message,
+      backgroundColor: color,
+      icon: Icon(icon, size: 28.sp, color: Colors.white),
+      borderRadius: BorderRadius.circular(12.r),
+      margin: EdgeInsets.all(12.w),
+      duration: const Duration(seconds: 3),
+      flushbarPosition: FlushbarPosition.TOP,
+    ).show(context);
   }
 
   @override

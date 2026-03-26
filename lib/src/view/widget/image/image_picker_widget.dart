@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class ImagePickerWidget extends StatelessWidget {
   final File? selectedImage;
@@ -28,30 +29,33 @@ class ImagePickerWidget extends StatelessWidget {
   void _showImageSourceDialog(BuildContext context) {
     showModalBottomSheet(
         context: context,
-        backgroundColor: AppTheme.primarycolor,
+        backgroundColor: Colors.black,
         useSafeArea: true,
         isScrollControlled: true,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        ),
         builder: (context) {
           return SafeArea(
             child: Wrap(
               children: [
                 ListTile(
-                  leading: const Icon(Icons.camera_alt, color: Colors.white),
-                  title: const Text("Tomar foto", style: TextStyle(color: Colors.white)),
+                  leading:  Icon(Icons.camera_alt, color: Colors.white,size: 24.sp,),
+                  title:  Text("Tomar foto", style: TextStyle(color: Colors.white,fontSize: 14.sp)),
                   onTap: () {
                     Navigator.pop(context);
                     _pickImage(context, ImageSource.camera);
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.photo_library, color: Colors.white),
-                  title: const Text("Seleccionar de la galería", style: TextStyle(color: Colors.white)),
+                  leading:  Icon(Icons.photo_library, color: Colors.white,size: 24.sp,),
+                  title: Text("Seleccionar de la galería", style: TextStyle(color: Colors.white,fontSize: 14.sp)),
                   onTap: () {
                     Navigator.pop(context);
                     _pickImage(context, ImageSource.gallery);
                   },
                 ),
-                const SizedBox(height: 8,)
+                 SizedBox(height: 8.h,)
               ],
             ),
           );
@@ -64,30 +68,34 @@ class ImagePickerWidget extends StatelessWidget {
   if (selectedImage != null) {
     imageProvider = FileImage(selectedImage!);
   } 
-  // 2. Segunda opción: URL de internet (Validamos que sea real)
   else if (imageUrl != null && imageUrl!.startsWith('http')) {
     imageProvider = NetworkImage(imageUrl!);
   }
 
     return GestureDetector(
       onTap: () => _showImageSourceDialog(context),
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical:8.h),
+        decoration: const BoxDecoration(color: Colors.transparent),
       child: Row(
         children: [
           CircleAvatar(
-            radius: 40,
+            radius: 35.r,
+            backgroundColor: Colors.grey[300],
             backgroundImage: imageProvider,
-            child: imageProvider == null ? const Icon(Icons.person, size: 40, color: Colors.black) : null,
+            child: imageProvider == null ?  Icon(Icons.person, size: 35.sp, color: Colors.black) : null,
           ),
-          const SizedBox(width: 16),
-          const Expanded(
+           SizedBox(width: 16.w),
+           Expanded(
             child: Text(
               "Cambiar foto de perfil",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold),
             ),
           ),
-          const Icon(Icons.arrow_forward_ios, size: 16),
+           Icon(Icons.arrow_forward_ios, size: 14.sp, color: Colors.grey[600]),
         ],
       ),
+       ),
     );
   }
 }

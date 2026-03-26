@@ -15,7 +15,7 @@ class Support extends StatelessWidget {
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
         backgroundColor: AppTheme.primarycolor,
-        title: const Text(
+        title: Text(
           "Atras",
           style:  StyleFontsTitle.titleStyle,
         ),

@@ -21,18 +21,16 @@ class _ProfileViewState extends State<ProfileView> {
   late final ProfileUserViewModel viewModel;
   bool _isInitialized = false;
 
-     final nameController = TextEditingController();
-     final  documentController = TextEditingController();
-     final phoneController = TextEditingController();
-     final  emailController = TextEditingController();
-     final passwordController = TextEditingController(text: '••••••••••••');
+  final nameController = TextEditingController();
+  final documentController = TextEditingController();
+  final phoneController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController(text: '••••••••••••');
 
   @override
   void initState() {
     super.initState();
     viewModel = ProfileUserViewModel();
- 
-  
 
     viewModel.fetchUserData().then((_) {
       if (mounted) {
@@ -57,12 +55,13 @@ class _ProfileViewState extends State<ProfileView> {
     passwordController.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     if (!_isInitialized) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator(
+        body: Center(
+            child: CircularProgressIndicator(
           strokeWidth: 4,
           color: Colors.black,
         )),
@@ -74,35 +73,34 @@ class _ProfileViewState extends State<ProfileView> {
         backgroundColor: AppTheme.colorbackgroundview,
         appBar: AppBar(
           backgroundColor: AppTheme.primarycolor,
-          title: const Text( "Mi cuenta",style:  StyleFontsTitle.titleStyle),
+          title:  Text("Mi cuenta", style: StyleFontsTitle.titleStyle),
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white, size: 20.w,),
+            icon: Icon(
+              Icons.arrow_back_ios_new_outlined,
+              color: Colors.white,
+              size: 20.w,
+            ),
             onPressed: () => Navigator.pop(context),
           ),
         ),
         body: Consumer<ProfileUserViewModel>(
           builder: (context, viewModel, child) {
             if (viewModel.isLoading) {
-              return const Center(child: CircularProgressIndicator(color: Colors.black,));
+              return const Center(
+                  child: CircularProgressIndicator(
+                color: Colors.black,
+              ));
             }
-
-           /* final profile = viewModel.profile;
-            final nameController = TextEditingController(text: profile.fullName);
-            final documentController = TextEditingController(text: profile.document);
-            final phoneController = TextEditingController(text: profile.phone);
-            final emailController = TextEditingController(text: profile.email); */
 
             return SingleChildScrollView(
               child: Padding(
-                padding:  EdgeInsets.symmetric(horizontal: 16.w),
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
                 child: Form(
                   key: _formKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-
                       SizedBox(height: 25.h),
-                  
                       ImagePickerWidget(
                         selectedImage: viewModel.selectedImage,
                         imageUrl: viewModel.profile.urlAvatarProfile,
@@ -110,55 +108,62 @@ class _ProfileViewState extends State<ProfileView> {
                           viewModel.onImageSelected(imageFile);
                         },
                       ),
-
-                       SizedBox(height: 24.h),
+                      SizedBox(height: 24.h),
                       Card(
                         color: AppTheme.colorcards,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10.r),
                         ),
-                        margin:  EdgeInsets.symmetric(vertical: 16.h),
+                        margin: EdgeInsets.symmetric(vertical: 16.h),
                         child: Padding(
-                          padding:  EdgeInsets.all(16.w),
+                          padding: EdgeInsets.all(16.w),
                           child: Column(
                             children: [
                               TextFormField(
-                                controller: nameController, validator: (value) => value == null || value.isEmpty
-                                    ? 'El nombre es obligatorio'
-                                    : null,
+                                controller: nameController,
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) return 'El nombre es obligatorio';
+                                  if (value.trim().split(' ').length < 2) return 'Ingresa nombre y apellido';
+                                  return null;
+                                },
                                 decoration: InputDecoration(
-                                  labelText: "Nombre(s)",
-                                  labelStyle: TextStyle(fontWeight: FontWeight.w600,color: Colors.black,fontSize: 14.sp),
-                                  border: const UnderlineInputBorder(),
-                                  focusedBorder: const UnderlineInputBorder(
-                                    borderSide: BorderSide(color: Colors.black, width: 2)
-                                  )
-                                ),   
-                                                            
+                                    labelText: "Nombre(s)", labelStyle: TextStyle(fontWeight: FontWeight.w600, color: Colors.black, fontSize: 14.sp), border: const UnderlineInputBorder(), focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.black, width: 2))),
                               ),
-                              
-                               SizedBox(height: 10.h),
+                              SizedBox(height: 10.h),
                             ],
                           ),
                         ),
                       ),
-                      _buildFieldCard("Número de documento", "Ingresa tu número",
-                          documentController,
-                          readOnlyCondition: true, isRequired: true),
-                      _buildFieldCard("Teléfono", "Ingresa tu teléfono", phoneController,
-                          isRequired: true),
-                      _buildFieldCard("Correo electrónico", "Ingresa tu correo",
-                          emailController,
-                          isRequired: true),
+                      _buildFieldCard("Número de documento", "Ingresa tu número", documentController, readOnlyCondition: true, isRequired: true),
+                      _buildFieldCard(
+                        "Teléfono",
+                        "Ingresa tu teléfono",
+                        phoneController,
+                        keyboardType: TextInputType.phone,
+                        isRequired: true,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) return 'Obligatorio';
+                          if (!RegExp(r'^3[0-9]{9}$').hasMatch(value)) return 'Número celular incorrecto';
+                          return null;
+                        },
+                      ),
+                      _buildFieldCard("Correo electrónico", "Ingresa tu correo", 
+                      emailController, isRequired: true,
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (value){
+                        if (value == null || value.isEmpty) return 'Obligatorio';
+                        final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                        if (!emailRegex.hasMatch(value)) return 'Correo no válido';
+                        return null;
+                      }
+                      ),
                       PasswordFieldCard(
                         label: "Actualizar contraseña",
-                        hintText: "Ingresa tu contraseña",
+                        hintText: "Nueva contraseña",
                         controller: passwordController,
                         isRequired: true,
                       ),
-
-                       SizedBox(height: 10.h),
-
+                      SizedBox(height: 10.h),
                       ButtonUpdateData(
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
@@ -167,20 +172,72 @@ class _ProfileViewState extends State<ProfileView> {
                               email: emailController.text,
                               phone: phoneController.text,
                               document: documentController.text.trim(),
-                              password: passwordController.text == '••••••••••••'
-                                  ? null
-                                  : passwordController.text,
+                              password: passwordController.text == '••••••••••••' ? null : passwordController.text,
                             );
                           }
                         },
                       ),
+                      SizedBox(height: 40.h),
+                      Container(
+                        padding: EdgeInsets.all(16.w),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.05), // Fondo muy tenue para alertar
+                          borderRadius: BorderRadius.circular(12.r),
+                          border: Border.all(color: Colors.red[200]!, width: 1),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.warning_amber_rounded, color: Colors.red[700], size: 20.sp),
+                                SizedBox(width: 8.w),
+                                Text(
+                                  "Zona de Peligro",
+                                  style: TextStyle(
+                                    color: Colors.red[700],
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14.sp,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 8.h),
+                            Text(
+                              "Al eliminar tu cuenta, perderás todo tu historial de viajes y datos registrados. Esta acción no se puede deshacer.",
+                              style: TextStyle(fontSize: 12.sp, color: Colors.black54),
+                            ),
+                            SizedBox(height: 16.h),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red[600],
+                                minimumSize: Size(double.infinity, 45.h), // Ancho completo adaptable
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8.r),
+                                ),
+                              ),
+                              onPressed: () async {
+                                // Tip de experto: Aquí deberías mostrar un Dialog de confirmación
+                                _confirmDeleteAccount(context, viewModel);
+                              },
+                              child: Text(
+                                "Eliminar mi cuenta permanentemente",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14.sp,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
 
-                       SizedBox(height: 20.h),
-
-                      ElevatedButton(
+                     /* ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red[600],
-                          padding:  EdgeInsets.symmetric(vertical: 16.h),
+                          padding: EdgeInsets.symmetric(vertical: 12.h),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30.r),
                           ),
@@ -192,7 +249,7 @@ class _ProfileViewState extends State<ProfileView> {
                             MaterialPageRoute(builder: (_) => const WelcomeView()),
                           );
                         },
-                        child:  Text(
+                        child: Text(
                           "Eliminar cuenta",
                           style: TextStyle(
                             color: Colors.white,
@@ -200,7 +257,8 @@ class _ProfileViewState extends State<ProfileView> {
                             fontSize: 16.sp,
                           ),
                         ),
-                      ),
+                      ), */
+
                       SizedBox(height: 30.h),
                     ],
                   ),
@@ -214,62 +272,87 @@ class _ProfileViewState extends State<ProfileView> {
   }
 }
 
-  Widget _buildFieldCard(String label, String hintText, TextEditingController controller, {bool readOnlyCondition = false, bool isRequired = false, bool obscure = false}) {
-    return Card(
-      color: AppTheme.colorcards,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10.r),
-      ),
-      elevation: 2,
-      margin:  EdgeInsets.symmetric(vertical: 8.h),
-      child: Padding(
-        padding:  EdgeInsets.all(16.w),
-        child: Row(
-          children: [
-            Expanded(
-              flex: 2,
-              child: Text(
-                label,
-                style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600),
-              ),
-            ),
-            Expanded(
-              flex: 3,
-              child: TextFormField(
-                controller: controller,
-                obscureText: obscure,
-                style: TextStyle(fontSize: 13.sp),
-                validator: isRequired
-                    ? (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Este campo es obligatorio';
-                        }
-                        return null;
-                      }
-                    : null,
-                decoration: InputDecoration(
-                  hintText: hintText,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  focusedBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.black87, width: 2.0),
-                  ),
-                  enabledBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.black87, width: 2.0),
-                  ),
-                  contentPadding:  EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-                ),
-                readOnly: readOnlyCondition && controller.text.isNotEmpty,
-              ),
-            ),
-          ],
+void _confirmDeleteAccount(BuildContext context, ProfileUserViewModel viewModel) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text("¿Estás seguro?"),
+      content: const Text("Esta acción eliminará todos tus datos de Heim de forma permanente."),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text("Cancelar", style: TextStyle(color: Colors.black)),
         ),
+        TextButton(
+          onPressed: () async {
+            Navigator.pop(context); // Cerrar diálogo
+            await viewModel.deleteAccount(context);
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const WelcomeView()),
+            );
+          },
+          child: const Text("Eliminar", style: TextStyle(color: Colors.red)),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget _buildFieldCard(String label, String hintText, TextEditingController controller, {bool readOnlyCondition = false, String? Function(String?)? validator, TextInputType keyboardType = TextInputType.text, bool isRequired = false, bool obscure = false}) {
+  return Card(
+    color: AppTheme.colorcards,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(10.r),
+    ),
+    elevation: 2,
+    margin: EdgeInsets.symmetric(vertical: 8.h),
+    child: Padding(
+      padding: EdgeInsets.all(16.w),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600),
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: TextFormField(
+              controller: controller,
+              obscureText: obscure,
+              style: TextStyle(fontSize: 13.sp),
+              validator: validator ??
+                  (isRequired
+                      ? (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Este campo es obligatorio';
+                          }
+                          return null;
+                        }
+                      : null),
+              decoration: InputDecoration(
+                hintText: hintText,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                focusedBorder: OutlineInputBorder(
+                   borderRadius: BorderRadius.circular(12.r),
+                  borderSide: const BorderSide(color: Colors.black87, width: 2.0),
+                ),
+                enabledBorder: OutlineInputBorder(
+                   borderRadius: BorderRadius.circular(12.r),
+                  borderSide: const BorderSide(color: Colors.black87, width: 2.0),
+                ),
+                contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+              ),
+              readOnly: readOnlyCondition && controller.text.isNotEmpty,
+            ),
+          ),
+        ],
       ),
-    );
-  }
-
-
-  
-
-
+    ),
+  );
+}

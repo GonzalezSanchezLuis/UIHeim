@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class UserMapWidget extends StatefulWidget {
   final List<LatLng> route;
@@ -72,7 +73,7 @@ class _UserMapWidgetState extends State<UserMapWidget> {
           zoomControlsEnabled: false,
           markers: _markers,
           polylines: _polylines,
-          padding: const EdgeInsets.only(bottom: 250, top: 0, right: 0, left: 0),
+          padding:  EdgeInsets.only(bottom: 250.h, top: 10.h, right: 0, left: 0),
           onMapCreated: (controller) async {
             _mapController = controller;
             _controller.complete(controller);
@@ -97,31 +98,44 @@ class _UserMapWidgetState extends State<UserMapWidget> {
           ),
         ),
         Positioned(
-          top: 140,
-          right: 10,
+          top: 140.h,
+          right: 10.w,
           child: Column(
             children: [
-              FloatingActionButton(
-                backgroundColor: Colors.white,
-                heroTag: "zoom_in",
-                mini: true,
-                onPressed: () async {
-                  final controller = await _controller.future;
-                  controller.animateCamera(CameraUpdate.zoomIn());
-                },
-                child: const Icon(Icons.add),
+              SizedBox(
+                width: 35.w,
+                height: 35.w,
+                child: FloatingActionButton(
+                  backgroundColor: Colors.black,
+                  heroTag: "zoom_in",
+                  mini: true,
+                  onPressed: () async {
+                    final controller = await _controller.future;
+                    controller.animateCamera(CameraUpdate.zoomIn());
+                  },
+                  child: Icon(
+                    Icons.add,
+                    size: 20.sp,
+                    color: Colors.white,
+                  ),
+                ),
               ),
-              const SizedBox(height: 1),
-              FloatingActionButton(
-                backgroundColor: Colors.white,
+               SizedBox(height: 10.h),
+              SizedBox(
+                width: 35.w,
+                height: 35.w,
+                child:  FloatingActionButton(
+                backgroundColor: Colors.black,
                 heroTag: "zoom_out",
                 mini: true,
                 onPressed: () async {
                   final controller = await _controller.future;
                   controller.animateCamera(CameraUpdate.zoomOut());
                 },
-                child: const Icon(Icons.remove),
+                child:  Icon(Icons.remove,size: 20.sp,color: Colors.white,),
               ),
+              )
+             
             ],
           ),
         ),
@@ -133,14 +147,14 @@ class _UserMapWidgetState extends State<UserMapWidget> {
     _originIcon = await _getMarkerFromIcon(
       Icons.circle,
       AppTheme.greenColors,
-      size: 30,
+      size: 25.w,
     );
     _destinationIcon = await _getMarkerFromIcon(
       Icons.circle,
       Colors.blueAccent,
-      size: 30,
+      size: 25.w,
     );
-    _driverIcon = await _getMarkerFromIconDriver(Icons.navigation, Colors.black, size: 50.0);
+    _driverIcon = await _getMarkerFromIconDriver(Icons.navigation, Colors.black, size: 45.w);
 
     if (_mapReady && widget.driverLocation != null) {
       print("🛠 Desde _loadCustomIcons: Agregando marcador del conductor");
@@ -194,15 +208,23 @@ class _UserMapWidgetState extends State<UserMapWidget> {
     }
 
     final Polyline routePolyline = Polyline(
+     /* Polyline(
+        polylineId: const PolylineId('user_route_border'),
+        color: Colors.black.withOpacity(0.3),
+        width: 8.w.toInt(),
+        points: widget.route,
+        jointType: JointType.round,
+      ), */
+
       polylineId: const PolylineId('user_route'),
       color: AppTheme.primarycolor,
-      width: 7,
+      width: 6.w.toInt(),
       points: widget.route,
       geodesic: false,
       jointType: JointType.round,
       startCap: Cap.roundCap,
       endCap: Cap.roundCap,
-    );
+    ); 
 
     setState(() {
       _polylines.clear();
@@ -217,6 +239,11 @@ class _UserMapWidgetState extends State<UserMapWidget> {
     try {
       if (points.length < 2) {
         print("⚠️ Muy pocos puntos para centrar el mapa");
+        if (points.isNotEmpty && _mapController != null) {
+          await _mapController!.animateCamera(
+            CameraUpdate.newLatLngZoom(points.first, 16.0),
+          );
+        }
         return;
       }
 
@@ -226,16 +253,18 @@ class _UserMapWidgetState extends State<UserMapWidget> {
       }
 
       final bounds = _calculateBounds(points);
+      double adaptivePadding = 80.w;
 
       await _mapController!.animateCamera(
-        CameraUpdate.newLatLngBounds(bounds, 100),
+       // CameraUpdate.newLatLngBounds(bounds, 100),
+       CameraUpdate.newLatLngBounds(bounds, adaptivePadding)
       );
     } catch (e) {
       print("🎯 Error centrando mapa: $e");
 
       if (points.isNotEmpty && _mapController != null) {
         await _mapController!.animateCamera(
-          CameraUpdate.newLatLngZoom(points.first, 13),
+          CameraUpdate.newLatLngZoom(points.first, 14.0),
         );
       }
     }
@@ -280,11 +309,12 @@ class _UserMapWidgetState extends State<UserMapWidget> {
     Color fillColor, {
     double size = 80.0,
     Color borderColor = Colors.white,
-    double borderWidth = 6.0,
   }) async {
     try {
       final pictureRecorder = PictureRecorder();
       final canvas = Canvas(pictureRecorder);
+
+      final double adaptiveBorderWidth = size * 0.1;
       final iconSize = size;
 
       final center = Offset(iconSize / 2, iconSize / 2);
@@ -300,10 +330,11 @@ class _UserMapWidgetState extends State<UserMapWidget> {
         ..color = fillColor
         ..style = PaintingStyle.fill;
 
-      canvas.drawCircle(center, radius - borderWidth, fillPaint);
+      canvas.drawCircle(center, radius - adaptiveBorderWidth, fillPaint);
+
       final textPainter = TextPainter(textDirection: TextDirection.ltr);
       final textStyle = TextStyle(
-        fontSize: iconSize * 0.8,
+        fontSize: iconSize * 0.65,
         fontFamily: iconData.fontFamily,
         package: iconData.fontPackage,
         color: Colors.white,

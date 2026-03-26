@@ -7,6 +7,7 @@ import 'package:holi/src/utils/format_price.dart';
 import 'package:holi/src/utils/reduced_address.dart';
 import 'package:holi/src/viewmodels/move/moving_details_viewmodel.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class MoveDetailsView extends StatefulWidget {
   final int moveId;
@@ -31,14 +32,15 @@ class _MoveDetailsState extends State<MoveDetailsView> {
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: const Text(
-          "Detalles del cambio de domicilio",
+        title: Text(
+          "Detalles del servicio",
           style: StyleFontsTitle.titleStyle,
         ),
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios,
             color: Colors.white,
+            size: 18.sp,
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -53,20 +55,22 @@ class _MoveDetailsState extends State<MoveDetailsView> {
 
           if (viewModel.errorMessage != null) {
             return Center(
+                child: Padding(
+              padding: EdgeInsets.all(20.w),
               child: Text(
                 "Error: ${viewModel.errorMessage}",
                 style: const TextStyle(color: Colors.red),
                 textAlign: TextAlign.center,
               ),
-            );
+            ));
           }
 
           final moveData = viewModel.movingDetails;
           if (moveData == null) {
-            return const Center(
+            return Center(
               child: Text(
                 "No se encontraron datos de la mudanza.",
-                style: TextStyle(fontSize: 16, color: Colors.black),
+                style: TextStyle(fontSize: 16.sp, color: Colors.black),
                 textAlign: TextAlign.center,
               ),
             );
@@ -81,15 +85,14 @@ class _MoveDetailsState extends State<MoveDetailsView> {
           final driverName = moveData['driverName'] ?? 'N/A';
           final typeOfVehicle = moveData['typeOfVehicle'] ?? 'N/A';
           final typeOfMove = moveData['typeOfMove'] ?? 'N/A';
-           final transactionalNumber = moveData['transactionalNumber'] ?? 'N/A';
-           final statusStr = moveData['paymentStatus'] ?? 'FALIED';
-           
-           final status = PaymentStatus.values.firstWhere(
+          final transactionalNumber = moveData['transactionalNumber'] ?? 'N/A';
+          final statusStr = moveData['paymentStatus'] ?? 'FALIED';
+
+          final status = PaymentStatus.values.firstWhere(
             (e) => e.value == statusStr,
             orElse: () => PaymentStatus.PAID,
           );
           final bool isApproved = status == PaymentStatus.PAID;
-
 
           final reducedOrigin = reducedAddress(origin);
           final reducedDestination = reducedAddress(destination);
@@ -101,12 +104,11 @@ class _MoveDetailsState extends State<MoveDetailsView> {
           final format = formatDate(rawDate);
 
           return ListView(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
             children: [
-              const SizedBox(height: 80),
-              _buildDivider(),
-              _buildSectionHeader('Fecha'),
-              _buildRow(format, ""),
+              SizedBox(height: 20.h),
+              _buildSectionHeader('Información general'),
+              _buildRow("Fecha", format),
               _buildRowTansaction("Referencia de pago N°", transactionalNumber),
               _buildDivider(),
               _buildSectionHeader('Resumen de pago'),
@@ -117,18 +119,21 @@ class _MoveDetailsState extends State<MoveDetailsView> {
               _buildRowIsApproved("Estado del pago", isApproved),
               // _buildRow('Pago', 'aprobado'),
               _buildDivider(),
-              _buildSectionHeader('Otros'),
+              _buildSectionHeader('Detalles técnicos'),
               _buildRow('Tipo de vehículo', typeOfVehicle),
               _buildRow('Tamaño de la mudanza', typeOfMove),
+
               _buildDivider(),
-              _buildSectionHeader('Tu viaje'),
-              _buildRow("Origen", ""),
-              _buildRow(reducedOrigin, ""),
-              _buildRow("Destino", ""),
-              _buildRow(reducedDestination, ""),
+
+              _buildSectionHeader('Ruta de mudanza'),
+              _buildRow("Origen", reducedOrigin),
+              SizedBox(height: 5.h),
+              _buildRow("Destino", reducedDestination),
+
               _buildDivider(),
-              _buildSectionHeader('Conductor'),
-              _buildRow(driverName, "")
+              _buildSectionHeader('Tu conductor'),
+              _buildRow("Nombre", driverName),
+              SizedBox(height: 40.h),
             ],
           );
         },
@@ -138,19 +143,52 @@ class _MoveDetailsState extends State<MoveDetailsView> {
 }
 
 Widget _buildDivider() {
-  return const Divider(color: Colors.grey, thickness: 1, height: 20);
+  return Divider(color: Colors.grey.withOpacity(0.3), thickness: 1, height: 30.h);
+}
+
+Widget _buildSectionHeader(String title) {
+  return Padding(
+    padding: EdgeInsets.symmetric(vertical: 10.h),
+    child: Text(
+      title,
+      style: TextStyle(
+        fontSize: 13.sp,
+        fontWeight: FontWeight.bold,
+        color: const Color(0xFF002C2B),
+        letterSpacing: 1.2,
+      ),
+    ),
+  );
 }
 
 Widget _buildRow(String label, String value, {bool isBold = false}) {
   return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 4.0),
+    padding: EdgeInsets.symmetric(vertical: 6.h),
     child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start, // Alinea al techo si hay varias líneas (clave para direcciones)
       children: [
-        Text(label, style: const TextStyle(fontSize: 16)),
-        Text(
-          value,
-          style: TextStyle(fontSize: 15, fontWeight: isBold ? FontWeight.bold : FontWeight.normal),
+        Expanded(
+          flex: 4,
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 13.sp,
+              color: Colors.black54,
+            ),
+          ),
+        ),
+        SizedBox(width: 10.w),
+        Expanded(
+          flex: 6,
+          child: Text(
+            value,
+            textAlign: TextAlign.right,
+            style: TextStyle(
+              fontSize: 12.sp,
+              fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
+              color: Colors.black,
+            ),
+          ),
         ),
       ],
     ),
@@ -173,37 +211,35 @@ Widget _buildRowTansaction(String label, int value, {bool isBold = false}) {
   );
 }
 
-
-
 Widget _buildRowIsApproved(String label, bool isApproved) {
-  // Use a Row to align the label and the status badge.
-  return Row(
+  return Padding(
+    padding: EdgeInsets.symmetric(vertical: 6.h),
+    child:   Row(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
     children: [
-      Text(label, style: const TextStyle(fontSize: 16)),
+      Text(label, style: TextStyle(fontSize: 14.sp,)),
       // The status badge Container.
       Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        padding:  EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
         decoration: BoxDecoration(
           color: isApproved ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
             color: isApproved ? Colors.green : Colors.red,
           ),
         ),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               isApproved ? Icons.check_circle_outline : Icons.cancel_outlined,
               color: isApproved ? Colors.green : Colors.red,
-              size: 18,
+              size: 14.sp,
             ),
-            const SizedBox(width: 6),
+             SizedBox(width: 5.w),
             Text(
               isApproved ? 'Aprobado' : 'Rechazado',
               style: TextStyle(
-                fontSize: 15,
+                fontSize: 12.sp,
                 fontWeight: FontWeight.bold,
                 color: isApproved ? Colors.green : Colors.red,
               ),
@@ -212,20 +248,10 @@ Widget _buildRowIsApproved(String label, bool isApproved) {
         ),
       ),
     ],
-  );
+  ),);
+
+
 }
-
-Widget _buildSectionHeader(String title) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 8.0),
-    child: Text(
-      title,
-      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF002C2B)),
-    ),
-  );
-}
-
-
 
 /*Widget _buildTableHeader() {
   return Padding(

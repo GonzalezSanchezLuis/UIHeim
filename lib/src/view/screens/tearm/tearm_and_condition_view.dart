@@ -11,7 +11,7 @@ class TearmAndCondition extends StatelessWidget {
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
         backgroundColor: AppTheme.primarycolor,
-        title: const Text("Terminos y condiciones", style:  StyleFontsTitle.titleStyle),
+        title:  Text("Terminos y condiciones", style:  StyleFontsTitle.titleStyle),
         leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white,), onPressed: () => {Navigator.pop(context)}),
       ),
       body: const SingleChildScrollView(

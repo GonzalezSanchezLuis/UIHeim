@@ -1,26 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class StyleFonts {
-  static const TextStyle title = TextStyle(
-    fontSize: 22,
+  static TextStyle get title => TextStyle(
+    fontSize: 18.sp,
     color: Colors.white,
-    fontWeight: FontWeight.w900,
+    fontWeight: FontWeight.bold,
   );
 
-  static const TextStyle descriptions = TextStyle(
-    fontSize: 16,
+  static  TextStyle get descriptions => TextStyle(
+    fontSize: 12.sp,
     color: Colors.white,
-    fontWeight: FontWeight.normal,
+    fontWeight: FontWeight.bold,
   );
 
-  static const TextStyle textColorButton = TextStyle(
-    fontSize: 18,
+  static  TextStyle  get textColorButton => TextStyle(
+    fontSize: 15.sp,
     fontWeight: FontWeight.bold,
     color: Colors.black,
   );
 
-  static const TextStyle selectedLabelStyle = TextStyle(
-    fontSize: 18,
+  static  TextStyle get selectedLabelStyle =>  TextStyle(
+    fontSize: 18.sp,
     fontWeight: FontWeight.bold,
     color: Colors.white,
   );

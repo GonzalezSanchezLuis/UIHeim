@@ -46,7 +46,7 @@ class _ValidatedDropdownFormFieldState extends State<ValidatedDropdownFormField>
       dropdownColor: Colors.white,
       icon: Icon(Icons.keyboard_arrow_down_rounded, color: AppTheme.primarycolor, size: 24.w),
       elevation: 8,
-      style: TextStyle(color: Colors.black, fontSize: 15.sp),
+      style: TextStyle(color: Colors.black, fontSize: 14.sp),
       borderRadius: BorderRadius.circular(12.r),
 
      
@@ -76,21 +76,11 @@ class _ValidatedDropdownFormFieldState extends State<ValidatedDropdownFormField>
           ),
         );
       }).toList(),
-     /* items: MoveType.values.map((type) => DropdownMenuItem(
-                value: type,
-                child: Text(
-                  type.label,
-                  style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w500),
-                  softWrap: true,
-                  maxLines: 2,
-                ),
-              ))
-          .toList(), */
 
       decoration: InputDecoration(
         labelText: widget.label,
         labelStyle: TextStyle(color: Colors.grey.shade600, fontSize: 14.sp),
-        contentPadding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 12.h),
+        contentPadding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
         filled: true,
         fillColor: Colors.white,
 
@@ -115,7 +105,7 @@ class _ValidatedDropdownFormFieldState extends State<ValidatedDropdownFormField>
         floatingLabelStyle: TextStyle(
           color: AppTheme.primarycolor,
           fontWeight: FontWeight.bold,
-          fontSize: 16.sp,
+          fontSize: 14.sp,
         ),
       ),
     );

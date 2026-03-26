@@ -14,7 +14,7 @@ class JoinDriver extends StatelessWidget {
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
            backgroundColor: AppTheme.primarycolor,
-        title: const Text("Nos gustaria trabajar contigo", style: StyleFontsTitle.titleStyle,),
+        title: Text("Nos gustaria trabajar contigo", style: StyleFontsTitle.titleStyle,),
         leading: IconButton(
           icon:  Icon(Icons.arrow_back_ios_rounded,color: Colors.white,size: 20.w,),
           onPressed: () {

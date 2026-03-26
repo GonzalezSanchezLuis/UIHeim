@@ -40,7 +40,7 @@ class _WalletViewState extends State<WalletView> {
     return Scaffold(
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
-        title: const Text(
+        title:  Text(
           "Ganancias",
           style: StyleFontsTitle.titleStyle,
         ),
@@ -84,8 +84,6 @@ class _WalletViewState extends State<WalletView> {
                   _buildPromoBanner(wallets.promotionalMovesLeft),
                   const SizedBox(height: 10),
 
-                
-                // 1. 💳 TARJETA PRINCIPAL CON TODOS LOS SALDOS Y FECHAS
                 _buildMainBalanceCard(
                   rawTotal: rawTotal,
                   rawAvailable: rawAvailable,

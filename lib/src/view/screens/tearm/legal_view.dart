@@ -13,7 +13,7 @@ class Legal extends StatelessWidget {
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
         backgroundColor: AppTheme.primarycolor,
-        title: const Text("Centro de privacidad",style:  StyleFontsTitle.titleStyle,),
+        title: Text("Centro de privacidad",style:  StyleFontsTitle.titleStyle,),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white,),
           onPressed: () {

@@ -4,6 +4,7 @@ import 'package:holi/src/core/theme/fonts/style_fonts_title.dart';
 import 'package:holi/src/service/drivers/driver_profile_service.dart';
 import 'package:holi/src/view/screens/driver/configuration_driver_view.dart';
 import 'package:holi/src/view/widget/card/account_card_widget.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class Driver extends StatefulWidget {
   const Driver({super.key});
@@ -48,86 +49,90 @@ class _DriverState extends State<Driver> {
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
          backgroundColor: AppTheme.primarycolor,
-        title: const Text(
+        title:  Text(
           "Mi cuenta",
           style: StyleFontsTitle.titleStyle,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white,),
+          icon: Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white,size: 20.sp,),
           onPressed: () => {Navigator.pop(context)},
         ),
       ),
-      body: Center(
+      body: SingleChildScrollView(
+        child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            const SizedBox(
-              height: 60,
+             SizedBox( height: 40.h,
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(2),
+                    padding:  EdgeInsets.all(2.w),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.black,
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.2),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
+                          blurRadius: 6.r,
+                          offset: Offset(0, 4.h),
                         ),
                       ],
                     ),
                     child: avatarUrl != null && avatarUrl!.isNotEmpty
                         ? CircleAvatar(
-                            radius: 35,
+                            radius: 35.r,
                             backgroundImage: NetworkImage(avatarUrl!),
                           )
-                        : const CircleAvatar(
-                            radius: 35,
-                            child: Icon(Icons.person, size: 36, color: Colors.black),
+                        : CircleAvatar(
+                            radius: 35.r,
+                            child: Icon(Icons.person, size: 36.sp, color: Colors.black),
                           ),
                   ),
-                  const SizedBox(width: 10.0),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        name,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-                      const SizedBox(height: 2.0),
-                      const Text(
-                        "¡Hola!",
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
-                  )
+                   SizedBox(width: 15.w),
+
+                   Expanded(child:   Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            name,
+                            style: TextStyle(
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
+                           SizedBox(height: 4.h),
+                         Text(
+                            "¡Hola!",
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      )
+                   ),
+                
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+             SizedBox(height: 30.h),
             AccountCard(
               title: "Mi cuenta",
               subtitle: "Configuracion",
-              width: 450,
-              height: 130,
-              icon: const Icon(Icons.settings),
+              width: 0.9.sw,
+              height: 60.h,
+              icon:  Icon(Icons.settings,size: 22.sp,),
               onTap: () => {Navigator.push(context, MaterialPageRoute(builder: (context) => const ConfigurationDriver()))},
             ),
           ],
         ),
       ),
+      ) 
     );
   }
 }

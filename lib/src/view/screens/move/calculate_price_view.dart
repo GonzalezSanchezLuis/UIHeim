@@ -1,5 +1,4 @@
 import 'dart:developer';
-import 'dart:ui' as ui;
 import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/enums/move_type.dart';
@@ -61,7 +60,7 @@ class _CalculatePriceState extends State<CalculatePrice> {
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
         backgroundColor: AppTheme.primarycolor,
-        title: const Text("A donde sera nuestro nuevo hogar?", style: StyleFontsTitle.titleStyle),
+        title: Text("A donde sera nuestro nuevo hogar?", style: StyleFontsTitle.titleStyle),
       ),
       body: SafeArea(
         child: GestureDetector(

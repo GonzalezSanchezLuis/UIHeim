@@ -54,7 +54,7 @@ class _MovingSummaryViewState extends State<MovingSummaryView> {
     return Scaffold(
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           "Resumen del cambio de domicilio",
           style: StyleFontsTitle.titleStyle,
         ),
@@ -121,7 +121,6 @@ class _MovingSummaryViewState extends State<MovingSummaryView> {
                               style: const TextStyle(fontSize: 15, color: Colors.grey),
                             ),
                             const Divider(height: 30),
-                            // Total to pay and payment method
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [

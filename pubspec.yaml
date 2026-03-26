@@ -104,6 +104,7 @@ flutter:
     - assets/images/intro1.svg
     - assets/images/intro2.svg
     - assets/images/logo_foreground.png
+    - assets/images/ic_launcher.png
     - assets/images/profile.jpg
     - assets/images/background-driver.svg
     - assets/images/passion.jpg

@@ -6,6 +6,7 @@ import 'package:holi/src/view/screens/auth/login_view.dart';
 import 'package:holi/src/view/screens/tearm/legal_view.dart';
 import 'package:holi/src/view/screens/user/profile_view.dart';
 import 'package:holi/src/service/auth/auth_service.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class ConfigurationUser extends StatefulWidget {
   const ConfigurationUser({super.key});
@@ -15,27 +16,30 @@ class ConfigurationUser extends StatefulWidget {
 }
 
 class _ConfigurationUserState extends State<ConfigurationUser> {
-  final AuthService _authService = AuthService();
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
         backgroundColor: AppTheme.primarycolor,
-        title: const Text(
+        elevation: 2,
+        title:  Text(
           "Configuración",
-          style:  StyleFontsTitle.titleStyle,
+          style: StyleFontsTitle.titleStyle,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white),
+          icon: Icon(
+            Icons.arrow_back_ios_new_outlined,
+            color: Colors.white,
+            size: 20.sp,
+          ),
           onPressed: () {
-            Navigator.pop(context); 
+            Navigator.pop(context);
           },
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 100, horizontal: 16),
+        padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 16.w),
         children: [
           _buildSettingOption(
             title: "Mi perfil",
@@ -48,7 +52,6 @@ class _ConfigurationUserState extends State<ConfigurationUser> {
             title: "Legal",
             icon: Icons.gavel,
             onTap: () {
-              // Acción al presionar esta opción
               Navigator.push(context, MaterialPageRoute(builder: (context) => const Legal()));
             },
           ),
@@ -56,22 +59,26 @@ class _ConfigurationUserState extends State<ConfigurationUser> {
             title: "Privacidad",
             icon: Icons.privacy_tip,
             onTap: () {
-               Navigator.push(context, MaterialPageRoute(builder: (context) => const Legal()));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const Legal()));
             },
           ),
           _buildSettingOption(
             title: "Acerca de",
             icon: Icons.info,
             onTap: () {
-              // Acción al presionar esta opción
               Navigator.push(context, MaterialPageRoute(builder: (context) => const About()));
             },
           ),
+          SizedBox(
+            height: 20.h,
+          ),
           _buildSettingOption(
-            title: "Cerrar sesión",
-            icon: Icons.logout,
+            title: "Salir de la app",
+            icon: Icons.logout_rounded,
+            isDestructive: true,
             onTap: () async {
-              final isLoggedOut = await _authService.logout();
+              _showLogoutDialog(context);
+              /* final isLoggedOut = await _authService.logout();
               if (isLoggedOut) {
                 Navigator.pushAndRemoveUntil(
                   context,
@@ -82,7 +89,7 @@ class _ConfigurationUserState extends State<ConfigurationUser> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text("Error al cerrar sesión")),
                 );
-              }
+              } */
             },
           ),
         ],
@@ -90,31 +97,51 @@ class _ConfigurationUserState extends State<ConfigurationUser> {
     );
   }
 
-  // Widget para cada opción
-  Widget _buildSettingOption({required String title, required VoidCallback onTap, required IconData icon}) {
+  Widget _buildSettingOption({
+    required String title,
+    required VoidCallback onTap,
+    required IconData icon,
+    bool isDestructive = false,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Card(
         color: AppTheme.colorcards,
         elevation: 2,
-        margin: const EdgeInsets.symmetric(vertical: 8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+        margin: EdgeInsets.symmetric(vertical: 6.h),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
+          padding: EdgeInsets.symmetric(vertical: 5.h, horizontal: 5.w),
           child: Row(
             children: [
-              Icon(icon, color: Colors.grey[700]),
-              const SizedBox(width: 12,),
-              Expanded(child: Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
+              Container(
+                  padding: EdgeInsets.all(8.w),
+                  decoration: BoxDecoration(
+                    color: isDestructive ? Colors.red.withOpacity(0.1) : Colors.grey[100],
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: isDestructive ? Colors.red.withOpacity(0.1) : Colors.grey[800],
+                    size: 22.sp,
+                  )),
+              SizedBox(
+                width: 16.w,
+              ),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                    color: isDestructive ? Colors.red[700] : Colors.black87,
+                  ),
                 ),
-              ),),
-              
-              const Icon(
-                Icons.chevron_right,
-                color: Colors.grey,
+              ),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: Colors.grey[400],
+                size: 16.sp,
               ),
             ],
           ),
@@ -122,4 +149,36 @@ class _ConfigurationUserState extends State<ConfigurationUser> {
       ),
     );
   }
+}
+
+void _showLogoutDialog(BuildContext context) {
+  final AuthService _authService = AuthService();
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.r)),
+      title: Text("Abandonaras la app?", style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
+      content: Text("Tendrás que ingresar tus credenciales nuevamente.", style: TextStyle(fontSize: 14.sp)),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text("Cancelar", style: TextStyle(color: Colors.black)),
+        ),
+        TextButton(
+          onPressed: () async {
+            Navigator.pop(context);
+            final isLoggedOut = await _authService.logout();
+            if (isLoggedOut) {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginView()),
+                (route) => false,
+              );
+            }
+          },
+          child: const Text("Salir", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+        ),
+      ],
+    ),
+  );
 }
