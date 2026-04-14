@@ -40,9 +40,26 @@ class HomeUserView extends StatefulWidget {
   final double? destinationLng;
   final LatLng? origin;
   final LatLng? destination;
+  final String? originName; 
+  final String? destinationName;
+  final String? accessType;
   final Map<String, dynamic>? initialIncomingMoveData;
 
-  const HomeUserView({super.key, this.calculatedPrice, this.distanceKm, this.duration, this.typeOfMove, this.estimatedTime, this.route, this.destinationLat, this.destinationLng, this.origin, this.destination, this.initialIncomingMoveData});
+  const HomeUserView({super.key, 
+  this.calculatedPrice, 
+  this.distanceKm, this.duration, 
+  this.typeOfMove, 
+  this.estimatedTime, 
+  this.route, 
+  this.destinationLat, 
+  this.destinationLng, 
+  this.origin, 
+  this.destination, 
+  this.originName, 
+  this.destinationName,
+  this.accessType,
+  this.initialIncomingMoveData
+  });
 
   @override
   _HomeUserState createState() => _HomeUserState();
@@ -133,7 +150,6 @@ class _HomeUserState extends State<HomeUserView> {
       },
       child: Scaffold(
         resizeToAvoidBottomInset: false,
-        backgroundColor: Colors.black,
         body: Stack(
           children: [
             IndexedStack(
@@ -171,7 +187,7 @@ class _HomeUserState extends State<HomeUserView> {
                         right: 0,
                         bottom: 30.h,
                         child: Padding(
-                          padding:  EdgeInsets.symmetric(horizontal: 5.w),
+                          padding: EdgeInsets.symmetric(horizontal: 5.w),
                           child: Container(
                             decoration: BoxDecoration(
                               color: AppTheme.primarycolor,
@@ -220,63 +236,6 @@ class _HomeUserState extends State<HomeUserView> {
             ),
           ],
         ),
-        bottomNavigationBar: currentPageIndex == 0
-            ? Consumer<GetDriverLocationViewmodel>(
-                builder: (context, driverVM, _) {
-                  final moveData = driverVM.moveData;
-
-                  if (driverIsAssigned) {
-                    return const SizedBox.shrink();
-                  }
-                  if (showPriceModal) {
-                    return Padding(
-                      padding:  EdgeInsets.all(16.w),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: SizedBox(
-                              height: 55.h,
-                              child: ConfirmButton(
-                                typeOfMove: widget.typeOfMove!,
-                                calculatedPrice: widget.calculatedPrice ?? '',
-                                distanceKm: widget.distanceKm ?? '',
-                                duration: widget.duration ?? '',
-                                estimatedTime: widget.estimatedTime ?? '',
-                                route: widget.route ?? [],
-                                locationViewModel: locationViewModel,
-                                userId: userId ?? 0,
-                                destinationLat: widget.destinationLat,
-                                destinationLng: widget.destinationLng,
-                                paymentMethod: _selectedPaymentMethod,
-                                buttonText: noDriverFound ? "Rintentar búsqueda" : "Confirmar y relajarme",
-                                onConfirmed: () {
-                                  setState(() {
-                                    showPriceModal = false;
-                                    isWaitingForDriver = true;
-                                    noDriverFound = false;
-                                  });
-                                  Future.delayed(const Duration(seconds: 30), () {
-                                    if (mounted && _currentActiveMoveData == null) {
-                                      setState(() {
-                                        isWaitingForDriver = false;
-                                        showPriceModal = true;
-                                        noDriverFound = true;
-                                      });
-                                    }
-                                  });
-                                },
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  return const SizedBox.shrink();
-                },
-              )
-            : null,
       ),
     );
   }
@@ -284,8 +243,8 @@ class _HomeUserState extends State<HomeUserView> {
   Widget _buildTopCoverageBanner() {
     return Container(
       width: double.infinity,
-      margin:  EdgeInsets.symmetric(horizontal: 16.w),
-      padding:  EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
       decoration: BoxDecoration(
         color: const Color(0xFF1E1E24).withOpacity(0.9),
         borderRadius: BorderRadius.circular(15.r),
@@ -293,10 +252,8 @@ class _HomeUserState extends State<HomeUserView> {
       ),
       child: Row(
         children: [
-           Icon(Icons.map_outlined, color: Color(0xFF4ADE80), size: 20.sp),
-
-           SizedBox(width: 12.w),
-
+          Icon(Icons.map_outlined, color: Color(0xFF4ADE80), size: 20.sp),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -323,10 +280,9 @@ class _HomeUserState extends State<HomeUserView> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        
         final routeVM = Provider.of<RouteUserViewmodel>(context, listen: false);
         final double containerHeight;
-        
+
         if (driverIsAssigned) {
           containerHeight = 0;
         } else if (showPriceModal) {
@@ -341,6 +297,19 @@ class _HomeUserState extends State<HomeUserView> {
         return Stack(
           children: [
             Positioned.fill(
+              child: UserMapWidget(
+                route: _realRoute,
+                origin: origin ?? const LatLng(4.709870566194833, -74.07554855445838),
+                destination: destination ?? const LatLng(4.709870566194833, -74.07554855445838),
+                driverLocation: context.watch<GetDriverLocationViewmodel>().driverLocation,
+                onLocationUpdated: (location) {
+                  setState(() {
+                    userCurrentLocation = location;
+                  });
+                },
+              ),
+            ),
+            /* Positioned.fill(
               child: Consumer<GetDriverLocationViewmodel>(builder: (context, getDriverLocation, _) {
                 return UserMapWidget(
                   route: _realRoute,
@@ -356,7 +325,7 @@ class _HomeUserState extends State<HomeUserView> {
                   },
                 );
               }),
-            ),
+            ),*/
             if ((showPriceModal || isWaitingForDriver) && !driverIsAssigned)
               Positioned(
                 bottom: 0,
@@ -369,7 +338,7 @@ class _HomeUserState extends State<HomeUserView> {
                       constraints: BoxConstraints(maxHeight: constraints.maxHeight * 0.5),
                       decoration: BoxDecoration(
                         color: Colors.black,
-                        borderRadius:  BorderRadius.only(
+                        borderRadius: BorderRadius.only(
                           topRight: Radius.circular(20.r),
                           topLeft: Radius.circular(20.r),
                         ),
@@ -381,8 +350,7 @@ class _HomeUserState extends State<HomeUserView> {
                         ],
                       ),
                       padding: EdgeInsets.all(16.w),
-                      child:  SingleChildScrollView(                       
-                        child: Column(
+                      child: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -397,8 +365,6 @@ class _HomeUserState extends State<HomeUserView> {
                           ],
                         ],
                       ),
-                        ),
-                    
                     );
                   },
                 ),
@@ -408,11 +374,12 @@ class _HomeUserState extends State<HomeUserView> {
       },
     );
   }
-  Widget _buildNoDriverRetryBanner(){
-  return Container(
+
+  Widget _buildNoDriverRetryBanner() {
+    return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(vertical: 8.h),
-      margin: EdgeInsets.only(bottom: 12.h),
+      margin: EdgeInsets.only(bottom: 5.h),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12.r),
         color: const Color(0xFF1E1E24),
@@ -423,14 +390,13 @@ class _HomeUserState extends State<HomeUserView> {
           Icon(Icons.auto_awesome, color: const Color(0xFF4ADE80), size: 18.sp),
           SizedBox(width: 8.w),
           Flexible(
-            // Para que el texto no cause overflow horizontal
             child: Text(
               "No nos rendimos. ¿Buscamos de nuevo?",
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.tealAccent,
                 fontWeight: FontWeight.bold,
-                fontSize: 12.sp, // Adaptable
+                fontSize: 12.sp,
                 letterSpacing: 0.5,
               ),
             ),
@@ -452,7 +418,6 @@ class _HomeUserState extends State<HomeUserView> {
 
             _resetMoveState();
 
-            // Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentView(paymentData: paymentData));
             Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (context) => PaymentView(paymentData: paymentData)),
@@ -532,9 +497,9 @@ class _HomeUserState extends State<HomeUserView> {
       child: Card(
         color: Colors.black,
         elevation: 2,
-        margin:  EdgeInsets.symmetric(vertical: 6.h),
+        margin: EdgeInsets.symmetric(vertical: 6.h),
         child: Padding(
-          padding:  EdgeInsets.symmetric(vertical: 14.h, horizontal: 12.w),
+          padding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 12.w),
           child: Row(
             children: [
               Icon(
@@ -542,12 +507,9 @@ class _HomeUserState extends State<HomeUserView> {
                 color: AppTheme.greenColors,
                 size: 22.sp,
               ),
-
-               SizedBox( width: 10.w),
-
-              Expanded(
-                child: DefaultTextStyle(style: TextStyle(fontSize: 14.sp), child: titleWidget)),
-               Icon(
+              SizedBox(width: 10.w),
+              Expanded(child: DefaultTextStyle(style: TextStyle(fontSize: 14.sp), child: titleWidget)),
+              Icon(
                 Icons.chevron_right,
                 color: Colors.grey,
                 size: 20.sp,
@@ -573,14 +535,14 @@ class _HomeUserState extends State<HomeUserView> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Padding(
-            padding:  EdgeInsets.symmetric(horizontal: 20.w),
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   widget.calculatedPrice!,
                   // formatPriceToHundreds(widget.calculatedPrice ?? '0'),
-                  style:  TextStyle(
+                  style: TextStyle(
                     fontSize: 30.sp,
                     fontWeight: FontWeight.w900,
                     color: primaryTextColor,
@@ -588,7 +550,7 @@ class _HomeUserState extends State<HomeUserView> {
                   textAlign: TextAlign.end,
                 ),
                 // Divisa (más pequeña y secundaria)
-                 Text(
+                Text(
                   ' COP ',
                   style: TextStyle(
                     fontSize: 16.sp,
@@ -599,24 +561,21 @@ class _HomeUserState extends State<HomeUserView> {
               ],
             ),
           ),
-           SizedBox(height: 5.h),
-
-           Divider(color: Colors.grey.withOpacity(0.3), thickness: 1),
-           SizedBox(height: 12.h),
-
+          SizedBox(height: 5.h),
+          Divider(color: Colors.grey.withOpacity(0.3), thickness: 1),
+          SizedBox(height: 7.h),
           Padding(
-            padding:  EdgeInsets.symmetric(horizontal: 20.w),
+            padding: EdgeInsets.symmetric(horizontal: 5.w),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                 Column(
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Fila Tamaño
                     Row(children: [
                       Icon(Icons.apartment_rounded, color: secondaryTextColor, size: 18.sp),
-                      SizedBox(width: 4.w),
-
+                      SizedBox(width: 2.w),
                       Text(
                         "Tamaño mudanza",
                         style: TextStyle(
@@ -625,7 +584,7 @@ class _HomeUserState extends State<HomeUserView> {
                         ),
                       ),
                     ]),
-                    SizedBox(height: 12.h),
+                    SizedBox(height: 5.h),
                     // Fila Tiempo
                     Row(
                       children: [
@@ -640,7 +599,7 @@ class _HomeUserState extends State<HomeUserView> {
                         ),
                       ],
                     ),
-                    SizedBox(height: 12.h),
+                    SizedBox(height: 5.h),
                     Row(
                       children: [
                         Icon(Icons.route, color: secondaryTextColor, size: 18.sp),
@@ -660,25 +619,21 @@ class _HomeUserState extends State<HomeUserView> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(widget.typeOfMove?.displayName ?? '', style:  TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold, color: primaryTextColor)),
-                     SizedBox(height: 12.h),
-                    Text("${widget.estimatedTime}", style:  TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold, color: primaryTextColor)),
-                     SizedBox(height: 12.h),
+                    Text(widget.typeOfMove?.displayName ?? '', style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold, color: primaryTextColor)),
+                    SizedBox(height: 5.h),
+                    Text("${widget.estimatedTime}", style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold, color: primaryTextColor)),
+                    SizedBox(height: 5.h),
                     Text("${widget.distanceKm}", style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold, color: primaryTextColor)),
                   ],
                 ),
               ],
             ),
           ),
-           SizedBox(height: 10.w),
-
-           Divider(color: Colors.grey.withOpacity(0.3), thickness: 1),
-           SizedBox(height: 10.h),
-
+          Divider(color: Colors.grey.withOpacity(0.3), thickness: 1),
           Padding(
-            padding:  EdgeInsets.symmetric(horizontal: 10.w),
+            padding: EdgeInsets.symmetric(horizontal: 5.w),
             child: _buildSettingMethodPay(
-              icon: Icons.monetization_on,
+              icon: Icons.money,
               titleWidget: Text.rich(
                 TextSpan(
                   text: 'Mi forma de pago es con ',
@@ -711,12 +666,51 @@ class _HomeUserState extends State<HomeUserView> {
               },
             ),
           ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 10.w),
+            child: SizedBox(
+              height: 45.h,
+              width: double.infinity,
+              child: ConfirmButton(
+                typeOfMove: widget.typeOfMove!,
+                calculatedPrice: widget.calculatedPrice ?? '', 
+                distanceKm: widget.distanceKm ?? '',
+                duration: widget.duration ?? '',
+                estimatedTime: widget.estimatedTime ?? '',
+                route: widget.route ?? [],
+                locationViewModel: locationViewModel,
+                userId: userId ?? 0,
+                destinationLat: widget.destinationLat,
+                destinationLng: widget.destinationLng,
+                originAddressText: widget.originName,
+                destinationAddressText: widget.destinationName,
+                paymentMethod: _selectedPaymentMethod,
+                accessType: widget.accessType,
+                buttonText: noDriverFound ? "Reintentar búsqueda" : "Confirmar y continuar",
+                onConfirmed: () {
+                  setState(() {
+                    showPriceModal = false;
+                    isWaitingForDriver = true;
+                    noDriverFound = false;
+                  });
+                  Future.delayed(const Duration(seconds: 30), () {
+                    if (mounted && _currentActiveMoveData == null) {
+                      setState(() {
+                        isWaitingForDriver = false;
+                        showPriceModal = true;
+                        noDriverFound = true;
+                      });
+                    }
+                  });
+                },
+              ),
+            ),
+          ),
+          SizedBox(height: 10.h),
         ],
       ),
     );
   }
-
-  
 
   void _resetMoveState() {
     setState(() {
@@ -729,7 +723,7 @@ class _HomeUserState extends State<HomeUserView> {
       _realRoute = [];
 
       final driverVM = Provider.of<GetDriverLocationViewmodel>(context, listen: false);
-      driverVM.setMoveData({}); // Limpia los datos del conductor
+      driverVM.setMoveData({});
     });
   }
 }

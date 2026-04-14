@@ -31,7 +31,6 @@ import 'package:holi/src/viewmodels/move/moving_summary_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/update_status_move_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/websocket/move_notification_driver_viewmodel.dart';
 import 'package:holi/src/viewmodels/payment/payment_driver_account_viewmodel.dart';
-import 'package:holi/src/viewmodels/payment/payment_viewmodel.dart';
 import 'package:holi/src/viewmodels/payment/wallet_viewmodel.dart';
 import 'package:holi/src/viewmodels/user/get_driver_location_viewmodel.dart';
 import 'package:holi/src/viewmodels/user/route_user_viewmodel.dart';
@@ -161,7 +160,6 @@ class App extends StatelessWidget {
             ChangeNotifierProvider(create: (context) => PasswordResetViewmodel()),
             ChangeNotifierProvider(create: (context) => RouteUserViewmodel()),
             ChangeNotifierProvider(create: (_) => ProfileDriverViewModel()..fetchDriverData()),
-            ChangeNotifierProvider(create: (context) => PaymentViewmodel()),
             //  ChangeNotifierProvider(create: (context) => MoveNotificationDriverViewmodel()),
             ChangeNotifierProvider(create: (context) => MovingSummaryViewmodel()),
             ChangeNotifierProvider(create: (context) => MovingHistoryViewmodel()),

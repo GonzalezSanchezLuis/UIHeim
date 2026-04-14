@@ -165,7 +165,7 @@ Widget _buildRow(String label, String value, {bool isBold = false}) {
   return Padding(
     padding: EdgeInsets.symmetric(vertical: 6.h),
     child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start, // Alinea al techo si hay varias líneas (clave para direcciones)
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
           flex: 4,

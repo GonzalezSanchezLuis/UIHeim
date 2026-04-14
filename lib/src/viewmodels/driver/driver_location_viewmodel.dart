@@ -12,10 +12,13 @@ class DriverLocationViewmodel extends ChangeNotifier {
   DriverLocationModel? _currentLocation;
 
   DriverLocationModel? get currentLocation => _currentLocation;
-  bool _sending = false;
+  bool _isSendingFromStream = false;
+  bool _isSendingFromTimer = false;
   Timer? _sendTimer;
 
   void startLocationUpdates(int driverId) {
+    _initPositionStream(driverId);
+    _startPeriodicSend(driverId);
     _serviceStatusSubscription = Geolocator.getServiceStatusStream().listen((ServiceStatus status) {
       if (status == ServiceStatus.enabled) {
         debugPrint("🚀 GPS detectado como ENCENDIDO. Reiniciando Stream...");
@@ -28,21 +31,22 @@ class DriverLocationViewmodel extends ChangeNotifier {
   void _initPositionStream(int driverId) {
     _locationSubscription?.cancel();
     _locationSubscription = Geolocator.getPositionStream(
-      locationSettings: const LocationSettings(accuracy: LocationAccuracy.bestForNavigation, distanceFilter: 15),
+      locationSettings: const LocationSettings(accuracy: LocationAccuracy.bestForNavigation, distanceFilter: 5),
     ).listen((Position position) async {
-      if (_sending) return;
-      _sending = true;
-      try {
-        _currentLocation = DriverLocationModel(position.latitude, position.longitude);
-        notifyListeners();
-        debugPrint("📍 GPS movido: ${position.latitude}, ${position.longitude}");
+      _currentLocation = DriverLocationModel(position.latitude, position.longitude);
+      notifyListeners();
 
+      if (_isSendingFromStream) return;
+      _isSendingFromStream = true;
+
+      try {
         await _locationService.sendLocation(_currentLocation!, driverId);
+        debugPrint("📍 GPS movido: ${position.latitude}, ${position.longitude}");
         debugPrint("✅ Ubicación enviada al servidor");
       } catch (e) {
-        debugPrint("❌ Error enviando al servidor: $e");
+        debugPrint("❌ Error  Stream: $e");
       } finally {
-        _sending = false;
+        _isSendingFromStream = false;
       }
     }, onError: (error) {
       debugPrint("⚠️ Error en el Stream de posición: $error");
@@ -51,16 +55,16 @@ class DriverLocationViewmodel extends ChangeNotifier {
 
   void _startPeriodicSend(int driverId) {
     _sendTimer?.cancel();
-    _sendTimer = Timer.periodic(const Duration(seconds: 10), (_) async {
-      if (_currentLocation != null && !_sending) {
-        _sending = true;
+    _sendTimer = Timer.periodic(const Duration(seconds: 15), (_) async {
+      if (_currentLocation != null && !_isSendingFromTimer) {
+        _isSendingFromTimer = true;
         try {
           await _locationService.sendLocation(_currentLocation!, driverId);
-          debugPrint("✅ Ubicación enviada al servidor (timer)");
+          debugPrint("⏰ Respaldo (Timer): Envío periódico exitoso");
         } catch (e) {
           debugPrint("❌ Error en envío timer: $e");
         } finally {
-          _sending = false;
+          _isSendingFromTimer = false;
         }
       }
     });

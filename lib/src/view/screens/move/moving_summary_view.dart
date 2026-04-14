@@ -5,6 +5,7 @@ import 'package:holi/src/utils/format_price.dart';
 import 'package:holi/src/view/screens/driver/home_driver_view.dart';
 import 'package:holi/src/viewmodels/move/moving_summary_viewmodel.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class MovingSummaryView extends StatefulWidget {
   final int moveId;
@@ -23,31 +24,7 @@ class _MovingSummaryViewState extends State<MovingSummaryView> {
     });
   }
 
-  // Helper method to build info rows with bold labels
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "$label ",
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: Colors.black87,
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(fontSize: 16, color: Colors.black54),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+ 
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +32,7 @@ class _MovingSummaryViewState extends State<MovingSummaryView> {
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
         title: Text(
-          "Resumen del cambio de domicilio",
+          "Resumen",
           style: StyleFontsTitle.titleStyle,
         ),
     
@@ -64,14 +41,41 @@ class _MovingSummaryViewState extends State<MovingSummaryView> {
       body: Consumer<MovingSummaryViewmodel>(
         builder: (context, viewmodel, child) {
           if (viewmodel.isLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator(color:Colors.black));
           } else if (viewmodel.errorMessage != null) {
             return Center(child: Text("Error: ${viewmodel.errorMessage}"));
           } else if (viewmodel.movingSummary != null) {
             final summary = viewmodel.movingSummary!;
             final String paymentMethod = summary.paymentMethod.toLowerCase();
 
-              Color _getPaymentColor() {
+            Widget _buildLocationSummary(IconData icon, String label, String address) {
+              return Padding(
+                padding: EdgeInsets.symmetric(vertical: 8.h),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(icon, color: AppTheme.primarycolor, size: 20.sp),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(label, style: TextStyle(fontSize: 12.sp, color: Colors.grey[600], fontWeight: FontWeight.bold)),
+                          Text(
+                            address,
+                            style: TextStyle(fontSize: 14.sp, color: Colors.black87, fontWeight: FontWeight.w500),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+             /* Color _getPaymentColor() {
               final String paymentMethod = summary.paymentMethod.toLowerCase();
               if (paymentMethod.toLowerCase() == "nequi") {
                 return const Color(0xFF7B1FA2); 
@@ -79,7 +83,7 @@ class _MovingSummaryViewState extends State<MovingSummaryView> {
                 return const Color(0xFFE53935); 
               }
               return Colors.orange; 
-            }
+            }*/
 
 
             List<String> partsOrigin = summary.origin.split(',');
@@ -93,83 +97,89 @@ class _MovingSummaryViewState extends State<MovingSummaryView> {
               children: [
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16.w),
                     child: Card(
                       elevation: 6,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
                       child: Padding(
-                        padding: const EdgeInsets.all(20.0),
+                        padding:  EdgeInsets.all(20.w),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Row(
-                              children: [
-                                Icon(Icons.check_circle, color: Colors.green, size: 28),
-                                SizedBox(width: 8),
-                                Text(
-                                  "¡Mudanza finalizada!",
-                                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                                ),
-                              ],
+                             Center(
+                              child: Column(
+                                 children: [
+                                  Icon(Icons.check_circle, color: Colors.green, size: 22.sp),
+                                  SizedBox(width: 12.h),
+                                  Text(
+                                    "¡Mudanza finalizada!",
+                                    style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
+                                    ),
+                                    Text("El servicio se completó con éxito", style: TextStyle(fontSize: 13.sp, color: Colors.grey)),
+                                ],
+                              ),
+                             
                             ),
-                            const SizedBox(height: 16),
-                            Text("Origen: $reducedOrigin", style: const TextStyle(fontSize: 16)),
-                            Text("Destino: $reducedDestination", style: const TextStyle(fontSize: 16)),
-                            const SizedBox(height: 8),
+                           Divider(height: 40.h, thickness: 1),
+
+                           // Text("Origen: $reducedOrigin", style:  TextStyle(fontSize: 14.sp)),
+                            //Text("Destino: $reducedDestination", style:  TextStyle(fontSize: 14.sp)),
+                            _buildLocationSummary(Icons.location_on_outlined, "ORIGEN", reducedOrigin),
+                            _buildLocationSummary(Icons.flag_outlined, "DESTINO", reducedDestination),
+
+                           SizedBox(height: 10.h),
                             Text(
                               "Distancia: ${summary.distanceKm} | Tiempo: ${summary.durationMin}",
-                              style: const TextStyle(fontSize: 15, color: Colors.grey),
+                              style:  TextStyle(fontSize: 12.sp, color: Colors.grey),
                             ),
-                            const Divider(height: 30),
+                              Divider(height: 30.h),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text("Total a pagar:", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                 Text("Total a pagar:", style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
                                 Text(                               
                                   formattedPrice,
-                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                  style:  TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 8),
+                             SizedBox(height: 8.h),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text("Método de pago:", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                                Text("Método de pago:", style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w500)),
                                 Row(
                                 children: [
                                 Image.asset(
                                 paymentMethod.toLowerCase() == "daviplata" ? 'assets/images/daviplata.png' : 'assets/images/nequi.png',
-                                width: 50,
-                                height: 50,
-                                color: _getPaymentColor(),
+                                width: 35.w,
+                                height: 35.h,
+                                fit: BoxFit.contain,
                               ),
                                 ],
                                 )
                               ],
                             ),
-                            const SizedBox(height: 20),
+                             SizedBox(height: 24.h),
                             Align(
                               alignment: Alignment.centerLeft,
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                padding:  EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
                                decoration: BoxDecoration(
-                                    // Si el pago está completado usa verde, si no, naranja
                                     color: summary.paymentCompleted ? Colors.green.withOpacity(0.1) : Colors.orange.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(20),
+                                    borderRadius: BorderRadius.circular(30.r),
                                     border: Border.all(color: summary.paymentCompleted ? Colors.green : Colors.orange),
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min, 
                                     children: [
-                                      Icon(summary.paymentCompleted ? Icons.check_circle : Icons.pending_actions, color: summary.paymentCompleted ? Colors.green : Colors.orange),
-                                      const SizedBox(width: 8),
+                                      Icon(summary.paymentCompleted ? Icons.check_circle : Icons.pending_actions, color: summary.paymentCompleted ? Colors.green : Colors.orange,size: 18.sp,),
+                                       SizedBox(width: 8.h),
                                       Text(
-                                        summary.paymentCompleted ? "Pago Completado" : "Pago Pendiente",
+                                        summary.paymentCompleted ? "Pago Completado" : "Pago en proceso",
                                         style: TextStyle(
-                                          fontSize: 16,
+                                          fontSize: 16.sp,
                                           fontWeight: FontWeight.bold,
-                                          // Color dinámico para que sea legible
                                           color: summary.paymentCompleted ? Colors.green : Colors.orange,
                                         ),
                                       ),
@@ -184,18 +194,17 @@ class _MovingSummaryViewState extends State<MovingSummaryView> {
                     ),
                   ),
                 ),
-                // "Finalizar" button container at the bottom
                 Container(
-                  padding: const EdgeInsets.all(16),
-                  width: double.infinity,
+                  padding:  EdgeInsets.all(20.w),
+                  decoration: const BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, -2))]),
                   child: SafeArea(
                     child:ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 18),
+                          minimumSize: Size(double.infinity, 55.h),
+                          padding: EdgeInsets.symmetric(vertical: 18.h),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
+                            borderRadius: BorderRadius.circular(12.r),
                           ),
                         ),
                         onPressed: () {
@@ -205,9 +214,9 @@ class _MovingSummaryViewState extends State<MovingSummaryView> {
                             (route) => false,
                           );
                         },
-                        child: const Text(
+                        child:  Text(
                           "Finalizar",
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold,color: Colors.white),
                         ),
                       ),
                     )
@@ -217,8 +226,8 @@ class _MovingSummaryViewState extends State<MovingSummaryView> {
               ],
             );
           } else {
-            return const Center(
-              child: Text("No se pudo cargar el resumen de la mudanza."),
+            return  Center(
+              child: Text("No se pudo cargar el resumen de la mudanza.",style: TextStyle(fontSize: 16.sp),),
             );
           }
         },

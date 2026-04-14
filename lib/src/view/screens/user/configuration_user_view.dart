@@ -78,18 +78,7 @@ class _ConfigurationUserState extends State<ConfigurationUser> {
             isDestructive: true,
             onTap: () async {
               _showLogoutDialog(context);
-              /* final isLoggedOut = await _authService.logout();
-              if (isLoggedOut) {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginView()),
-                  (route) => false,
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Error al cerrar sesión")),
-                );
-              } */
+             
             },
           ),
         ],
@@ -155,20 +144,20 @@ void _showLogoutDialog(BuildContext context) {
   final AuthService _authService = AuthService();
   showDialog(
     context: context,
-    builder: (context) => AlertDialog(
+    builder: (dialogContext) => AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.r)),
       title: Text("Abandonaras la app?", style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
       content: Text("Tendrás que ingresar tus credenciales nuevamente.", style: TextStyle(fontSize: 14.sp)),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pop(dialogContext),
           child: const Text("Cancelar", style: TextStyle(color: Colors.black)),
         ),
         TextButton(
-          onPressed: () async {
-            Navigator.pop(context);
+         onPressed: () async {
+            Navigator.pop(dialogContext);
             final isLoggedOut = await _authService.logout();
-            if (isLoggedOut) {
+            if (isLoggedOut && context.mounted) {
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (context) => const LoginView()),

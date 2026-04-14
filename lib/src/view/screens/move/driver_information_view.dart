@@ -3,6 +3,7 @@ import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/core/theme/fonts/style_fonts_title.dart';
 import 'package:holi/src/viewmodels/driver/driver_data_viewmodel.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class DriverInformationView extends StatefulWidget {
   final int driverId;
@@ -45,29 +46,29 @@ class _DriverDataViewState extends State<DriverInformationView> {
           backgroundColor: Colors.black,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white),
+            icon: Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white,size: 20.sp,),
             onPressed: () => Navigator.pop(context),
           ),
         ),
         body: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding:  EdgeInsets.all(16.w),
             child: Column(
               children: [
                 _buildProfileHeader(profile),
-
-                const SizedBox(height: 24),
-                const SizedBox(height: 12),
+                 SizedBox(height: 16.h),
                 //  _buildVehicleCard("Foton Turbo 2.5", "PLACA: JKL-987"),
 
                 const SizedBox(height: 24),
 
                 // 3. VERIFICACIONES DE SEGURIDAD
                 _buildSectionTitle("Verificaciones de Seguridad"),
-                const Divider(height: 20),
+                SizedBox(height: 10.h),
+                Divider(height: 1.h, color: Colors.grey.shade300),
+                SizedBox(height: 16.h),
                 _buildSecurityList(),
 
-                const SizedBox(height: 30),
+               SizedBox(height: 30.h),
               ],
             ),
           ),
@@ -84,50 +85,53 @@ class _DriverDataViewState extends State<DriverInformationView> {
       width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5)),
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10.r, offset: const Offset(0, 5)),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
         child: Column(
           children: [
-            // Avatar con borde
-            CircleAvatar(
-              radius: 53,
-              backgroundColor: AppTheme.primarycolor,
+            Container(
+              padding: EdgeInsets.all(4.w),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: AppTheme.primarycolor, width: 2.w),
+              ),
               child: CircleAvatar(
-                radius: 50,
+                radius: 25.r,
                 backgroundColor: const Color(0xFF1E1E24),
-                backgroundImage: hasValidAvatar ? NetworkImage(avatarUrl) : null, child: !hasValidAvatar ? const Icon(Icons.person, size: 50, color: Colors.white,) : null,
+                backgroundImage: hasValidAvatar ? NetworkImage(avatarUrl) : null, child: !hasValidAvatar ?  Icon(Icons.person, size: 45.sp, color: Colors.white,) : null,
               ),
             ),
-            const SizedBox(height: 16),
-            Text(profile.name, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            Text(displayPhone, style: const TextStyle(fontSize: 15, color: Colors.grey)),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
+            Text(profile.name, style:  TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+            SizedBox(height: 4.h),
+            Text(displayPhone, style:  TextStyle(fontSize: 12.sp, color: Colors.grey)),
+             SizedBox(height: 12.sp),
 
             // Calificación con RichText (Negrita parcial)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding:  EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
               decoration: BoxDecoration(
                 color: Colors.amber.shade50,
-                borderRadius: BorderRadius.circular(30),
+                borderRadius: BorderRadius.circular(30.r),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.star, color: Colors.amber, size: 20),
-                  const SizedBox(width: 6),
+                   Icon(Icons.star, color: Colors.amber, size: 20.sp),
+                   SizedBox(width: 6.w),
                   RichText(
-                    text: const TextSpan(
+                    text: TextSpan(
                       text: '3.9 ',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                      style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold, color: Colors.black),
                       children: [
                         TextSpan(
                           text: '(10 servicios)',
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.normal, color: Colors.grey),
+                          style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.normal, color: Colors.grey),
                         ),
                       ],
                     ),
@@ -146,7 +150,7 @@ class _DriverDataViewState extends State<DriverInformationView> {
       alignment: Alignment.centerLeft,
       child: Text(
         title,
-        style: TextStyle(fontSize: 18, color: Colors.grey.shade800, fontWeight: FontWeight.bold),
+        style: TextStyle(fontSize: 16.sp, color: Colors.grey.shade800, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -183,12 +187,12 @@ class _DriverDataViewState extends State<DriverInformationView> {
     return Column(
       children: _securityChecks
           .map((check) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
+                padding:  EdgeInsets.only(bottom: 14.h),
                 child: Row(
                   children: [
-                    const Icon(Icons.check_circle, color: Colors.green, size: 22),
-                    const SizedBox(width: 12),
-                    Text(check, style: TextStyle(fontSize: 15, color: Colors.grey.shade700)),
+                    Icon(Icons.check_circle, color: Colors.green, size: 20.sp),
+                     SizedBox(width: 12.w),
+                    Text(check, style: TextStyle(fontSize: 15.sp, color: Colors.grey.shade700)),
                   ],
                 ),
               ))

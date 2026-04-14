@@ -283,7 +283,7 @@ class _HomeDriverState extends State<HomeDriverView> {
                         return AnimatedContainer(
                           duration: const Duration(milliseconds: 400),
                           curve: Curves.fastOutSlowIn,
-                          height: hasMoveData ? MediaQuery.of(context).size.height * 0.47 : MediaQuery.of(context).size.height * 0.16,
+                          height: hasMoveData ? MediaQuery.of(context).size.height * 0.52 : MediaQuery.of(context).size.height * 0.16,
                           decoration: BoxDecoration(
                             color: Colors.black,
                             borderRadius:  BorderRadius.only(
@@ -298,7 +298,7 @@ class _HomeDriverState extends State<HomeDriverView> {
                             ],
                           ),
                           child: Padding(
-                              padding: EdgeInsets.all(15.w),
+                              padding: EdgeInsets.all(16.w),
                               child: driverViewModel.connectionStatus == null
                                   ? const Center(
                                       child: CircularProgressIndicator(
@@ -454,8 +454,8 @@ class _HomeDriverState extends State<HomeDriverView> {
 
   Widget _buildHistoryButton() {
     return Container(
-      width: 56.w,
-      height: 56.w,
+      width: 45.w,
+      height: 45.w,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: Colors.white,

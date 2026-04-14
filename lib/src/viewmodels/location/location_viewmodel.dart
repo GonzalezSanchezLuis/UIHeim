@@ -17,12 +17,9 @@ class LocationViewModel extends ChangeNotifier {
 Future<Position?> updateLocation(BuildContext context) async {
     _isLoading = true;
     notifyListeners();
-
-    // 1. Validar permisos y GPS activo
     final isGpsActive = await GpsValidatorService.ensureLocationServiceAndPermission(context);
 
     if (!isGpsActive) {
-      // El usuario no activó el GPS, salimos
       _isLoading = false;
       notifyListeners();
       _currentAddress = "Permisos o GPS no habilitados";
@@ -37,8 +34,6 @@ Future<Position?> updateLocation(BuildContext context) async {
 
       _currentPosition = position;
       log("🟢 Coordenadas de origen obtenidas: lat=${position.latitude}, lng=${position.longitude}");
-
-      // 3. Obtener dirección usando reverse geocoding
       List<Placemark> placemarks = await placemarkFromCoordinates(
         position.latitude,
         position.longitude,

@@ -61,7 +61,7 @@ class RouteDriverViewmodel extends ChangeNotifier {
       _timer!.cancel();
     }
 
-    _remainingTime = 15;
+   _remainingTime = 15;
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_remainingTime > 0) {
@@ -170,9 +170,6 @@ class RouteDriverViewmodel extends ChangeNotifier {
       rethrow;
     }
   }
-
- 
-
   @override
   void dispose() {
     _timer?.cancel();

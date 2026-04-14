@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:holi/src/core/enums/connection_status.dart';
 import 'package:holi/src/core/enums/move_type.dart';
@@ -155,7 +156,7 @@ class ConnectButton extends StatelessWidget {
             backgroundColor: buttonBackgroundColor,
             minimumSize: Size(MediaQuery.of(context).size.width * 0.7, 60),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
+              borderRadius: BorderRadius.circular(12.r),
             ),
           ),
           child: SizedBox(
@@ -193,40 +194,40 @@ class DisconnectButton extends StatelessWidget {
             backgroundColor: buttonBackgroundColor,
             minimumSize: Size(MediaQuery.of(context).size.width * 0.7, 60),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
+              borderRadius: BorderRadius.circular(12.r),
             ),
           ),
           child: SizedBox(
-            height: 40,
+            height: 40.h,
             child: Center(
               child: provider.isLoading
-                  ? const Row(
+                  ? Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
+                          width: 24.w,
+                          height: 24.h,
+                          child: const CircularProgressIndicator(
                             valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                             strokeWidth: 3,
                           ),
                         ),
-                        SizedBox(width: 16),
+                        SizedBox(width: 16.w),
                         Text(
                           "Desconectando...",
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 20,
+                            fontSize: 20.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],
                     )
-                  : const Text(
+                  : Text(
                       "Desconectarme",
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 28,
+                        fontSize: 20.sp,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -252,6 +253,7 @@ class ConfirmButton extends StatelessWidget {
   final String? originAddressText;
   final String? destinationAddressText;
   final String? paymentMethod;
+  final String? accessType;
   final int userId;
   final String? buttonText;
 
@@ -270,21 +272,23 @@ class ConfirmButton extends StatelessWidget {
     this.originAddressText,
     this.destinationAddressText,
     this.paymentMethod,
+    this.accessType,
     this.buttonText,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
+    print("🛠️ DEBUG BOTÓN: Origin=$originAddressText | Dest=$destinationAddressText");
     final viewModel = Provider.of<ConfirmMoveViewModel>(context, listen: false);
     return SizedBox(
         width: MediaQuery.of(context).size.width * 0.9,
-        height: 100,
+        height: 100.h,
         child: ElevatedButton(
           onPressed: viewModel.isLoading
               ? null
               : () async {
-                  final result = viewModel.confirmMove(
+                  final result = await viewModel.confirmMove(
                       context: context,
                       typeOfMove: typeOfMove!,
                       calculatedPrice: calculatedPrice,
@@ -295,22 +299,24 @@ class ConfirmButton extends StatelessWidget {
                       locationViewModel: locationViewModel,
                       destinationLat: destinationLat,
                       destinationLng: destinationLng,
-                      originAddressText: viewModel.originAddressText,
-                      destinationAddressText: viewModel.destinationAddressText,
+                      originAddressText: originAddressText,
+                      destinationAddressText: destinationAddressText,
                       paymentMethod: paymentMethod,
+                      accessType: accessType,
                       userId: userId);
-
                   onConfirmed();
                 },
           style: ElevatedButton.styleFrom(
             backgroundColor: AppTheme.confirmationscolor,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
+              borderRadius: BorderRadius.circular(12.r),
             ),
           ),
           child: viewModel.isLoading
               ? const CircularProgressIndicator(color: Colors.black)
-              : Text(buttonText ?? "Confirmar y relajarme", style: const TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
+              : Text(
+                  buttonText ?? "Confirmar y continuar",
+                  style: TextStyle(fontSize: 15.sp, color: Colors.white, fontWeight: FontWeight.bold),
                 ),
         ));
   }

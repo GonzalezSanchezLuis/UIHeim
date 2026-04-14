@@ -73,7 +73,6 @@ class LocationService {
     }
   }
 
-  /// Obtiene coordenadas precisas usando un placeId
   Future<Map<String, double>?> getCoordinatesFromPlaceId(String placeId) async {
     final String url = "https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=AIzaSyDB04XLcypB4xsGaRqNPjAGmf1xTegz0Rg";
 
@@ -103,7 +102,6 @@ class LocationService {
   }
 
 
-  // Obtiene sugerencias de direcciones (requiere API key de Google)
   Future<List<Prediction>> getAddressSuggestions(String query) async {
     if (googleApiKey.isEmpty) {
       throw Exception("Google API key is required for address suggestions");

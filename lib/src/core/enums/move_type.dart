@@ -1,4 +1,4 @@
-enum MoveType { PEQUENA, MEDIANA, GRANDE }
+enum MoveType { PEQUENA, MEDIANA}
 
 extension MoveTypeExtension on MoveType {
   String get label {
@@ -7,8 +7,6 @@ extension MoveTypeExtension on MoveType {
         return 'Pequeña';
       case MoveType.MEDIANA:
         return 'Mediana';
-      case MoveType.GRANDE:
-        return 'Grande';
     }
   }
 

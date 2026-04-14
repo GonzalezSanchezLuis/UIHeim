@@ -7,8 +7,6 @@ extension MoveTypeExtension on MoveType {
         return "Pequeña";
       case MoveType.MEDIANA:
         return "Mediana";
-      case MoveType.GRANDE:
-        return "Grande";
     }
   }
 }

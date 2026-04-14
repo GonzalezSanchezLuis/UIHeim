@@ -35,6 +35,7 @@ class _UserMapWidgetState extends State<UserMapWidget> {
   BitmapDescriptor? _originIcon;
   BitmapDescriptor? _destinationIcon;
   BitmapDescriptor? _driverIcon;
+  GoogleMap? _mapWidget;
 
   final LatLng _defaultLocation = const LatLng(4.709870566194833, -74.07554855445838);
 
@@ -42,9 +43,6 @@ class _UserMapWidgetState extends State<UserMapWidget> {
   void initState() {
     super.initState();
     _loadCustomIcons();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _drawRoute();
-    });
   }
 
   @override
@@ -67,35 +65,34 @@ class _UserMapWidgetState extends State<UserMapWidget> {
     print("🧱 UserMapWidget.build ejecutado con driverLocation: ${widget.driverLocation}");
     return Stack(
       children: [
+        //  _mapWidget!,
         GoogleMap(
+          initialCameraPosition: CameraPosition(
+            target: widget.route.isNotEmpty ? widget.origin : _defaultLocation,
+            zoom: widget.route.isNotEmpty ? 12 : 5.5,
+          ),
           myLocationEnabled: false,
           myLocationButtonEnabled: false,
           zoomControlsEnabled: false,
           markers: _markers,
           polylines: _polylines,
-          padding:  EdgeInsets.only(bottom: 250.h, top: 10.h, right: 0, left: 0),
+          padding: EdgeInsets.only(bottom: 250.h, top: 10.h, right: 0, left: 0),
           onMapCreated: (controller) async {
             _mapController = controller;
             _controller.complete(controller);
             _mapReady = true;
 
-            await Future.delayed(const Duration(microseconds: 300));
-
             if (widget.driverLocation != null) {
               print("🚀 onMapCreated: driverLocation disponible, creando marcador...");
               _updateDriverMarker(widget.driverLocation!);
-              _moveCameraToDriver(widget.driverLocation!);
+              _moveCameraToDriver(widget.driverLocation);
             }
             if (widget.route.isNotEmpty) {
               _drawRoute();
             } else {
-              _moveCameraToDriver(widget.driverLocation!);
+              _moveCameraToDriver(widget.driverLocation);
             }
           },
-          initialCameraPosition: CameraPosition(
-            target: widget.route.isNotEmpty ? widget.origin : _defaultLocation,
-            zoom: widget.route.isNotEmpty ? 12 : 5.5,
-          ),
         ),
         Positioned(
           top: 140.h,
@@ -120,22 +117,25 @@ class _UserMapWidgetState extends State<UserMapWidget> {
                   ),
                 ),
               ),
-               SizedBox(height: 10.h),
+              SizedBox(height: 10.h),
               SizedBox(
                 width: 35.w,
                 height: 35.w,
-                child:  FloatingActionButton(
-                backgroundColor: Colors.black,
-                heroTag: "zoom_out",
-                mini: true,
-                onPressed: () async {
-                  final controller = await _controller.future;
-                  controller.animateCamera(CameraUpdate.zoomOut());
-                },
-                child:  Icon(Icons.remove,size: 20.sp,color: Colors.white,),
-              ),
+                child: FloatingActionButton(
+                  backgroundColor: Colors.black,
+                  heroTag: "zoom_out",
+                  mini: true,
+                  onPressed: () async {
+                    final controller = await _controller.future;
+                    controller.animateCamera(CameraUpdate.zoomOut());
+                  },
+                  child: Icon(
+                    Icons.remove,
+                    size: 20.sp,
+                    color: Colors.white,
+                  ),
+                ),
               )
-             
             ],
           ),
         ),
@@ -174,15 +174,15 @@ class _UserMapWidgetState extends State<UserMapWidget> {
       return;
     }
 
-    /*Future.delayed(const Duration(microseconds: 300), () {
+    Future.delayed(const Duration(microseconds: 300), () {
       _centerMap(widget.route);
-    });*/
+    });
 
     List<LatLng> pointsToInclude = List.from(widget.route);
     pointsToInclude.add(widget.origin);
     pointsToInclude.add(widget.destination);
 
-   if (widget.driverLocation != null) pointsToInclude.add(widget.driverLocation!);
+    if (widget.driverLocation != null) pointsToInclude.add(widget.driverLocation!);
 
     final Set<Marker> updatedMarkers = {
       Marker(markerId: const MarkerId('origin'), position: widget.origin, icon: _originIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen), anchor: const Offset(0.5, 0.5)),
@@ -208,14 +208,6 @@ class _UserMapWidgetState extends State<UserMapWidget> {
     }
 
     final Polyline routePolyline = Polyline(
-     /* Polyline(
-        polylineId: const PolylineId('user_route_border'),
-        color: Colors.black.withOpacity(0.3),
-        width: 8.w.toInt(),
-        points: widget.route,
-        jointType: JointType.round,
-      ), */
-
       polylineId: const PolylineId('user_route'),
       color: AppTheme.primarycolor,
       width: 6.w.toInt(),
@@ -224,14 +216,15 @@ class _UserMapWidgetState extends State<UserMapWidget> {
       jointType: JointType.round,
       startCap: Cap.roundCap,
       endCap: Cap.roundCap,
-    ); 
+    );
 
-    setState(() {
-      _polylines.clear();
-      _markers = updatedMarkers;
-      _polylines = {routePolyline};
-    });
-
+    if (_markers.isEmpty) {
+      setState(() {
+        _polylines.clear();
+        _markers = updatedMarkers;
+        _polylines = {routePolyline};
+      });
+    }
     _centerMap(pointsToInclude);
   }
 
@@ -256,9 +249,8 @@ class _UserMapWidgetState extends State<UserMapWidget> {
       double adaptivePadding = 80.w;
 
       await _mapController!.animateCamera(
-       // CameraUpdate.newLatLngBounds(bounds, 100),
-       CameraUpdate.newLatLngBounds(bounds, adaptivePadding)
-      );
+          // CameraUpdate.newLatLngBounds(bounds, 100),
+          CameraUpdate.newLatLngBounds(bounds, adaptivePadding));
     } catch (e) {
       print("🎯 Error centrando mapa: $e");
 
@@ -270,7 +262,6 @@ class _UserMapWidgetState extends State<UserMapWidget> {
     }
   }
 
- 
   LatLngBounds _calculateBounds(List<LatLng> points) {
     double minLat = points.first.latitude;
     double maxLat = points.first.latitude;
@@ -387,8 +378,10 @@ class _UserMapWidgetState extends State<UserMapWidget> {
     }
   }
 
-  Future<void> _moveCameraToDriver(LatLng driverPosition) async {
+  Future<void> _moveCameraToDriver(LatLng? driverPosition) async {
     try {
+      if (driverPosition == null) return;
+
       final controller = await _controller.future;
       await controller.animateCamera(
         CameraUpdate.newLatLngZoom(driverPosition, 16),

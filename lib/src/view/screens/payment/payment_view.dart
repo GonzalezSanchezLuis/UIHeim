@@ -1,3 +1,4 @@
+import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/utils/format_price.dart';
@@ -8,10 +9,11 @@ import 'package:holi/src/view/screens/user/home_user_view.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // Importante para ocultar botones
+import 'package:flutter/services.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/utils/format_price.dart';
 import 'package:holi/src/view/screens/payment/wava_payment_vew.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class PaymentView extends StatefulWidget {
   final Map<String, dynamic> paymentData;
@@ -28,13 +30,11 @@ class _PaymentViewState extends State<PaymentView> {
   @override
   void initState() {
     super.initState();
-    // 1. Ocultar botones de navegación del sistema por seguridad
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   }
 
   @override
   void dispose() {
-    // 2. Restaurar botones al salir (muy importante)
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
   }
@@ -53,12 +53,11 @@ class _PaymentViewState extends State<PaymentView> {
   Widget build(BuildContext context) {
     final String paymentMethod = widget.paymentData['paymentMethod'] ?? "N/A";
     final String paymentURL = widget.paymentData['paymentURL'] ?? "";
-    final String origin = widget.paymentData['origin'] ?? "";
-    final String destination = widget.paymentData['destination'] ?? "";
+    final String origin = widget.paymentData['origin'] ?? "Origen no definido";
+    final String destination = widget.paymentData['destination'] ?? "Destino no definido";
     final String distanceKm = widget.paymentData['distanceKm'] ?? "";
     final String durationMin = widget.paymentData['durationMin'] ?? "";
 
-    // Lógica de limpieza de strings
     List<String> partsOrigin = origin.split(',');
     String reducedOrigin = partsOrigin.take(2).join(',').trim();
     List<String> partsDestination = destination.split(',');
@@ -67,114 +66,128 @@ class _PaymentViewState extends State<PaymentView> {
     final dynamic amount = widget.paymentData['amount'];
     final double priceValue = amount != null ? (amount is num ? amount.toDouble() : double.tryParse(amount.toString()) ?? 0) : 0;
     String formattedPrice = formatPriceMovingDetails(priceValue.toString());
-
-    // 3. PopScope para bloquear el botón físico de atrás
     return PopScope(
-      canPop: false, 
+      canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Por seguridad, completa el pago para finalizar."),
-            duration: Duration(seconds: 2),
+          SnackBar(
+            content: Text("Por seguridad, completa el pago para finalizar.", style: TextStyle(fontSize: 14.sp)),
+            backgroundColor: Colors.redAccent,
           ),
         );
       },
       child: Scaffold(
         backgroundColor: AppTheme.colorbackgroundview,
         appBar: AppBar(
-          title: const Text(
-            "Finalizar Trasteo", // Un título más directo
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-          ),
+          title: Text("Resumen de Mudanza", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 18.sp)),
           backgroundColor: Colors.black,
+          centerTitle: true,
           elevation: 0,
-          automaticallyImplyLeading: false, 
+          automaticallyImplyLeading: false,
         ),
         body: Column(
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Card(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Row(
+                physics: const BouncingScrollPhysics(),
+                padding: EdgeInsets.all(20.w),
+                child: Column(
+                  children: [
+                    Icon(Icons.check_circle_outline_rounded, color: Colors.green, size: 22.sp),
+                    SizedBox(height: 10.h),
+                    Text(
+                      "¡Mudanza Completada!",
+                      style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 25.h),
+                    Card(
+                      elevation: 0,
+                      color: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20.r),
+                        side: BorderSide(color: Colors.grey.shade200, width: 1),
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.all(20.w),
+                        child: Column(
                           children: [
-                            Icon(Icons.check_circle, color: Colors.green, size: 28),
-                            SizedBox(width: 8),
-                            Text(
-                              "¡Mudanza finalizada!",
-                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Text("Origen: $reducedOrigin", style: const TextStyle(fontSize: 16)),
-                        Text("Destino: $reducedDestination", style: const TextStyle(fontSize: 16)),
-                        const SizedBox(height: 8),
-                        Text(
-                          "Distancia: $distanceKm  | Tiempo: $durationMin ",
-                          style: const TextStyle(fontSize: 15, color: Colors.grey),
-                        ),
-                        const Divider(height: 30),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text("Total a pagar:", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                            Text(
-                              formattedPrice,
-                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text("Método de pago:", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                            _buildInfoRow(Icons.location_on_outlined, "Desde", reducedOrigin),
+                            Divider(height: 30.h, color: Colors.grey.shade100),
+                            _buildInfoRow(Icons.flag_outlined, "Hasta", reducedDestination),
+                            Divider(height: 30.h, color: Colors.grey.shade100),
                             Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Image.asset(
-                                  paymentMethod.toLowerCase() == "daviplata" ? 'assets/images/daviplata.png' : 'assets/images/nequi.png',
-                                  width: 50,
-                                  height: 50,
-                                  // Solo aplicar filtro si no es imagen real a color
+                                Text("Total pagado", style: TextStyle(fontSize: 16.sp, color: Colors.grey)),
+                                Text(
+                                  formattedPrice,
+                                  style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: Colors.black),
                                 ),
-                                const SizedBox(width: 5),
                               ],
                             ),
                           ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
+                    SizedBox(height: 20.h),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(15.r),
+                      ),
+                      child: Row(
+                        children: [
+                          Image.asset(
+                            paymentMethod.toLowerCase().contains("daviplata") ? 'assets/images/daviplata.png' : 'assets/images/nequi.png',
+                            width: 40.w,
+                            height: 40.w,
+                          ),
+                          SizedBox(width: 12.w),
+                          Text(
+                            "Pago vía $paymentMethod",
+                            style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
+                          ),
+                          const Spacer(),
+                          const Icon(Icons.lock_outline, color: Colors.grey, size: 18),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-            Container(
-              padding: const EdgeInsets.all(16),
-              width: double.infinity,
-              child: ElevatedButton.icon(
+            Padding(
+              padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 30.h),
+              child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _getPaymentColor(),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  minimumSize: Size(double.infinity, 40.h),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                  elevation: 0,
                 ),
-                onPressed: () {
+                onPressed: () async {
                   if (_openingPayment) return;
                   setState(() => _openingPayment = true);
-                  startPayment(context, paymentURL);
+                  final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => WavaPaymentView(paymentUrl: paymentURL)));
+                  if (mounted && result == 'success') {
+                    _showFeedback(context, "¡Pago Exitoso!", "Tu mudanza ha sido finalizada correctamente.", Colors.green);
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (_) => const HomeUserView()),
+                      (route) => false,
+                    );
+                  }
+                
+                  
                 },
-                icon: const Icon(Icons.payment, color: Colors.white),
-                label: Text(
-                  "Pagar con $paymentMethod",
-                  style: const TextStyle(fontSize: 18, color: Colors.white),
-                ),
+                child: _openingPayment
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : Text(
+                        "Liberar pago al conductor",
+                        style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1.2),
+                      ),
               ),
             ),
           ],
@@ -183,160 +196,44 @@ class _PaymentViewState extends State<PaymentView> {
     );
   }
 
-  void startPayment(BuildContext context, String paymentUrl) {
-    Navigator.push(
-      context, 
-      MaterialPageRoute(builder: (_) => WavaPaymentView(paymentUrl: paymentUrl))
-    ).then((_) => setState(() => _openingPayment = false));
-  }
-}
-
-/*class PaymentView extends StatelessWidget {
-  final Map<String, dynamic> paymentData;
-
-  const PaymentView({super.key, required this.paymentData});
-
-  Color _getPaymentColor() {
-    final String paymentMethod = paymentData['paymentMethod'].toLowerCase();
-    if (paymentMethod.toLowerCase() == "nequi") {
-      return const Color(0xFF7B1FA2);
-    } else if (paymentMethod.toLowerCase() == "daviplata") {
-      return const Color(0xFFE53935);
-    }
-    return Colors.orange;
+  void _showFeedback(BuildContext context, String title, String msg, Color color) {
+    Flushbar(
+      title: title,
+      message: msg,
+      backgroundColor: color,
+      duration: const Duration(seconds: 3),
+      flushbarPosition: FlushbarPosition.TOP,
+      margin: EdgeInsets.all(12.w),
+      borderRadius: BorderRadius.circular(10.r),
+    ).show(context);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final String paymentMethod = paymentData['paymentMethod'] ?? "N/A";
-    print("datos de pago que devuelve WAVA $paymentData");
-
-    final String paymentURL = paymentData['paymentURL'] ?? "";
-    final String origin = paymentData['origin'] ?? "";
-    final String destination = paymentData['destination'] ?? "";
-    final String distanceKm = paymentData['distanceKm'] ?? "";
-    final String durationMin = paymentData['durationMin'] ?? "";
-
-    List<String> partsOrigin = origin.split(',');
-    String reducedOrigin = partsOrigin.take(2).join(',').trim();
-
-    List<String> partsDestination = destination.split(',');
-    String reducedDestination = partsDestination.take(2).join(',').trim();
-
-    final dynamic amount = paymentData['amount'];
-    final double priceValue = amount != null ? (amount is num ? amount.toDouble() : double.tryParse(amount.toString()) ?? 0) : 0;
-
-    String formattedPrice = formatPriceMovingDetails(priceValue.toString());
-    bool _openingPayment = false;
-
-    return Scaffold(
-      backgroundColor: AppTheme.colorbackgroundview,
-      appBar: AppBar(
-        title: const Text(
-          "Pago del cambio de domicilio",
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+  // Widget auxiliar para las filas de información
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 20.sp, color: AppTheme.primarycolor),
+        SizedBox(width: 12.w),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: TextStyle(fontSize: 12.sp, color: Colors.grey)),
+              Text(
+                value,
+                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600, color: Colors.black87),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
-        backgroundColor: Colors.black,
-        elevation: 0,
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Card(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Row(
-                        children: [
-                          Icon(Icons.check_circle, color: Colors.green, size: 28),
-                          SizedBox(width: 8),
-                          Text(
-                            "¡Mudanza finalizada!",
-                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Text("Origen: $reducedOrigin", style: const TextStyle(fontSize: 16)),
-                      Text("Destino: $reducedDestination", style: const TextStyle(fontSize: 16)),
-                      const SizedBox(height: 8),
-                      Text(
-                        "Distancia: $distanceKm  | Tiempo: $durationMin ",
-                        style: const TextStyle(fontSize: 15, color: Colors.grey),
-                      ),
-                      const Divider(height: 30),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text("Total a pagar:", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                          Text(
-                            formattedPrice,
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text("Método de pago:", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-                          Row(
-                            children: [
-                              Image.asset(
-                                paymentMethod.toLowerCase() == "daviplata" ? 'assets/images/daviplata.png' : 'assets/images/nequi.png',
-                                width: 50,
-                                height: 50,
-                                color: _getPaymentColor(),
-                              ),
-
-                              const SizedBox(width: 5),
-                              // Text("$paymentMethod "),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(16),
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _getPaymentColor(),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-              onPressed: () async {
-                if (_openingPayment) return;
-                _openingPayment = true;
-                startPayment(context, paymentURL);
-              },
-              icon: const Icon(Icons.payment, color: Colors.white),
-              label: Text(
-                "Pagar con $paymentMethod",
-                style: const TextStyle(fontSize: 18, color: Colors.white),
-              ),
-            ),
-          ),
-        ],
-      ),
+      ],
     );
   }
 
-  void startPayment(BuildContext context, String paymentUrl) async {
-    try {
-      Navigator.push(context, MaterialPageRoute(builder: (_) => WavaPaymentView(paymentUrl: paymentUrl)));
-    } catch (e) {
-      print("ERROR DURANTE EL PROCESO DE PAGO: $e");
-    }
+  void startPayment(BuildContext context, String paymentUrl) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => WavaPaymentView(paymentUrl: paymentUrl))).then((_) => setState(() => _openingPayment = false));
   }
-} */
+}

@@ -85,18 +85,6 @@ class _ConfigurationDriverState extends State<ConfigurationDriver> {
             isDestructive: true,
             onTap: () async {
               _showLogoutDialog(context);
-              /* final isLoggedOut = await _authService.logout();
-              if (isLoggedOut) {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginView()),
-                  (route) => false,
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Error al cerrar sesión")),
-                );
-              } */
             },
           ),
         ],
@@ -190,34 +178,4 @@ void _showLogoutDialog(BuildContext context) {
   );
 }
 
-/*Widget _buildSettingOption({required String title, required VoidCallback onTap, required IconData icon}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Card(
-        elevation: 2,
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
-          child: Row(
-            children: [      
-              Icon(icon,color: Colors.grey[700]),
-              const SizedBox(width: 12,),
-              Expanded(child: Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ), ),
-             
-              const Icon(
-                Icons.chevron_right,
-                color: Colors.grey,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-} */
+

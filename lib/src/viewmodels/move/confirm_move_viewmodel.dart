@@ -36,6 +36,7 @@ class ConfirmMoveViewModel with ChangeNotifier {
     String? originAddressText,
     String? destinationAddressText,
     String? paymentMethod,
+    String? accessType,
   }) async {
     _isLoading = true;
     _errorMessage = null;
@@ -43,7 +44,6 @@ class ConfirmMoveViewModel with ChangeNotifier {
     notifyListeners();
 
     try {
-      // 🧭 Obtener ubicación actual
       final position = await locationViewModel.updateLocation(context);
       if (position == null) {
         _errorMessage = "No se pudo obtener tu ubicación actual.";
@@ -69,6 +69,7 @@ class ConfirmMoveViewModel with ChangeNotifier {
           originAddressText: originAddressText,
           destinationAddressText: destinationAddressText,
           paymentMethod: paymentMethod,
+          accessType: accessType,
           userId: userId);
 
       if (result != null) {

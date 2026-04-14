@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class StyleFontsMove {
-   static const  paragraphStyleMove = TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white);
+   static get  paragraphStyleMove =>  TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600, color: Colors.grey);
 }

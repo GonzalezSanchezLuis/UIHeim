@@ -19,7 +19,10 @@ class ConfirmMoveService {
       double? destinationLng,
       String? originAddressText,
       String? destinationAddressText,
-      String? paymentMethod}) async {
+      String? paymentMethod,
+      String? accessType,
+      
+      }) async {
     try {
       final url = Uri.parse("$apiBaseUrl/move/confirm");
       final cleanedPrice = calculatedPrice.replaceAll('\$', '').replaceAll(' ', '').replaceAll('.', '').split(',')[0];
@@ -38,7 +41,8 @@ class ConfirmMoveService {
         "origin": originAddressText,
         "destination": destinationAddressText,
         'paymentMethod': paymentMethod,
-        "userId": userId
+        "userId": userId,
+        'accessType':accessType
       };
 
       print("🚀 Enviando datos al servidor:");
