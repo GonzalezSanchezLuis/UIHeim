@@ -40,7 +40,6 @@ class MoveRequestCard extends StatelessWidget {
     }
   }
 
-  final GlobalKey<SlideActionState> _acceptKey = GlobalKey<SlideActionState>();
   @override
   Widget build(BuildContext context) {
     final dynamic priceRaw = moveData['price'];
@@ -60,10 +59,17 @@ class MoveRequestCard extends StatelessWidget {
       orElse: () => MoveType.PEQUENA,
     );
 
-    final String accessType = moveData['accessType']?.toString().toUpperCase() ?? 'NO ESPECIFICADO';
-    final bool hasElevator = accessType == 'ASCENSOR';
-    final bool isStairs = accessType == 'ESCALERAS';
-    final bool firstFloor = accessType == 'CALLE';
+    final String rawAccessType = moveData['accessType']?.toString().toUpperCase() ?? 'NO ESPECIFICADO';
+
+    String displayAccessType = rawAccessType;
+    if (rawAccessType == 'CALLE') displayAccessType = 'CALLE';
+    if (rawAccessType == 'ASCENSOR') displayAccessType = 'ASCENSOR';
+    if (rawAccessType == 'ESCALERAS') displayAccessType = 'ESCALERAS';
+
+    
+    final bool hasElevator = displayAccessType == 'ASCENSOR';
+    final bool isStairs = displayAccessType == 'ESCALERAS';
+    final bool firstFloor = displayAccessType == 'PISO 1';
 
     return Container(
         padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 8.h),
@@ -111,17 +117,14 @@ class MoveRequestCard extends StatelessWidget {
                       children: [
                         Text(
                           '${moveData['distance'] ?? "Cargando..."} ${moveData['estimatedTimeOfArrival'] ?? "..."}',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14.sp,
-                          ),
+                          style: StyleFontsMove.paragraphStyleMove,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        SizedBox(height: 4.h),
+                        SizedBox(height: 3.h),
                         Text(
                           'Desde $reducedOriginAddress',
-                          style: StyleFontsMove.paragraphStyleMove,
+                                style: TextStyle(color: Colors.grey, fontSize: 13.sp),
                         ),
                       ],
                     ),
@@ -145,6 +148,8 @@ class MoveRequestCard extends StatelessWidget {
                         Text(
                           '${moveData['distanceToDestination'] ?? "Cargando..."} ${moveData['timeToDestination'] ?? "..."}',
                           style: StyleFontsMove.paragraphStyleMove,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         Text(
                           'Hasta ${moveData['destination']}',
@@ -169,30 +174,30 @@ class MoveRequestCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  if (accessType != 'NO ESPECIFICADO')
+                  if (displayAccessType != 'NO ESPECIFICADO')
                     Row(
                       children: [
                         Container(
                           padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-                          decoration: BoxDecoration(
-                            color: firstFloor ? Colors.green.withOpacity(0.2) : (isStairs ? Colors.orange.withOpacity(0.2) : Colors.blue.withOpacity(0.2)),
-                            borderRadius: BorderRadius.circular(8.r),
+                         decoration: BoxDecoration(
+                            color: firstFloor ? Colors.green.withOpacity(0.15) : (isStairs ? Colors.orange.withOpacity(0.15) : Colors.blue.withOpacity(0.15)),
+                            borderRadius: BorderRadius.circular(6.r),
                             border: Border.all(
-                              color: firstFloor ? Colors.green : (isStairs ? Colors.orange : Colors.blueAccent),
-                              width: 1.5,
+                              color: firstFloor ? Colors.greenAccent : (isStairs ? Colors.orange : Colors.blueAccent),
+                              width: 1,
                             ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                firstFloor ? Icons.home_work_outlined : (hasElevator ? Icons.elevator_outlined : Icons.stairs_outlined),
+                                firstFloor ? Icons.door_front_door_outlined : (hasElevator ? Icons.elevator_outlined : Icons.stairs_outlined),
                                 color: firstFloor ? Colors.greenAccent : (hasElevator ? Colors.blueAccent : Colors.orange),
                                 size: 18.sp,
                               ),
                               SizedBox(width: 6.w),
                               Text(
-                                accessType,
+                                displayAccessType,
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 12.sp,
@@ -207,16 +212,6 @@ class MoveRequestCard extends StatelessWidget {
                     ),
                 ],
               ),
-              /* Row(
-                children: [
-                  Icon(Icons.local_shipping_outlined, color: Colors.white, size: 18.sp),
-                  SizedBox(width: 5.w),
-                  Text(
-                    'Mudanza ${typeOfMove.displayName}',
-                    style: StyleFontsMove.paragraphStyleMove,
-                  ),
-                ],
-              ),*/
 
               SizedBox(height: 2.h),
               Row(
@@ -278,66 +273,59 @@ class MoveRequestCard extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(height: 5.w),
-              Row(
-                children: [
-                  SizedBox(width: 4.w),
-               Expanded(
-                    child: Consumer<AcceptMoveViewmodel>(
-                      builder: (context, acceptVM, child) {
-                        return ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.confirmationscolor,
-                            foregroundColor: Colors.white,
-                            minimumSize: Size(double.infinity, 50.h),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30.r),
-                            ),
-                            elevation: 0,
+
+              SizedBox(height: 8.h),
+              Padding(
+                padding: EdgeInsets.only(bottom: 4.h), 
+                child: Consumer<AcceptMoveViewmodel>(
+                  builder: (context, acceptVM, child) {
+                    return SizedBox(
+                      width: double.infinity, 
+                      height: 46.h, 
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.confirmationscolor,
+                          disabledBackgroundColor: Colors.grey[800],
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16.r),
                           ),
-                          // Si está cargando, deshabilitamos el botón para evitar doble clic
-                          onPressed: acceptVM.isLoading
-                              ? null
-                              : () async {
-                                  final routeVM = Provider.of<RouteDriverViewmodel>(context, listen: false);
-                                  final moveId = int.tryParse(moveData['moveId'].toString()) ?? 0;
+                          elevation: 0,
+                        ),
+                        onPressed: acceptVM.isLoading
+                            ? null
+                            : () async {
+                                final routeVM = Provider.of<RouteDriverViewmodel>(context, listen: false);
+                                final moveId = int.tryParse(moveData['moveId'].toString()) ?? 0;
+                                final success = await acceptVM.acceptMove(moveId);
 
-                                  final success = await acceptVM.acceptMove(moveId);
-
-                                  if (success) {
-                                    routeVM.stopTimer();
-                                    onMoveAccepted(moveData);
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Error al aceptar la mudanza')),
-                                    );
-                                  }
-                                },
-                          child: acceptVM.isLoading
-                              ? SizedBox(
-                                  height: 20.h,
-                                  width: 20.h,
-                                  child: const CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : Text(
-                                  "Aceptar",
-                                  style: TextStyle(
-                                    fontSize: 15.sp,
-                                    fontWeight: FontWeight.bold,
-
-                                  ),
+                                if (success) {
+                                  routeVM.stopTimer();
+                                  onMoveAccepted(moveData);
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Error al aceptar la mudanza')),
+                                  );
+                                }
+                              },
+                        child: acceptVM.isLoading
+                            ? SizedBox(
+                                height: 20.r,
+                                width: 20.r,
+                                child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              )
+                            : Text(
+                                "Aceptar Mudanza",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                        );
-                      },
-                    ),
-                  ),
-                  
-                ],
-              ),
-              SizedBox(height: MediaQuery.of(context).padding.bottom > 0 ? 8.h : 0),
+                              ),
+                      ),
+                    );
+                  },
+                ),
+              )
             ])));
   }
 }

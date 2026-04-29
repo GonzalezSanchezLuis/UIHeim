@@ -1,13 +1,16 @@
 import 'dart:developer';
 import 'package:another_flushbar/flushbar.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/core/theme/fonts/style_fonts_title.dart';
+import 'package:holi/src/service/fcm/firebase_messaging_service.dart';
 import 'package:holi/src/view/screens/driver/home_driver_view.dart';
 import 'package:holi/src/view/screens/tearm/privacy_policy_view.dart';
 import 'package:holi/src/view/screens/tearm/tearm_and_condition_view.dart';
 import 'package:holi/src/viewmodels/auth/auth_viewmodel.dart';
+import 'package:holi/src/viewmodels/fcm/fcm_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -100,7 +103,7 @@ class _RegisterDriverState extends State<RegisterDriver> {
                   _buildField(
                     controller: _licenseCategoryController,
                     label: "Categoría (Ej: C2, B2)",
-                    textCapitalization: TextCapitalization.characters, // Forzamos mayúsculas
+                    textCapitalization: TextCapitalization.characters, 
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) return 'La categoría es obligatoria';
                       // RegEx para formatos como A1, B2, C3, etc.
@@ -114,11 +117,10 @@ class _RegisterDriverState extends State<RegisterDriver> {
                   _buildField(
                     controller: _typeVehicleController,
                     label: "Tipo de vehículo (Ej: Turbo, NHR)",
-                    textCapitalization: TextCapitalization.words, // Primera letra mayúscula
+                    textCapitalization: TextCapitalization.words,
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) return 'El tipo de vehículo es obligatorio';
                       if (value.length < 3) return 'Ingresa una descripción válida';
-                      // Evitamos que solo metan números
                       if (RegExp(r'^[0-9]+$').hasMatch(value.trim())) {
                         return 'Escribe el nombre del tipo de vehículo';
                       }
@@ -131,7 +133,6 @@ class _RegisterDriverState extends State<RegisterDriver> {
                     label: "Placas del vehículo",
                     validator: (value){
                       if (value == null || value.isEmpty) return 'La placa es obligatoria';
-                        // RegEx para placas colombianas comunes
                         if (!RegExp(r'^[A-Z]{3}[0-9]{3}$|^[A-Z]{3}[0-9]{2}[A-Z]{1}$').hasMatch(value.toUpperCase())) {
                           return 'Formato inválido (Ej: ABC123)';
                         }
@@ -174,7 +175,7 @@ class _RegisterDriverState extends State<RegisterDriver> {
                                   ..onTap = () {
                                     print("Navegar a PRIVACIDAD");
                                     Navigator.push(context, MaterialPageRoute(builder: (context) => const PrivacyPolicyView()));
-                                    // Aquí pones tu Navigator.push o launchUrl
+                                  
                                   },
                               ),
                               const TextSpan(
@@ -262,6 +263,7 @@ class _RegisterDriverState extends State<RegisterDriver> {
       try {
         final prefs = await SharedPreferences.getInstance();
         final userId = prefs.getInt('userId');
+        const  role = 'DRIVER';
 
         log("id del usuario actual $userId");
 
@@ -274,7 +276,8 @@ class _RegisterDriverState extends State<RegisterDriver> {
           );
           return;
         }
-
+        final fcmToken = await FirebaseMessaging.instance.getToken();
+        
         final success = await registerDriverViewModel.registerDriver(
           userId: userId,
           document: _documentController.text.trim(),
@@ -283,11 +286,17 @@ class _RegisterDriverState extends State<RegisterDriver> {
           licenseCategory: _licenseCategoryController.text.trim(),
           vehicleType: _typeVehicleController.text.trim(),
           enrollVehicle: _enrollVehicleController.text.trim(),
+          fcmToken:fcmToken!,
+          role: role
+
         );
 
         setState(() => _isLoading = false);
 
         if (success) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('role', 'DRIVER');
+
           _showFlushbar('Todo salio bien', 'Hemos registrado tus datos con éxito.', AppTheme.confirmationscolor, Icons.check_circle_outline);
           setState(() => _isLoading = false);
           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeDriverView()));

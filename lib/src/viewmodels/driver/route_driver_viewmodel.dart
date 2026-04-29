@@ -19,7 +19,7 @@ class RouteDriverViewmodel extends ChangeNotifier {
   int get remainingTime => _remainingTime;
   List<LatLng> get driverToOriginRoute => _driverToOriginRoute;
 
-  final String _googleMapsApiKey = 'AIzaSyDB04XLcypB4xsGaRqNPjAGmf1xTegz0Rg';
+  final String _googleMapsApiKey = 'AIzaSyDF6pFogbufSdpW3nIeCgQMRFyoSEd1Rmw';
 
   Future<void> updateMoveData(Map<String, dynamic> data) async {
     print("Datos recibidos - Conductor----: ${data['driverLat']},${data['driverLng']}");
@@ -137,6 +137,9 @@ class RouteDriverViewmodel extends ChangeNotifier {
 
   Future<void> _fetchDriverRoute(LatLng driver, LatLng origin) async {
     print('Solicitando ruta conductor -> origen: ${driver.latitude},${driver.longitude} -> ${origin.latitude},${origin.longitude}');
+    print("ENTRO _fetchDriverRoute");
+    print("DRIVER: ${driver.latitude}, ${driver.longitude}");
+    print("ORIGIN: ${origin.latitude}, ${origin.longitude}");
 
     try {
       PolylinePoints polylinePoints = PolylinePoints();

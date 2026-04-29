@@ -1,4 +1,5 @@
 import 'package:another_flushbar/flushbar.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
@@ -217,7 +218,9 @@ class _CreateAccountState extends State<CreateAccount> {
       final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
 
       try {
-        final success = await authViewModel.registerUser(name, email, password);
+        String? fcmToken = await FirebaseMessaging.instance.getToken();
+        print("📱 Token capturado para registro: $fcmToken");
+        final success = await authViewModel.registerUser(name, email, password,fcmToken!);
         if (success) {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool('intro_view', true);
@@ -225,13 +228,6 @@ class _CreateAccountState extends State<CreateAccount> {
           final userId = prefs.getInt('userId');
 
           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeUserView()));
-
-          if (userId != null && role != null) {
-           final fcmViewModel = FcmViewModel();
-           await fcmViewModel.initFcm(userId, role).catchError((e){
-            print("Error en registro de token (pero el usuario ya entró): $e");
-           });
-          }
         } else {
           if (mounted) setState(() => _isLoading = false);
 

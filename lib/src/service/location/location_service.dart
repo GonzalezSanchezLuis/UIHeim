@@ -74,7 +74,7 @@ class LocationService {
   }
 
   Future<Map<String, double>?> getCoordinatesFromPlaceId(String placeId) async {
-    final String url = "https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=AIzaSyDB04XLcypB4xsGaRqNPjAGmf1xTegz0Rg";
+    final String url = "https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=AIzaSyDF6pFogbufSdpW3nIeCgQMRFyoSEd1Rmw";
 
     try {
       final response = await http.get(Uri.parse(url));

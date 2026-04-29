@@ -21,6 +21,7 @@ import 'package:holi/src/view/widget/maps/user_maps_widget.dart';
 import 'package:holi/src/view/widget/navbar/custom_bottom_navbar.dart';
 import 'package:holi/src/view/widget/user/build_waiting_widget.dart';
 import 'package:holi/src/viewmodels/auth/sesion_viewmodel.dart';
+import 'package:holi/src/viewmodels/fcm/fcm_viewmodel.dart';
 import 'package:holi/src/viewmodels/location/location_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/websocket/move_notification_user_viewmodel.dart';
 import 'package:holi/src/viewmodels/user/get_driver_location_viewmodel.dart';
@@ -40,26 +41,12 @@ class HomeUserView extends StatefulWidget {
   final double? destinationLng;
   final LatLng? origin;
   final LatLng? destination;
-  final String? originName; 
+  final String? originName;
   final String? destinationName;
   final String? accessType;
   final Map<String, dynamic>? initialIncomingMoveData;
 
-  const HomeUserView({super.key, 
-  this.calculatedPrice, 
-  this.distanceKm, this.duration, 
-  this.typeOfMove, 
-  this.estimatedTime, 
-  this.route, 
-  this.destinationLat, 
-  this.destinationLng, 
-  this.origin, 
-  this.destination, 
-  this.originName, 
-  this.destinationName,
-  this.accessType,
-  this.initialIncomingMoveData
-  });
+  const HomeUserView({super.key, this.calculatedPrice, this.distanceKm, this.duration, this.typeOfMove, this.estimatedTime, this.route, this.destinationLat, this.destinationLng, this.origin, this.destination, this.originName, this.destinationName, this.accessType, this.initialIncomingMoveData});
 
   @override
   _HomeUserState createState() => _HomeUserState();
@@ -87,6 +74,7 @@ class _HomeUserState extends State<HomeUserView> {
   @override
   void initState() {
     super.initState();
+    _initFcm();
     _checkSession();
     _updateModalState();
     _loadUserId();
@@ -138,6 +126,17 @@ class _HomeUserState extends State<HomeUserView> {
     _websocketUserService.disconnect();
     _websocketFinishedMoveService?.disconnect();
     super.dispose();
+  }
+
+  void _initFcm() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt('userId');
+    final role = prefs.getString('role');
+
+    if (userId != null && role != null) {
+      final fcmViewModel = FcmViewModel();
+      await fcmViewModel.initFcm(userId, role);
+    }
   }
 
   @override
@@ -673,7 +672,7 @@ class _HomeUserState extends State<HomeUserView> {
               width: double.infinity,
               child: ConfirmButton(
                 typeOfMove: widget.typeOfMove!,
-                calculatedPrice: widget.calculatedPrice ?? '', 
+                calculatedPrice: widget.calculatedPrice ?? '',
                 distanceKm: widget.distanceKm ?? '',
                 duration: widget.duration ?? '',
                 estimatedTime: widget.estimatedTime ?? '',

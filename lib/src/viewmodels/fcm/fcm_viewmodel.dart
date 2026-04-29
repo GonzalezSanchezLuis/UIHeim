@@ -36,8 +36,8 @@ class FcmViewModel extends ChangeNotifier {
 
   Future<void> _handleFcmToken(int userId, String ownerType) async {
     try {
-      // Obtener el token FCM
       final token = await FirebaseMessaging.instance.getToken();
+      print('DEBUG: Enviando al backend -> ID: $userId, Tipo: $ownerType');
       print('📱 Token FCM: $token');
 
       if (token != null) {
@@ -51,7 +51,7 @@ class FcmViewModel extends ChangeNotifier {
       FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
         print('🔄 Token actualizado: $newToken');
 
-        sendTokenToBackend(FcmTokenRequestModel(token: newToken, ownerId: userId, ownerType: ownerType));
+      //  sendTokenToBackend(FcmTokenRequestModel(token: newToken, ownerId: userId, ownerType: ownerType));
       });
     } catch (e) {
       errorMessage = 'Error al obtener token: $e';

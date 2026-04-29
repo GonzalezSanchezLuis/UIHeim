@@ -77,7 +77,7 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  Future<bool> registerUser(String name, String email, String password) async {
+  Future<bool> registerUser(String name, String email, String password, String fcmToken) async {
     isLoading = true;
     errorMessage = null;
     notifyListeners();
@@ -107,7 +107,15 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   Future<bool> registerDriver({
- required int userId, required String phone, required String document, required String licenseCategory, required licenseNumber, required String vehicleType, required String enrollVehicle
+ required int userId, 
+ required String phone, 
+ required String document, 
+ required String licenseCategory, 
+ required licenseNumber, 
+ required String vehicleType, 
+ required String enrollVehicle, 
+ required String fcmToken,
+ required String role,
   }) async {
     isLoading = true;
     errorMessage = null;
@@ -120,7 +128,10 @@ class AuthViewModel extends ChangeNotifier {
       licenseCategory: licenseCategory, 
       licenseNumber: licenseNumber, 
       vehicleType: vehicleType, 
-      enrollVehicle: enrollVehicle);
+      enrollVehicle: enrollVehicle,
+      fcmToken:fcmToken,
+      role:role
+      );
     isLoading = false;
 
     if (result == null || result["error"] != null) {

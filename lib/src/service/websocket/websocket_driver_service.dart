@@ -13,7 +13,7 @@ class WebSocketDriverService {
 
   WebSocketDriverService({required this.driverId, required this.onMessage});
 
-  void connect() {
+  /*void connect() {
     _client = StompClient(
       config: StompConfig.SockJS(
         url: "$apiBaseUrl/ws",
@@ -21,6 +21,32 @@ class WebSocketDriverService {
         onWebSocketError: (error) => print('WebSocket error: $error'),
         onDisconnect: (_) => print('WebSocket disconnected'),
         onStompError: (frame) => print('STOMP error: ${frame.body}'),
+      ),
+    );
+
+    _client.activate();
+  }*/
+
+void connect() {
+    String cleanUrl = apiBaseUrl.trim().replaceAll('#', '');
+
+    final String socketUrl = "$cleanUrl/ws";
+
+    print("🚀 Intentando conexión real a: $socketUrl");
+
+    _client = StompClient(
+      config: StompConfig.SockJS(
+        url: socketUrl,
+        onConnect: _onConnect,
+        onWebSocketError: (error) {
+          print('❌ WebSocket error: $error');
+        },
+        onDisconnect: (frame) => print('🔌 WebSocket disconnected'),
+        onStompError: (frame) => print('⚠️ STOMP error: ${frame.body}'),
+        reconnectDelay: const Duration(seconds: 5),
+        webSocketConnectHeaders: {
+          "ngrok-skip-browser-warning": "true",
+        },
       ),
     );
 

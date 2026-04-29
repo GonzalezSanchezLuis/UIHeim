@@ -30,7 +30,7 @@ class _CalculatePriceState extends State<CalculatePrice> {
  String? _selectedAccess;
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final locationService = LocationService(googleApiKey: "AIzaSyDB04XLcypB4xsGaRqNPjAGmf1xTegz0Rg");
+  final locationService = LocationService(googleApiKey: "AIzaSyDF6pFogbufSdpW3nIeCgQMRFyoSEd1Rmw");
   final LocationViewModel locationViewModel = LocationViewModel();
 
   Map<String, double>? _destinationCoords;

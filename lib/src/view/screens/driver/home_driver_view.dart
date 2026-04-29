@@ -15,6 +15,7 @@ import 'package:holi/src/view/screens/auth/login_view.dart';
 import 'package:holi/src/view/screens/driver/driver_view.dart';
 import 'package:holi/src/view/screens/driver/wallet_view.dart';
 import 'package:holi/src/view/screens/move/history_move_view.dart';
+import 'package:holi/src/viewmodels/fcm/fcm_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/restore_move_viewmodel.dart';
 import 'package:holi/src/view/widget/button/button_card_home_widget.dart';
 import 'package:holi/src/view/widget/card/bottom_move_card.dart';
@@ -61,6 +62,7 @@ class _HomeDriverState extends State<HomeDriverView> {
   @override
   void initState() {
     super.initState();
+    _initFcm();
     initializeStatusFromPrefs();
     BackgroundLocationService.initService();
 
@@ -118,6 +120,17 @@ class _HomeDriverState extends State<HomeDriverView> {
     _locationSubscription?.cancel();
     _socketService.disconnect();
     super.dispose();
+  }
+
+  void _initFcm() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt('userId');
+    final role = prefs.getString('role');
+
+    if (userId != null && role != null) {
+      final fcmViewModel = FcmViewModel();
+      await fcmViewModel.initFcm(userId, role);
+    }
   }
 
   @override
@@ -286,7 +299,7 @@ class _HomeDriverState extends State<HomeDriverView> {
                           height: hasMoveData ? MediaQuery.of(context).size.height * 0.52 : MediaQuery.of(context).size.height * 0.16,
                           decoration: BoxDecoration(
                             color: Colors.black,
-                            borderRadius:  BorderRadius.only(
+                            borderRadius: BorderRadius.only(
                               topRight: Radius.circular(20.r),
                               topLeft: Radius.circular(20.r),
                             ),
@@ -325,8 +338,7 @@ class _HomeDriverState extends State<HomeDriverView> {
                                                   Expanded(
                                                     child: driverViewModel.connectionStatus!.isConnected ? _buildDisconnectCard() : _buildConnectCard(),
                                                   ),
-
-                                                   SizedBox(width: 10.w),
+                                                  SizedBox(width: 10.w),
                                                   _buildHistoryButton(),
                                                 ] else
                                                   const Expanded(
@@ -426,14 +438,13 @@ class _HomeDriverState extends State<HomeDriverView> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Expanded(child:  ConnectButton(onConnected: (LatLng location) {
+          Expanded(child: ConnectButton(onConnected: (LatLng location) {
             final locationVM = Provider.of<DriverLocationViewmodel>(context, listen: false);
             locationVM.setManualLocation(location);
             final sessionVM = Provider.of<SessionViewModel>(context, listen: false);
             final driverId = int.tryParse(sessionVM.userId?.toString() ?? '0') ?? 0;
             locationVM.startLocationUpdates(driverId);
-          })
-         ),
+          })),
         ],
       ),
     );
@@ -441,15 +452,13 @@ class _HomeDriverState extends State<HomeDriverView> {
 
   Widget _buildDisconnectCard() {
     return Container(
-      height: 70.h,
-      child: const Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        DisconnectButton(),
-      ],
-    )
-    );
- 
+        height: 70.h,
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            DisconnectButton(),
+          ],
+        ));
   }
 
   Widget _buildHistoryButton() {
@@ -460,11 +469,7 @@ class _HomeDriverState extends State<HomeDriverView> {
         shape: BoxShape.circle,
         color: Colors.white,
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 6,
-            offset: const Offset(0, 2)
-          ),
+          BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 6, offset: const Offset(0, 2)),
         ],
       ),
       child: IconButton(

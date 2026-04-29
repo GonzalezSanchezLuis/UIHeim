@@ -59,7 +59,7 @@
         <meta-data android:name="com.google.android.gms.maps.useViewLifecycleInFragment" android:value="true"/>
 
         <meta-data android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyDB04XLcypB4xsGaRqNPjAGmf1xTegz0Rg"/>
+            android:value="AIzaSyDF6pFogbufSdpW3nIeCgQMRFyoSEd1Rmw"/>
 
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"

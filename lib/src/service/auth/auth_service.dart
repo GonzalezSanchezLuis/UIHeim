@@ -25,6 +25,8 @@ class AuthService {
     required String licenseNumber,
     required String vehicleType,
     required String enrollVehicle,
+    required String fcmToken,
+    required String role
   }) async {
     return _register("/drivers/register", {
       'userId': userId,
@@ -34,6 +36,8 @@ class AuthService {
       'licenseNumber': licenseNumber,
       'vehicleType': vehicleType,
       'enrollVehicle': enrollVehicle,
+      'fcmToken': fcmToken,
+      'role': role
     });
   } 
 

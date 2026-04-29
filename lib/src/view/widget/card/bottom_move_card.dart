@@ -55,7 +55,6 @@ class _BottomMoveCardState extends State<BottomMoveCard> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Cabecera con flechita animada
           GestureDetector(
             onTap: () {
               setState(() {

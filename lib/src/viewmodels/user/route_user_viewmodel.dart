@@ -11,7 +11,7 @@ class RouteUserViewmodel extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   List<LatLng> get route => _route;
-  final String _googleMapsApiKey = 'AIzaSyDB04XLcypB4xsGaRqNPjAGmf1xTegz0Rg';
+  final String _googleMapsApiKey = 'AIzaSyDF6pFogbufSdpW3nIeCgQMRFyoSEd1Rmw';
 
   Future<void> fetchRoute(LatLng origin, LatLng destination) async {
     _isLoading = true;
