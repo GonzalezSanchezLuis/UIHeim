@@ -292,11 +292,17 @@ class _HomeDriverState extends State<HomeDriverView> {
                     child: Consumer2<RouteDriverViewmodel, DriverStatusViewmodel>(
                       builder: (context, directionsViewModel, driverViewModel, child) {
                         final bool hasMoveData = directionsViewModel.moveData != null && directionsViewModel.moveData!.isNotEmpty && _currentMoveData == null;
+                        final double bottomPanelHeightFactor = hasMoveData
+                            ? 0.52
+                            : (profileViewModel.isDriverActive ? 0.16 : 0.22);
+                        final double bottomInset = MediaQuery.paddingOf(context).bottom;
 
-                        return AnimatedContainer(
+                        return Padding(
+                          padding: EdgeInsets.only(bottom: bottomInset),
+                          child: AnimatedContainer(
                           duration: const Duration(milliseconds: 400),
                           curve: Curves.fastOutSlowIn,
-                          height: hasMoveData ? MediaQuery.of(context).size.height * 0.52 : MediaQuery.of(context).size.height * 0.16,
+                          height: MediaQuery.of(context).size.height * bottomPanelHeightFactor,
                           decoration: BoxDecoration(
                             color: Colors.black,
                             borderRadius: BorderRadius.only(
@@ -311,7 +317,7 @@ class _HomeDriverState extends State<HomeDriverView> {
                             ],
                           ),
                           child: Padding(
-                              padding: EdgeInsets.all(16.w),
+                              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                               child: driverViewModel.connectionStatus == null
                                   ? const Center(
                                       child: CircularProgressIndicator(
@@ -330,24 +336,22 @@ class _HomeDriverState extends State<HomeDriverView> {
                                             });
                                           },
                                         )
-                                      : Column(
+                                      : Row(
+                                          crossAxisAlignment: CrossAxisAlignment.center,
                                           children: [
-                                            Row(
-                                              children: [
-                                                if (profileViewModel.isDriverActive) ...[
-                                                  Expanded(
-                                                    child: driverViewModel.connectionStatus!.isConnected ? _buildDisconnectCard() : _buildConnectCard(),
-                                                  ),
-                                                  SizedBox(width: 10.w),
-                                                  _buildHistoryButton(),
-                                                ] else
-                                                  const Expanded(
-                                                    child: VerifcationPendingCard(),
-                                                  ),
-                                              ],
-                                            ),
+                                            if (profileViewModel.isDriverActive) ...[
+                                              Expanded(
+                                                child: driverViewModel.connectionStatus!.isConnected ? _buildDisconnectCard() : _buildConnectCard(),
+                                              ),
+                                              SizedBox(width: 10.w),
+                                              _buildHistoryButton(),
+                                            ] else
+                                              const Expanded(
+                                                child: VerifcationPendingCard(),
+                                              ),
                                           ],
                                         )),
+                          ),
                         );
                       },
                     ),
@@ -433,32 +437,23 @@ class _HomeDriverState extends State<HomeDriverView> {
   }
 
   Widget _buildConnectCard() {
-    return Container(
-      height: 70.h,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Expanded(child: ConnectButton(onConnected: (LatLng location) {
+    return SizedBox(
+      height: 50.h,
+      child: ConnectButton(onConnected: (LatLng location) {
             final locationVM = Provider.of<DriverLocationViewmodel>(context, listen: false);
             locationVM.setManualLocation(location);
             final sessionVM = Provider.of<SessionViewModel>(context, listen: false);
             final driverId = int.tryParse(sessionVM.userId?.toString() ?? '0') ?? 0;
             locationVM.startLocationUpdates(driverId);
-          })),
-        ],
-      ),
+          }),
     );
   }
 
   Widget _buildDisconnectCard() {
-    return Container(
-        height: 70.h,
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            DisconnectButton(),
-          ],
-        ));
+    return SizedBox(
+      height: 50.h,
+      child: const DisconnectButton(),
+    );
   }
 
   Widget _buildHistoryButton() {
@@ -486,6 +481,7 @@ class _HomeDriverState extends State<HomeDriverView> {
   }
 
   void _showMoveHistoryModal() {
+    final navigator = Navigator.of(context);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -559,16 +555,14 @@ class _HomeDriverState extends State<HomeDriverView> {
               // BOTÓN: CERRAR SESIÓN
               OutlinedButton(
                 onPressed: () async {
+                  navigator.pop();
                   final isLoggedOut = await _authService.logout();
-                  if (mounted) {
-                    Navigator.pop(context);
-                    if (isLoggedOut) {
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(builder: (context) => const LoginView()),
-                        (route) => false,
-                      );
-                    }
+                  if (!mounted) return;
+                  if (isLoggedOut) {
+                    navigator.pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (_) => const LoginView()),
+                      (route) => false,
+                    );
                   }
                 },
                 style: OutlinedButton.styleFrom(

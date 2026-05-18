@@ -146,27 +146,28 @@ class _ConfigurationDriverState extends State<ConfigurationDriver> {
   }
 }
 
-void _showLogoutDialog(BuildContext context) {
-  final AuthService _authService = AuthService();
+void _showLogoutDialog(BuildContext parentContext) {
+  final authService = AuthService();
+  final navigator = Navigator.of(parentContext, rootNavigator: true);
+
   showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
+    context: parentContext,
+    builder: (dialogContext) => AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.r)),
       title: Text("Abandonaras la app?", style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
       content: Text("Tendrás que ingresar tus credenciales nuevamente.", style: TextStyle(fontSize: 14.sp)),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pop(dialogContext),
           child: const Text("Cancelar", style: TextStyle(color: Colors.black)),
         ),
         TextButton(
           onPressed: () async {
-            Navigator.pop(context);
-            final isLoggedOut = await _authService.logout();
+            Navigator.pop(dialogContext);
+            final isLoggedOut = await authService.logout();
             if (isLoggedOut) {
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginView()),
+              navigator.pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const LoginView()),
                 (route) => false,
               );
             }

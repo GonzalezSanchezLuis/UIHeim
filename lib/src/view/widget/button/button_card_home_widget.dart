@@ -75,11 +75,12 @@ class ButtonLogOut extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton(
       onPressed: () async {
+        final navigator = Navigator.of(context, rootNavigator: true);
         final isLoggedOut = await _authService.logout();
+        if (!context.mounted) return;
         if (isLoggedOut) {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => const LoginView()),
+          navigator.pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const LoginView()),
             (route) => false,
           );
         } else {

@@ -2,6 +2,7 @@
 import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:math' as math;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -28,7 +29,8 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
   bool _mapReady = false;
   bool _isIconsLoaded = false;
   bool _hasCenteredOnDriver = false;
-  bool _isUserInteracting = false;
+  bool _followDriver = true;
+  bool _isAnimatingCamera = false;
   bool _isSimulating = false;
 
   late BitmapDescriptor _driverIcon;
@@ -36,7 +38,7 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
   BitmapDescriptor? _destinationIcon;
 
   double _currentZoom = 5.0;
-  double get _activeLocationZoom => 14.5 > 15 ? 15.0 : 14.5.sp;
+  static const double _activeLocationZoom = 15.0;
   final LatLng _defaultLocation = const LatLng(4.709870566194833, -74.07554855445838);
 
   Timer? _movementTimer;
@@ -67,7 +69,7 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
 
     if (widget.driverLocation != null && widget.driverLocation != oldWidget.driverLocation) {
       _updateDriverMarker(widget.driverLocation!);
-      if (!_isUserInteracting) {
+      if (_followDriver) {
         _animateCamera(widget.driverLocation!);
       }
     }
@@ -79,7 +81,7 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
         _hasCenteredOnDriver = true;
         _animateCamera(widget.driverLocation!, zoom: _activeLocationZoom);
         widget.onDriverConnected?.call(widget.driverLocation!);
-      } else if (!_isUserInteracting && locationChanged) {
+      } else if (_followDriver && locationChanged) {
         _animateCamera(widget.driverLocation!);
       }
     }
@@ -94,11 +96,43 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
   Future<void> _animateCamera(LatLng target, {double? zoom}) async {
     if (!_mapReady || _mapController == null || !mounted) return;
 
+    _isAnimatingCamera = true;
     try {
       await _mapController!.animateCamera(
         zoom != null ? CameraUpdate.newLatLngZoom(target, zoom) : CameraUpdate.newLatLng(target),
       );
-    } catch (_) {}
+    } catch (_) {
+    } finally {
+      _isAnimatingCamera = false;
+    }
+  }
+
+  Future<void> _goToDriverLocation() async {
+    if (!_mapReady || _mapController == null) return;
+
+    LatLng? target = widget.driverLocation;
+
+    if (target == null) {
+      try {
+        final position = await Geolocator.getCurrentPosition(
+          locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+        );
+        target = LatLng(position.latitude, position.longitude);
+        if (_isIconsLoaded) {
+          _updateDriverMarker(target);
+        }
+      } catch (_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No se pudo obtener tu ubicación')),
+          );
+        }
+        return;
+      }
+    }
+
+    setState(() => _followDriver = true);
+    await _animateCamera(target, zoom: _activeLocationZoom);
   }
 
   void _updateDriverMarker(LatLng location, {double rotation = 0.0}) {
@@ -158,7 +192,7 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
     _fitRouteBounds();
   }
 
-  void _fitRouteBounds() {
+  Future<void> _fitRouteBounds() async {
     if (!_mapReady || _mapController == null) return;
 
     final allPoints = [
@@ -170,11 +204,18 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
     if (allPoints.length < 2) return;
 
     final bounds = _boundsFromLatLngList(allPoints);
-    double adaptivePadding = 60.w;
+    final double adaptivePadding = 60.w;
 
-    _mapController!.animateCamera(
-      CameraUpdate.newLatLngBounds(bounds, adaptivePadding),
-    );
+    _isAnimatingCamera = true;
+    try {
+      await _mapController!.animateCamera(
+        CameraUpdate.newLatLngBounds(bounds, adaptivePadding),
+      );
+    } catch (_) {
+    } finally {
+      _isAnimatingCamera = false;
+    }
+    if (mounted) setState(() => _followDriver = false);
   }
 
   Future<void> _loadCustomIcons() async {
@@ -254,9 +295,10 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
       final interpolated = _interpolateLatLng(start, end, t);
       _updateDriverMarker(interpolated, rotation: _getBearing(start, end));
 
+      _isAnimatingCamera = true;
       _mapController!.animateCamera(CameraUpdate.newCameraPosition(
         CameraPosition(target: interpolated, zoom: 17, tilt: 45.0),
-      ));
+      )).whenComplete(() => _isAnimatingCamera = false);
 
       step++;
       t = step / stepsPerSegment;
@@ -341,12 +383,16 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
               }
             });
           },
+          onCameraMoveStarted: () {
+            if (!_isAnimatingCamera && _followDriver) {
+              setState(() => _followDriver = false);
+            }
+          },
           onCameraMove: (position) {
             _currentZoom = position.zoom;
-            if (!_isUserInteracting) setState(() => _isUserInteracting = true);
           },
         ),
-        if (_isUserInteracting)
+        if (_mapReady)
           Positioned(
             top: MediaQuery.of(context).padding.top + 20.h,
             right: 20.w,
@@ -354,18 +400,15 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
               width: 45.w,
               height: 45.w,
               child: FloatingActionButton(
-              mini: true,
-              elevation: 4,
-              backgroundColor: Colors.black,
-              
-              shape: const CircleBorder(),
-              onPressed: () {
-                setState(() => _isUserInteracting = false);
-                if (widget.driverLocation != null) _animateCamera(widget.driverLocation!, zoom: _activeLocationZoom);
-              },
-              child:  Icon(Icons.my_location, color: Colors.white, size: 22.sp,),
+                heroTag: 'driver_my_location',
+                mini: true,
+                elevation: 4,
+                backgroundColor: Colors.black,
+                shape: const CircleBorder(),
+                onPressed: _goToDriverLocation,
+                child: Icon(Icons.my_location, color: Colors.white, size: 22.sp),
+              ),
             ),
-            )
           ),
         if (!_mapReady) Container(
             color: Colors.white.withOpacity(0.8),

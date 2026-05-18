@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:holi/config/app_config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
   Future<Map<String, dynamic>?> registerUser({
@@ -125,7 +126,12 @@ class AuthService {
         headers: {'Content-Type': 'application/json'},
       );
 
-      return response.statusCode == 200;
+      if (response.statusCode == 200) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.clear();
+        return true;
+      }
+      return false;
     } catch (_) {
       return false;
     }

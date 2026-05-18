@@ -140,10 +140,12 @@ class _ConfigurationUserState extends State<ConfigurationUser> {
   }
 }
 
-void _showLogoutDialog(BuildContext context) {
-  final AuthService _authService = AuthService();
+void _showLogoutDialog(BuildContext parentContext) {
+  final authService = AuthService();
+  final navigator = Navigator.of(parentContext, rootNavigator: true);
+
   showDialog(
-    context: context,
+    context: parentContext,
     builder: (dialogContext) => AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.r)),
       title: Text("Abandonaras la app?", style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
@@ -154,13 +156,12 @@ void _showLogoutDialog(BuildContext context) {
           child: const Text("Cancelar", style: TextStyle(color: Colors.black)),
         ),
         TextButton(
-         onPressed: () async {
+          onPressed: () async {
             Navigator.pop(dialogContext);
-            final isLoggedOut = await _authService.logout();
-            if (isLoggedOut && context.mounted) {
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginView()),
+            final isLoggedOut = await authService.logout();
+            if (isLoggedOut) {
+              navigator.pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const LoginView()),
                 (route) => false,
               );
             }
