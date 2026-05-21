@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class FloatingMoveCardWrapper extends StatefulWidget {
   final Map<String, dynamic> moveData;
@@ -14,14 +15,16 @@ class _FloatingMoveCardWrapperState extends State<FloatingMoveCardWrapper> with 
   double _opacity = 0.0;
   Offset _offset = const Offset(0, 0.2);
 
-  @override
+@override
   void initState() {
     super.initState();
     Future.delayed(const Duration(milliseconds: 100), () {
-      setState(() {
-        _opacity = 1.0;
-        _offset = Offset.zero;
-      });
+      if (mounted) {
+        setState(() {
+          _opacity = 1.0;
+          _offset = Offset.zero;
+        });
+      }
     });
   }
 
@@ -52,99 +55,105 @@ class _FloatingMoveCardWrapperState extends State<FloatingMoveCardWrapper> with 
     return Card(
       color: Colors.black.withOpacity(0.9),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(15.r),
         side: const BorderSide(color: AppTheme.primarycolor, width: 2),
       ),
       elevation: 10,
+      margin: EdgeInsets.symmetric(horizontal: 10.w),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+             Row(
               children: [
-                Icon(Icons.check_circle, color: Colors.green, size: 25),
-                SizedBox(width: 10),
+                Icon(Icons.check_circle, color: Colors.green, size: 14.sp),
+                SizedBox(width: 5.w),
                 Text(
                   'Aceptado',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 18,
+                    fontSize: 12.sp,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 15),
+             SizedBox(height: 5.h),
             Row(
               children: [
                 CircleAvatar(
-                  radius: 10,
+                  radius: 10.r,
                   backgroundColor: Colors.grey[800],
                   backgroundImage: (moveData['avatarProfile'] != null && moveData['avatarProfile'].toString().isNotEmpty) ? NetworkImage(moveData['avatarProfile']) : null,
-                  child: (moveData['avatarProfile'] == null || moveData['avatarProfile'].toString().isEmpty) ? const Icon(Icons.person, size: 15, color: Colors.white) : null,
+                  child: (moveData['avatarProfile'] == null || moveData['avatarProfile'].toString().isEmpty) ?  Icon(Icons.person, size: 14.sp, color: Colors.white) : null,
                 ),
-                const SizedBox(width: 12),
+                 SizedBox(width: 6.w),
                 Expanded(
                   child: Text(
-                    'Vamos por $userName',
-                    style: const TextStyle(
+                    'Vamos por la carga de $userName',
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 18,
+                      fontSize: 13.sp,
                       fontWeight: FontWeight.bold,
                     ),
+                    maxLines: 1, 
+                      overflow: TextOverflow.ellipsis
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Row(
               children: [
-                const Icon(Icons.circle, color: Colors.green, size: 20),
-                const SizedBox(width: 8),
+                 Icon(Icons.circle, color: Colors.green, size: 10.sp),
+                 SizedBox(width: 5.w),
                 Expanded(
                   child: Text(
                     reduced,
-                    style: const TextStyle(color: Colors.white, fontSize: 18),
+                    style:  TextStyle(color: Colors.white70, fontSize: 12.sp),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+             SizedBox(height: 8.h),
             Row(
               children: [
-                const Icon(Icons.circle, color: Colors.blueAccent, size: 20),
-                const SizedBox(width: 8),
+                 Icon(Icons.circle, color: Colors.blueAccent, size: 10.sp),
+                SizedBox(width: 8.w),
                 Expanded(
                   child: Text(
                     reducedDestination,
-                    style: const TextStyle(color: Colors.white, fontSize: 18),
+                    style: TextStyle(color: Colors.white70, fontSize: 12.sp),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 8.h),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+              padding:  EdgeInsets.symmetric(vertical: 8.h, horizontal: 10.w),
               decoration: BoxDecoration(
                 color: Colors.green.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(10.r),
               ),
-              child: const Row(
+              child:  Row(
                 children: [
-                  Icon(Icons.location_on, color: Colors.green, size: 18),
-                  SizedBox(width: 8),
+                  Icon(Icons.location_on, color: Colors.greenAccent, size: 13.sp),
+                  SizedBox(width: 8.w),
                   Expanded(
                     child: Text(
                       'Tu presencia mantiene el viaje en marcha.',
                       style: TextStyle(
                         color: Colors.greenAccent,
-                        fontSize: 13,
+                        fontSize: 11.sp,
                         fontWeight: FontWeight.w600,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],

@@ -60,13 +60,13 @@ class _IntroductionViewState extends State<IntroductionView> {
                 children: [
                   _buildPageContent(
                     image: 'assets/images/intro1.svg',
-                    title: "Mudarte ya no es un dolor de cabeza.",
-                    description: "Puede ser tan fácil como pedir un taxi.",
+                    title: "Despacha la mercancía pesada de tu negocio al instante",
+                    description: "Sin costos fijos de camiones propios, con precios fijos y conductores verificados en minutos.",
                   ),
                   _buildPageContent(
                     image: 'assets/images/intro2.svg',
-                    title: "Mudarte no debería doler",
-                    description: "Nosotros lo hacemos fácil, rápido y sin complicaciones.",
+                    title: "Tu camión siempre en marcha y más plata en tu bolsillo",
+                    description: "Recibe viajes de carga ligera y pesada al instante. ¡Tus primeros servicios son con 0% de comisión!",
                   ),
                 ],
               ),

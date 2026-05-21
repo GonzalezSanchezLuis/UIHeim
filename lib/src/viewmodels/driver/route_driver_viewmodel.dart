@@ -42,7 +42,7 @@ class RouteDriverViewmodel extends ChangeNotifier {
         final destination = LatLng(ToDouble(data['destinationLat']), ToDouble(data['destinationLng']));
 
         moveData = {'origin': origin, 'destination': destination, ...data};
-        _startTimer();
+       // _startTimer();
         isTimerRunning = true;
         notifyListeners();
 
@@ -102,6 +102,11 @@ class RouteDriverViewmodel extends ChangeNotifier {
 
   void handleMoveFinished() {
     handleMoveCancelled();
+  }
+
+  void updateDriverPositionFromGps(LatLng location) {
+    _driverLocation = location;
+    notifyListeners();
   }
 
   Future<void> _fetchRealRoute(LatLng origin, LatLng destination) async {

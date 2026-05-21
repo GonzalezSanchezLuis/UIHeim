@@ -51,7 +51,7 @@ class JoinDriver extends StatelessWidget {
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 24.sp,
+                          fontSize: 20.sp,
                         ),
                       ),
                     ),
@@ -59,10 +59,10 @@ class JoinDriver extends StatelessWidget {
                      Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20.w),
                       child: Text(
-                        'No buscamos a cualquiera. Buscamos a los mejores conductores de Bogotá.',
+                        'Para los dueños de su propio camino. En Heim, tú no eres un número más; eres el socio logístico que las empresas están buscando.',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 18.sp,
+                          fontSize: 15.sp,
                         ),
                       ),
                     ),

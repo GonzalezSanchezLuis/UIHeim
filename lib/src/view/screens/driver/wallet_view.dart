@@ -8,7 +8,6 @@ import 'package:holi/src/viewmodels/payment/wallet_viewmodel.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-// --- CLASE PRINCIPAL ---
 class WalletView extends StatefulWidget {
   const WalletView({Key? key}) : super(key: key);
 
@@ -17,7 +16,6 @@ class WalletView extends StatefulWidget {
 }
 
 class _WalletViewState extends State<WalletView> {
-  // 🔹 Función para formatear fechas
   String _formatDate(DateTime? date) {
     if (date == null) return "N/A";
     return DateFormat('dd MMM yyyy').format(date);
@@ -84,13 +82,13 @@ class _WalletViewState extends State<WalletView> {
                   _buildPromoBanner(wallets.promotionalMovesLeft),
                   const SizedBox(height: 10),
 
-                _buildMainBalanceCard(
+              /*  _buildMainBalanceCard(
                   rawTotal: rawTotal,
                   rawAvailable: rawAvailable,
                   rawPending: rawPending,
                   lastPayment: lastPayment,
                   nextPayment: nextPayment,
-                ),
+                ),*/
 
                 const SizedBox(height: 24),
 

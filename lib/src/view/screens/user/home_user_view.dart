@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -5,9 +8,11 @@ import 'package:holi/src/core/enums/move_type.dart';
 import 'package:holi/src/core/extensions/move_type_extension.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/model/payment/payment_model.dart';
+import 'package:holi/src/service/moves/active_move_location_service.dart';
 import 'package:holi/src/service/websocket/websocket_finished_move_service.dart';
 import 'package:holi/src/service/websocket/websocket_user_service.dart';
 import 'package:holi/src/utils/format_price.dart';
+import 'package:holi/src/utils/to_double.dart';
 import 'package:holi/src/view/screens/move/driver_information_view.dart';
 import 'package:holi/src/view/screens/move/calculate_price_view.dart';
 import 'package:holi/src/view/screens/move/history_move_view.dart';
@@ -70,6 +75,11 @@ class _HomeUserState extends State<HomeUserView> {
   int? userId;
   Map<String, dynamic>? _currentMoveData;
   Map<String, dynamic>? _currentActiveMoveData;
+  LatLng? _tripOrigin;
+  LatLng? _tripDestination;
+  Timer? _driverLocationPollTimer;
+  bool _isPollingDriverLocation = false;
+  final ActiveMoveLocationService _activeMoveLocationService = ActiveMoveLocationService();
 
   @override
   void initState() {
@@ -81,6 +91,8 @@ class _HomeUserState extends State<HomeUserView> {
     print("✅ initState ejecutado");
     print("ORIGIN desde widget: ${widget.origin}");
     print("DESTINO desde widget: ${widget.destination}");
+
+    _rehydrateActiveTrip();
 
     if (widget.origin != null && widget.destination != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -98,34 +110,105 @@ class _HomeUserState extends State<HomeUserView> {
 
     _websocketUserService = WebsocketUserService(
         userId: userId,
-        onMessage: (data) {
-          debugPrint("🧲 Mensaje del backend recibido: $data");
-
-          if (data['move'] != null) {
-            Provider.of<GetDriverLocationViewmodel>(context, listen: false).setMoveData(data['move']);
-            print("DATA DENTRO DE GETDRIVERLOCATIONVIEWMODEL $data");
-          }
-          _moveNotificationUserViewModel.addNotification(data);
-          print("DATA DE LA MUDANZA QUE ACEPTA EL CONDUCTOR   $data");
-
-          if (data['move'] != null && data['move']['moveId'] != null) {
-            final int moveId = data['move']['moveId'];
-            _handleMoveAssigned(moveId);
-          }
-
-          setState(() {
-            _currentActiveMoveData = data['move'];
-            print("🧲 Datos de _currentActiveMoveData : $_currentActiveMoveData");
-          });
-        });
+        onMessage: _onUserWebSocketMessage);
     _websocketUserService.connect();
   }
 
   @override
   void dispose() {
+    _stopDriverLocationPolling();
     _websocketUserService.disconnect();
     _websocketFinishedMoveService?.disconnect();
     super.dispose();
+  }
+
+  Future<void> _onUserWebSocketMessage(Map<String, dynamic> data) async {
+    debugPrint("🧲 Mensaje del backend recibido: $data");
+
+    final driverVM = Provider.of<GetDriverLocationViewmodel>(context, listen: false);
+    driverVM.applyPayload(data);
+
+    if (data['move'] != null) {
+      final move = Map<String, dynamic>.from(data['move'] as Map);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('active_move_data', jsonEncode(move));
+      await _persistActiveMoveRoute();
+
+      if (!mounted) return;
+      setState(() {
+        _currentActiveMoveData = move;
+      });
+
+      final moveId = move['moveId'];
+      if (moveId != null) {
+        final int parsedMoveId = moveId is int ? moveId : int.tryParse(moveId.toString()) ?? 0;
+        if (parsedMoveId > 0) {
+          _handleMoveAssigned(parsedMoveId);
+          _startDriverLocationPolling();
+        }
+      }
+    } else if (data['driverLat'] != null && data['driverLng'] != null && mounted) {
+      setState(() {
+        _currentActiveMoveData = {
+          ...?_currentActiveMoveData,
+          'driverLat': data['driverLat'],
+          'driverLng': data['driverLng'],
+        };
+      });
+      _startDriverLocationPolling();
+    }
+
+    _moveNotificationUserViewModel.addNotification(data);
+  }
+
+  void _startDriverLocationPolling() {
+    if (_driverLocationPollTimer != null) return;
+    _pollDriverLocation();
+    _driverLocationPollTimer = Timer.periodic(const Duration(seconds: 8), (_) => _pollDriverLocation());
+    debugPrint("🔄 Polling de ubicación del conductor iniciado");
+  }
+
+  void _stopDriverLocationPolling() {
+    _driverLocationPollTimer?.cancel();
+    _driverLocationPollTimer = null;
+  }
+
+  Future<void> _pollDriverLocation() async {
+    if (_isPollingDriverLocation || !mounted) return;
+    final move = _currentActiveMoveData;
+    if (move == null || move.isEmpty) return;
+
+    final moveIdRaw = move['moveId'];
+    final moveId = moveIdRaw is int ? moveIdRaw : int.tryParse(moveIdRaw?.toString() ?? '');
+    if (moveId == null || moveId <= 0) return;
+
+    final driverIdRaw = move['driverId'];
+    final int? driverId = driverIdRaw is int ? driverIdRaw : int.tryParse(driverIdRaw?.toString() ?? '');
+
+    _isPollingDriverLocation = true;
+    try {
+      final latest = await _activeMoveLocationService.fetchLatestMoveState(
+        moveId: moveId,
+        driverId: driverId,
+      );
+      if (!mounted || latest == null) return;
+
+      Provider.of<GetDriverLocationViewmodel>(context, listen: false).setMoveData(latest);
+
+      final lat = latest['driverLat'];
+      final lng = latest['driverLng'];
+      if (lat != null && lng != null) {
+        setState(() {
+          _currentActiveMoveData = {...move, 'driverLat': lat, 'driverLng': lng};
+        });
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('active_move_data', jsonEncode(_currentActiveMoveData));
+      }
+    } catch (e) {
+      debugPrint("⚠️ Error polling ubicación conductor: $e");
+    } finally {
+      _isPollingDriverLocation = false;
+    }
   }
 
   void _initFcm() async {
@@ -201,6 +284,8 @@ class _HomeUserState extends State<HomeUserView> {
                               phone: _currentActiveMoveData!['driverPhone'] ?? '',
                               nameDriver: _currentActiveMoveData!['driverName'] ?? '',
                               vehicleType: _currentActiveMoveData!['vehicleType'] ?? '',
+                              amount: ToDouble(_currentActiveMoveData!['amount']),
+                              accountNumber: _currentActiveMoveData!['accountNumber'] ?? '',
                             ),
                           ),
                         ),
@@ -274,32 +359,18 @@ class _HomeUserState extends State<HomeUserView> {
     // final bool driverIsAssigned = _currentActiveMoveData != null;
     final bool driverIsAssigned = _currentActiveMoveData != null && _currentActiveMoveData!.isNotEmpty;
 
-    final LatLng origin = (widget.route != null && widget.route!.isNotEmpty) ? widget.route!.first : const LatLng(3.3784759685695906, -72.95412998954771);
-    final LatLng destination = (widget.route != null && widget.route!.isNotEmpty) ? widget.route!.last : const LatLng(3.3784759685695906, -72.95412998954771);
+    final LatLng origin = _resolveMapOrigin();
+    final LatLng destination = _resolveMapDestination();
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final routeVM = Provider.of<RouteUserViewmodel>(context, listen: false);
-        final double containerHeight;
-
-        if (driverIsAssigned) {
-          containerHeight = 0;
-        } else if (showPriceModal) {
-          containerHeight = constraints.maxHeight * 0.35;
-        } else if (showHomeButtons) {
-          containerHeight = constraints.maxHeight * 0.28;
-        } else if (isWaitingForDriver) {
-          containerHeight = constraints.maxHeight * 0.22;
-        } else {
-          containerHeight = constraints.maxHeight * 0.20;
-        }
         return Stack(
           children: [
             Positioned.fill(
               child: UserMapWidget(
                 route: _realRoute,
-                origin: origin ?? const LatLng(4.709870566194833, -74.07554855445838),
-                destination: destination ?? const LatLng(4.709870566194833, -74.07554855445838),
+                origin: origin,
+                destination: destination,
                 driverLocation: context.watch<GetDriverLocationViewmodel>().driverLocation,
                 onLocationUpdated: (location) {
                   setState(() {
@@ -308,61 +379,49 @@ class _HomeUserState extends State<HomeUserView> {
                 },
               ),
             ),
-            /* Positioned.fill(
-              child: Consumer<GetDriverLocationViewmodel>(builder: (context, getDriverLocation, _) {
-                return UserMapWidget(
-                  route: _realRoute,
-                  //   origin: origin,
-                  // destination: destination,
-                  origin: origin ?? const LatLng(4.709870566194833, -74.07554855445838),
-                  destination: destination ?? const LatLng(4.709870566194833, -74.07554855445838),
-                  driverLocation: getDriverLocation.driverLocation,
-                  onLocationUpdated: (location) => {
-                    setState(() {
-                      userCurrentLocation = location;
-                    })
-                  },
-                );
-              }),
-            ),*/
             if ((showPriceModal || isWaitingForDriver) && !driverIsAssigned)
               Positioned(
-                bottom: 0,
                 left: 0,
                 right: 0,
+                bottom: 0,
                 child: Consumer<GetDriverLocationViewmodel>(
                   builder: (context, driverVM, _) {
-                    final moveData = driverVM.moveData;
-                    return Container(
-                      constraints: BoxConstraints(maxHeight: constraints.maxHeight * 0.5),
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.only(
-                          topRight: Radius.circular(20.r),
-                          topLeft: Radius.circular(20.r),
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 8.r,
+                    return SafeArea(
+                      top: false,
+                      minimum: EdgeInsets.only(bottom: 8.h),
+                      child: Container(
+                        constraints: BoxConstraints(maxHeight: constraints.maxHeight * 0.55),
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          borderRadius: BorderRadius.only(
+                            topRight: Radius.circular(20.r),
+                            topLeft: Radius.circular(20.r),
                           ),
-                        ],
-                      ),
-                      padding: EdgeInsets.all(16.w),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (noDriverFound) ...[
-                            _buildNoDriverRetryBanner(),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 8.r,
+                            ),
                           ],
-                          if (showPriceModal) ...[
-                            _buildDataMove(),
-                          ],
-                          if (isWaitingForDriver) ...[
-                            const WaitingForDriverWidget(),
-                          ],
-                        ],
+                        ),
+                        padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 12.h),
+                        child: SingleChildScrollView(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (noDriverFound) ...[
+                                _buildNoDriverRetryBanner(),
+                              ],
+                              if (showPriceModal) ...[
+                                _buildDataMove(),
+                              ],
+                              if (isWaitingForDriver) ...[
+                                const WaitingForDriverWidget(),
+                              ],
+                            ],
+                          ),
+                        ),
                       ),
                     );
                   },
@@ -445,18 +504,79 @@ class _HomeUserState extends State<HomeUserView> {
     });
   }
 
+  LatLng _resolveMapOrigin() {
+    if (widget.route != null && widget.route!.isNotEmpty) return widget.route!.first;
+    if (widget.origin != null) return widget.origin!;
+    if (_tripOrigin != null) return _tripOrigin!;
+    return _latLngFromMoveData(_currentActiveMoveData, isDestination: false) ??
+        const LatLng(3.3784759685695906, -72.95412998954771);
+  }
+
+  LatLng _resolveMapDestination() {
+    if (widget.route != null && widget.route!.isNotEmpty) return widget.route!.last;
+    if (widget.destination != null) return widget.destination!;
+    if (_tripDestination != null) return _tripDestination!;
+    return _latLngFromMoveData(_currentActiveMoveData, isDestination: true) ??
+        const LatLng(3.3784759685695906, -72.95412998954771);
+  }
+
+  LatLng? _latLngFromMoveData(Map<String, dynamic>? data, {required bool isDestination}) {
+    if (data == null || data.isEmpty) return null;
+    final latKey = isDestination ? 'destinationLat' : 'originLat';
+    final lngKey = isDestination ? 'destinationLng' : 'originLng';
+    final lat = data[latKey];
+    final lng = data[lngKey];
+    if (lat == null || lng == null) return null;
+    return LatLng(ToDouble(lat), ToDouble(lng));
+  }
+
   Future<void> _fetchRoute() async {
+    if (widget.origin == null || widget.destination == null) return;
+    _tripOrigin = widget.origin;
+    _tripDestination = widget.destination;
+    await _fetchRouteFromCoords(widget.origin!, widget.destination!);
+  }
+
+  Future<void> _fetchRouteFromCoords(LatLng origin, LatLng destination) async {
     final routeVM = Provider.of<RouteUserViewmodel>(context, listen: false);
-    print("ROUTE VM ${routeVM}");
 
     try {
-      await routeVM.fetchRoute(widget.origin!, widget.destination!);
+      await routeVM.fetchRoute(origin, destination);
       if (!mounted) return;
       setState(() {
         _realRoute = routeVM.route;
+        _tripOrigin = origin;
+        _tripDestination = destination;
       });
+      await _persistActiveMoveRoute();
     } catch (e) {
-      print("ERROR AL OBTENER LA RUTA DE GOOGLE: $e");
+      debugPrint("ERROR AL OBTENER LA RUTA DE GOOGLE: $e");
+    }
+  }
+
+  Future<void> _persistActiveMoveRoute() async {
+    if (_realRoute.isEmpty) return;
+    final prefs = await SharedPreferences.getInstance();
+    final encoded = _realRoute.map((p) => [p.latitude, p.longitude]).toList();
+    await prefs.setString('active_move_route', jsonEncode(encoded));
+  }
+
+  List<LatLng>? _loadPersistedRoute(String? raw) {
+    if (raw == null || raw.isEmpty) return null;
+    try {
+      final list = jsonDecode(raw) as List;
+      return list
+          .map((e) {
+            if (e is List && e.length >= 2) {
+              return LatLng(ToDouble(e[0]), ToDouble(e[1]));
+            }
+            return null;
+          })
+          .whereType<LatLng>()
+          .toList();
+    } catch (e) {
+      debugPrint("Error al leer ruta persistida: $e");
+      return null;
     }
   }
 
@@ -540,7 +660,6 @@ class _HomeUserState extends State<HomeUserView> {
               children: [
                 Text(
                   widget.calculatedPrice!,
-                  // formatPriceToHundreds(widget.calculatedPrice ?? '0'),
                   style: TextStyle(
                     fontSize: 30.sp,
                     fontWeight: FontWeight.w900,
@@ -548,7 +667,6 @@ class _HomeUserState extends State<HomeUserView> {
                   ),
                   textAlign: TextAlign.end,
                 ),
-                // Divisa (más pequeña y secundaria)
                 Text(
                   ' COP ',
                   style: TextStyle(
@@ -571,12 +689,11 @@ class _HomeUserState extends State<HomeUserView> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Fila Tamaño
                     Row(children: [
-                      Icon(Icons.apartment_rounded, color: secondaryTextColor, size: 18.sp),
+                      Icon(Icons.local_shipping_outlined, color: secondaryTextColor, size: 18.sp),
                       SizedBox(width: 2.w),
                       Text(
-                        "Tamaño mudanza",
+                        "Tamaño de la carga",
                         style: TextStyle(
                           fontSize: 13.sp,
                           color: secondaryTextColor,
@@ -705,13 +822,64 @@ class _HomeUserState extends State<HomeUserView> {
               ),
             ),
           ),
-          SizedBox(height: 10.h),
+          SizedBox(height: 4.h),
         ],
       ),
     );
   }
 
+  Future<void> _rehydrateActiveTrip() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? savedMoveDataRaw = prefs.getString('active_move_data');
+    if (savedMoveDataRaw == null || savedMoveDataRaw.isEmpty) return;
+
+    try {
+      final Map<String, dynamic> moveData = Map<String, dynamic>.from(jsonDecode(savedMoveDataRaw) as Map);
+      if (moveData.isEmpty) return;
+
+      debugPrint("🚨 Recuperando viaje activo del disco local después de un cierre...");
+
+      final origin = _latLngFromMoveData(moveData, isDestination: false);
+      final destination = _latLngFromMoveData(moveData, isDestination: true);
+
+      final persistedRoute = _loadPersistedRoute(prefs.getString('active_move_route'));
+
+      if (!mounted) return;
+
+      Provider.of<GetDriverLocationViewmodel>(context, listen: false).setMoveData(moveData);
+
+      setState(() {
+        _currentActiveMoveData = moveData;
+        _tripOrigin = origin;
+        _tripDestination = destination;
+        if (persistedRoute != null && persistedRoute.isNotEmpty) {
+          _realRoute = persistedRoute;
+        }
+        isWaitingForDriver = false;
+        showPriceModal = false;
+        showHomeButtons = false;
+      });
+
+      final moveId = moveData['moveId'];
+      if (moveId != null) {
+        final int parsedMoveId = moveId is int ? moveId : int.tryParse(moveId.toString()) ?? 0;
+        if (parsedMoveId > 0) {
+          _handleMoveAssigned(parsedMoveId);
+          _startDriverLocationPolling();
+        }
+      }
+
+      if (origin != null && destination != null && (persistedRoute == null || persistedRoute.isEmpty)) {
+        await _fetchRouteFromCoords(origin, destination);
+      }
+    } catch (e) {
+      debugPrint("Error al rehidratar viaje activo: $e");
+    }
+  }
+
   void _resetMoveState() {
+    _stopDriverLocationPolling();
+    _clearPersistedActiveTrip();
     setState(() {
       _currentActiveMoveData = null;
       _currentMoveData = null;
@@ -720,9 +888,16 @@ class _HomeUserState extends State<HomeUserView> {
       showHomeButtons = true;
       _paymentViewOpened = false;
       _realRoute = [];
+      _tripOrigin = null;
+      _tripDestination = null;
 
-      final driverVM = Provider.of<GetDriverLocationViewmodel>(context, listen: false);
-      driverVM.setMoveData({});
+      Provider.of<GetDriverLocationViewmodel>(context, listen: false).clear();
     });
+  }
+
+  Future<void> _clearPersistedActiveTrip() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('active_move_data');
+    await prefs.remove('active_move_route');
   }
 }

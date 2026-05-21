@@ -3,6 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 
 class StyleFontsTitle {
-  static  TextStyle get titleStyle  => TextStyle(fontSize: 24.sp, fontWeight: FontWeight.bold,color: Colors.white);
+  static  TextStyle get titleStyle  => TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold,color: Colors.white);
 
 }

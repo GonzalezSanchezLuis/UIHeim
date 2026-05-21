@@ -251,7 +251,7 @@ class _HomeDriverState extends State<HomeDriverView> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Flexible(
+                                /* Flexible(
                                     child: Text(
                                       raw,
                                       overflow: TextOverflow.ellipsis,
@@ -260,8 +260,8 @@ class _HomeDriverState extends State<HomeDriverView> {
                                         fontWeight: FontWeight.bold,
                                         color: Colors.white,
                                       ),
-                                    ),
-                                  ),
+                                    ), 
+                                  ), */
                                   SizedBox(width: 8.w),
                                   Icon(Icons.arrow_forward_ios, size: 14.sp, color: Colors.white70),
                                 ],
@@ -293,7 +293,7 @@ class _HomeDriverState extends State<HomeDriverView> {
                       builder: (context, directionsViewModel, driverViewModel, child) {
                         final bool hasMoveData = directionsViewModel.moveData != null && directionsViewModel.moveData!.isNotEmpty && _currentMoveData == null;
                         final double bottomPanelHeightFactor = hasMoveData
-                            ? 0.52
+                            ? 0.38
                             : (profileViewModel.isDriverActive ? 0.16 : 0.22);
                         final double bottomInset = MediaQuery.paddingOf(context).bottom;
 
@@ -545,7 +545,7 @@ class _HomeDriverState extends State<HomeDriverView> {
                   ),
                 ),
                 child: Text(
-                  'Ver historial de mudanzas',
+                  'Ver historial de viajes',
                   style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
                 ),
               ),

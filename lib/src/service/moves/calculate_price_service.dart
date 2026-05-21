@@ -17,7 +17,7 @@ class CalculatePriceService {
     required double? originLng,
     required double? destinationLat,
     required double? destinationLng,
-    required String? accessType
+   
   }) async {
     try {
       final url = Uri.parse("$_baseUrl/price/calculate");
@@ -31,7 +31,6 @@ class CalculatePriceService {
         if (originLng != null) 'originLng': originLng,
         if (destinationLat != null) 'destinationLat': destinationLat,
         if (destinationLng != null) 'destinationLng': destinationLng,
-        'accessType' : accessType
       };
 
       log("DATA QUE SE ENVIA PARA EL SERVIDOR $requestBody");
@@ -52,7 +51,6 @@ class CalculatePriceService {
           'formattedPrice': decoded['formattedPrice'],
           'distanceKm': decoded['formattedDistance'],
           'timeMin': decoded['formattedDuration'],
-          'accessType': decoded['accessType'],
           'route': (decoded['route'] as List)
               .map((point) => {
                     'lat': (point['lat'] as num).toDouble(),

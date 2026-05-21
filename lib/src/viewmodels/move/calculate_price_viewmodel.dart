@@ -26,7 +26,6 @@ class CalculatePriceViewmodel extends ChangeNotifier {
     required LocationService locationService,
     required LocationViewModel locationViewModel,
     String? destinationPlaceId,
-    String? accessType,
   }) async {
     isLoading = true;
     notifyListeners();
@@ -78,8 +77,6 @@ class CalculatePriceViewmodel extends ChangeNotifier {
       originLng: originCoords['longitude'],
       destinationLat: destinationCoords['latitude'],
       destinationLng: destinationCoords['longitude'],
-      accessType: accessType
-
     );
 
    
@@ -119,8 +116,7 @@ class CalculatePriceViewmodel extends ChangeNotifier {
               origin: LatLng(originCoords!['latitude']!, originCoords['longitude']!),
               destination: LatLng(destinationCoords!['latitude']!, destinationCoords['longitude']!),
               originName: originAddress.isEmpty ? locationViewModel.currentAddress : originAddress,
-              destinationName: destinationAddress,
-              accessType: accessType,
+              destinationName: destinationAddress
             ),
           ),
         );

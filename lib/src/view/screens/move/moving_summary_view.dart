@@ -112,7 +112,7 @@ class _MovingSummaryViewState extends State<MovingSummaryView> {
                                   Icon(Icons.check_circle, color: Colors.green, size: 22.sp),
                                   SizedBox(width: 12.h),
                                   Text(
-                                    "¡Mudanza finalizada!",
+                                    "¡Viaje finalizado!",
                                     style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
                                     ),
                                     Text("El servicio se completó con éxito", style: TextStyle(fontSize: 13.sp, color: Colors.grey)),
@@ -136,7 +136,7 @@ class _MovingSummaryViewState extends State<MovingSummaryView> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                 Text("Total a pagar:", style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                                 Text("Total a pagado:", style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
                                 Text(                               
                                   formattedPrice,
                                   style:  TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
@@ -144,7 +144,7 @@ class _MovingSummaryViewState extends State<MovingSummaryView> {
                               ],
                             ),
                              SizedBox(height: 8.h),
-                            Row(
+                          /*  Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text("Método de pago:", style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w500)),
@@ -159,9 +159,9 @@ class _MovingSummaryViewState extends State<MovingSummaryView> {
                                 ],
                                 )
                               ],
-                            ),
+                            ), */
                              SizedBox(height: 24.h),
-                            Align(
+                          /*  Align(
                               alignment: Alignment.centerLeft,
                               child: Container(
                                 padding:  EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
@@ -187,7 +187,7 @@ class _MovingSummaryViewState extends State<MovingSummaryView> {
                                   )
                                 
                               ),
-                            ),
+                            ), */
                           ],
                         ),
                       ),

@@ -120,7 +120,7 @@ class _UserState extends State<User> {
               SizedBox(height: 5.h),
               AccountCard(
                 title: "Otros",
-                subtitle: "Realiza mudanzas con Heim",
+                subtitle: "Mueve tu carga con facilidad",
                 width: 0.9.sw, // Consistencia universal
                 height: 60.h,
                 icon: Icon(

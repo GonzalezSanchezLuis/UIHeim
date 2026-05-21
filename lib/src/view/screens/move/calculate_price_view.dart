@@ -27,8 +27,6 @@ class _CalculatePriceState extends State<CalculatePrice> {
   MoveType? _selectedMovingType;
   List<Prediction> _suggestions = [];
 
- String? _selectedAccess;
-
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final locationService = LocationService(googleApiKey: "AIzaSyDF6pFogbufSdpW3nIeCgQMRFyoSEd1Rmw");
   final LocationViewModel locationViewModel = LocationViewModel();
@@ -58,7 +56,7 @@ class _CalculatePriceState extends State<CalculatePrice> {
       appBar: AppBar(
         backgroundColor: AppTheme.primarycolor,
         elevation: 0,
-        title: Text("A donde sera nuestro nuevo hogar? ", style: StyleFontsTitle.titleStyle),
+        title: Text("Que moveremos hoy?", style: StyleFontsTitle.titleStyle),
       ),
       body: SafeArea(
         child: GestureDetector(
@@ -79,15 +77,7 @@ class _CalculatePriceState extends State<CalculatePrice> {
                   _buildMovingTypeSelector(),
                   SizedBox(height: 25.h),
                   _buildAddressSection(locationViewModel),
-                  SizedBox(height: 25.h),
-                  if (_selectedMovingType != null) ...[
-                    Text(
-                      "Detalles de acceso",
-                      style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold, color: Colors.black87),
-                    ),
-                    SizedBox(height: 10.h),
-                    _buildAccessOption(),
-                  ],
+                
                   SizedBox(height: 35.h),
                   _buildSubmitButton(locationViewModel),
                   SizedBox(height: MediaQuery.of(context).viewInsets.bottom > 0 ? 50.h : 20.h),
@@ -105,97 +95,112 @@ class _CalculatePriceState extends State<CalculatePrice> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Ajustamos los detalles para que el precio que veas sea el que pagues. Sin sorpresas al llegar.",
+          "Precios fijos basados en el volumen de tu carga y la distancia. Planifica los costos de tu negocio sin sorpresas. Debes tener encueta que cancelaras el valor del viaje al momento de terminar de cargar.",
           style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w500, color: Colors.grey[700]),
+        ),
+        SizedBox(height: 20.h),
+         Text(
+          "Detalles de envio",
+          style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold, color: Colors.black87),
         ),
         SizedBox(height: 15.h),
         Row(
           children: [
-            _buildSelectableCard(
-              label: "Apartaestudio",
-              desc: "1 Habitación",
-              value: MoveType.PEQUENA,
-              icon: Icons.home_outlined,
+       _buildUnifiedSmallCard(
+              label: "Express",
+              desc: "Cajas/Paquetes",
+              icon: Icons.local_post_office_outlined,
+              value: MoveType.XPRESS,
+              groupValue: _selectedMovingType,
+              onTap: (val) => setState(() => _selectedMovingType = val),
             ),
-            SizedBox(width: 15.w),
-            _buildSelectableCard(
-              label: "Apartamento",
-              desc: "2-3 Habitaciones",
+            SizedBox(width: 10.w),
+            _buildUnifiedSmallCard(
+              label: "Mediana",
+              desc: "Bultos/Muebles",
+              icon: Icons.inventory_2_outlined,
               value: MoveType.MEDIANA,
-              icon: Icons.apartment_outlined,
+              groupValue: _selectedMovingType,
+              onTap: (val) => setState(() => _selectedMovingType = val),
             ),
+            SizedBox(width: 10.w),
+            _buildUnifiedSmallCard(
+              label: "Grande",
+              desc: "Estibas/Carga",
+              icon: Icons.local_shipping_outlined,
+              value: MoveType.GRANDE,
+              groupValue: _selectedMovingType,
+              onTap: (val) => setState(() => _selectedMovingType = val),
+            )
           ],
         ),
       ],
     );
   }
 
-  Widget _buildSelectableCard({required String label, required String desc, required MoveType value, required IconData icon}) {
-    bool isSelected = _selectedMovingType == value;
+Widget _buildUnifiedSmallCard({
+    required String label,
+    required String desc, 
+    required IconData icon,
+    required dynamic value,
+    required dynamic groupValue,
+    required Function(dynamic) onTap,
+  }) {
+    bool isSelected = groupValue == value;
+
     return Expanded(
       child: GestureDetector(
-        onTap: () => setState(() => _selectedMovingType = value),
+        onTap: () => onTap(value),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: EdgeInsets.symmetric(vertical: 5.h),
-          decoration: BoxDecoration(
-            color: isSelected ? AppTheme.secondarycolor: AppTheme.primarycolor,
-            borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(color: isSelected ? AppTheme.primarycolor : Colors.grey.shade300, width: 2),
-            boxShadow: isSelected ? [BoxShadow(color: AppTheme.primarycolor.withOpacity(0.2), blurRadius: 10)] : [],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, color: isSelected ? Colors.black : Colors.grey, size: 18.w),
-              Text(label, style: TextStyle(color: isSelected ? Colors.black : Colors.white, fontWeight: FontWeight.bold, fontSize: 12.sp)),
-              Text(desc, style: TextStyle(color: isSelected ? Colors.black : Colors.white, fontSize: 11.sp)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAccessOption() {
-    return Row(
-      children: [
-        _buildTinyCard(
-            title: "Primer piso",
-            value: "CALLE",
-            isSelected: _selectedAccess == 'CALLE',
-            icon: Icons.home_work_outlined),
-             SizedBox(width: 5.w),
-        _buildTinyCard(title: "Ascensor", value: "ASCENSOR", isSelected: _selectedAccess == "ASCENSOR", icon: Icons.elevator_outlined),
-        SizedBox(width: 5.w),
-        _buildTinyCard(title: "Escaleras", value: "ESCALERAS", isSelected: _selectedAccess == "ESCALERAS", icon: Icons.stairs_outlined),
-      ],
-    );
-  }
-
-  Widget _buildTinyCard({required String title, required IconData icon,required String value, required bool isSelected}) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => setState(() => _selectedAccess = value),
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 12.h),
+          padding: EdgeInsets.symmetric(vertical: 5.h), 
           decoration: BoxDecoration(
             color: isSelected ? Colors.black : Colors.white,
             borderRadius: BorderRadius.circular(10.r),
-            border: Border.all(color: isSelected ? Colors.black : Colors.grey.shade300),
+            border: Border.all(
+              color: isSelected ? Colors.black : Colors.grey.shade300,
+              width: 1,
+            ),
           ),
-          child: Row(
+          child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: isSelected ? Colors.white : Colors.black54, size: 15.w),
-              SizedBox(width: 8.w),
-              Text(title, style: TextStyle(color: isSelected ? Colors.white : Colors.black87, fontSize: 12.sp, fontWeight: FontWeight.w500)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    icon,
+                    color: isSelected ? Colors.white : Colors.black54,
+                    size: 14.w,
+                  ),
+                  SizedBox(width: 6.w),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.black87,
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 2.h), 
+              Text(
+                desc,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: isSelected ? Colors.white70 : Colors.grey.shade600,
+                  fontSize: 9.sp, 
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
             ],
-          )
+          ),
         ),
       ),
     );
   }
+
 
   Widget _buildAddressSection(LocationViewModel locationViewModel) {
     return Column(
@@ -243,7 +248,7 @@ class _CalculatePriceState extends State<CalculatePrice> {
             padding: EdgeInsets.symmetric(vertical: 14.h),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
           ),
-          onPressed: (_selectedMovingType == null || _selectedAccess == null)
+          onPressed: (_selectedMovingType == null )
               ? null
               : () async {
                   if (_formKey.currentState!.validate()) {
@@ -251,12 +256,11 @@ class _CalculatePriceState extends State<CalculatePrice> {
                     await viewmodel.handleRequestVehicle(
                       context: context,
                       typeOfMove: _selectedMovingType,
-                      numberOfRooms: _selectedMovingType == MoveType.PEQUENA ? "1" : "3",
+                      numberOfRooms: _selectedMovingType == MoveType.XPRESS ? "1" : "3",
                       originAddress: _originAddressController.text.trim(),
                       destinationAddress: _destinationAddressController.text.trim(),
                       locationService: locationService,
                       locationViewModel: locationViewModel,
-                      accessType:_selectedAccess
                     );
                   }
                 },

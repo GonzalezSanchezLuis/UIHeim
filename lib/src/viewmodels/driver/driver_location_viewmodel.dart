@@ -31,7 +31,7 @@ class DriverLocationViewmodel extends ChangeNotifier {
   void _initPositionStream(int driverId) {
     _locationSubscription?.cancel();
     _locationSubscription = Geolocator.getPositionStream(
-      locationSettings: const LocationSettings(accuracy: LocationAccuracy.bestForNavigation, distanceFilter: 5),
+      locationSettings: const LocationSettings(accuracy: LocationAccuracy.bestForNavigation, distanceFilter: 3),
     ).listen((Position position) async {
       _currentLocation = DriverLocationModel(position.latitude, position.longitude);
       notifyListeners();

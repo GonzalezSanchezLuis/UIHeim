@@ -6,14 +6,9 @@ import 'package:holi/src/view/screens/payment/payment_failed_view.dart';
 import 'package:holi/src/view/screens/payment/payment_success_view.dart';
 import 'package:holi/src/view/screens/payment/wava_payment_vew.dart';
 import 'package:holi/src/view/screens/user/home_user_view.dart';
-import 'package:url_launcher/url_launcher.dart';
-
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:holi/src/core/theme/colors/app_theme.dart';
-import 'package:holi/src/utils/format_price.dart';
-import 'package:holi/src/view/screens/payment/wava_payment_vew.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PaymentView extends StatefulWidget {
   final Map<String, dynamic> paymentData;
@@ -80,7 +75,7 @@ class _PaymentViewState extends State<PaymentView> {
       child: Scaffold(
         backgroundColor: AppTheme.colorbackgroundview,
         appBar: AppBar(
-          title: Text("Resumen de Mudanza", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 18.sp)),
+          title: Text("Resumen de carga", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 18.sp)),
           backgroundColor: Colors.black,
           centerTitle: true,
           elevation: 0,
@@ -97,7 +92,7 @@ class _PaymentViewState extends State<PaymentView> {
                     Icon(Icons.check_circle_outline_rounded, color: Colors.green, size: 22.sp),
                     SizedBox(height: 10.h),
                     Text(
-                      "¡Mudanza Completada!",
+                      "¡Viaje Completado!",
                       style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 25.h),
@@ -131,7 +126,7 @@ class _PaymentViewState extends State<PaymentView> {
                       ),
                     ),
                     SizedBox(height: 20.h),
-                    Container(
+                   /* Container(
                       padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -153,12 +148,12 @@ class _PaymentViewState extends State<PaymentView> {
                           const Icon(Icons.lock_outline, color: Colors.grey, size: 18),
                         ],
                       ),
-                    ),
+                    ), */
                   ],
                 ),
               ),
             ),
-            Padding(
+          /*  Padding(
               padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 30.h),
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -172,7 +167,7 @@ class _PaymentViewState extends State<PaymentView> {
                   setState(() => _openingPayment = true);
                   final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => WavaPaymentView(paymentUrl: paymentURL)));
                   if (mounted && result == 'success') {
-                    _showFeedback(context, "¡Pago Exitoso!", "Tu mudanza ha sido finalizada correctamente.", Colors.green);
+                    _showFeedback(context, "¡Pago Exitoso!", "Tu viaje ha sido finalizada correctamente.", Colors.green);
                     Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(builder: (_) => const HomeUserView()),
@@ -189,7 +184,51 @@ class _PaymentViewState extends State<PaymentView> {
                         style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1.2),
                       ),
               ),
+            ),*/
+       Padding(
+              padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 30.h),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0XFF076461),
+                  minimumSize: Size(double.infinity, 40.h),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                  elevation: 0,
+                ),
+                onPressed: () async {
+                  if (_openingPayment) return;
+                  setState(() => _openingPayment = true);
+
+                  /* // 💸 FASE 2: Se comentarea la pasarela de pagos para el MVP Lean
+      final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => WavaPaymentView(paymentUrl: paymentURL)));
+      if (mounted && result == 'success') { ... } 
+      */
+
+                  // 🕒 Simulación rápida de carga para dar feedback visual al usuario (Opcional pero recomendado)
+                  await Future.delayed(const Duration(milliseconds: 500));
+
+                  if (mounted) {
+                    // 1. Mostramos el feedback de que el servicio terminó con éxito
+                    _showFeedback(context, "¡Servicio Finalizado!", "Gracias por usar Heim. Tu viaje ha terminado correctamente.", Colors.green);
+
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.remove('active_move_data');
+                    await prefs.remove('active_move_route');
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (_) => const HomeUserView()),
+                      (route) => false,
+                    );
+                  }
+                },
+                child: _openingPayment
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : Text(
+                        "Finalizar viaje", 
+                        style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1.2),
+                      ),
+              ),
             ),
+       
           ],
         ),
       ),

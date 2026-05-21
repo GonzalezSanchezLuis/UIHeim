@@ -45,7 +45,7 @@ class _SelectPaymentMethodState extends State<SelectPaymentMethod> {
              SizedBox(height: 30.h,),
              Text(
               "Selecciona tu método  de pago favorito.",
-              style:  TextStyle(color: Colors.black,fontSize: 22.sp),
+              style:  TextStyle(color: Colors.black,fontSize: 14.sp),
               
             ),
                 SizedBox( height: 20.h,),
@@ -88,8 +88,8 @@ class _SelectPaymentMethodState extends State<SelectPaymentMethod> {
               alignment: Alignment.center,
               children: [
                 Container(
-                  width: 44.w,
-                  height: 44.w,
+                  width: 40.w,
+                  height: 40.w,
                   decoration: BoxDecoration(
                     color: const Color.fromARGB(255, 219, 203, 203),
                     borderRadius: BorderRadius.circular(22.r),
