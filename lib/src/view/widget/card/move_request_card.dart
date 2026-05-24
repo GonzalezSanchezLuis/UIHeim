@@ -122,7 +122,7 @@ return Container(
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Icon(Icons.circle, color: Colors.green, size: 12.sp), // Icono más pequeño e intuitivo
+                Icon(Icons.circle, color: Colors.green, size: 12.sp), 
                 SizedBox(width: 8.w),
                 Expanded(
                   child: Text(
@@ -137,7 +137,6 @@ return Container(
 
             SizedBox(height: 6.h),
 
-            // 🏁 DIRECCIÓN: DESTINO
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -158,7 +157,6 @@ return Container(
             const Divider(color: Colors.grey, thickness: 0.5),
             SizedBox(height: 4.h),
 
-            // 👤 SECCIÓN CLIENTE Y TIMER
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -191,7 +189,7 @@ return Container(
                       decoration: BoxDecoration(
                         color: borderColor.withOpacity(0.15),
                         border: Border.all(color: borderColor, width: 1.5.w),
-                        borderRadius: BorderRadius.circular(10.r),
+                        borderRadius: BorderRadius.circular(20.r),
                       ),
                       child: Text(
                         '${remainingTime}s',

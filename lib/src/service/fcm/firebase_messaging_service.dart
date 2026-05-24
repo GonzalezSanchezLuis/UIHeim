@@ -9,7 +9,8 @@ class FirebaseMessagingService {
   static Function(Map<String, dynamic> data)? onNewTripData;
   static final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-
+  static const String _soundName = 'audiologoheim';
+  static const String _channelId = 'heim_trips_channel_v1';
   // 🔔 Inicializa todo: notificaciones locales + listeners de FCM
   Future<void> initialize() async {
     await Firebase.initializeApp();
@@ -34,7 +35,7 @@ class FirebaseMessagingService {
 
   // 🔔 Inicializa las notificaciones locales
   void initializeNotifications() {
-    const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('ic_notification'); 
+    const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('ic_notification');
 
     const InitializationSettings initializationSettings = InitializationSettings(android: initializationSettingsAndroid);
 
@@ -54,48 +55,50 @@ class FirebaseMessagingService {
   // 🔔 Mostrar notificación local
   void showNotification(RemoteMessage message) async {
     const AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
-      'your_channel_id',
-      'your_channel_name',
-      channelDescription: 'your_channel_description',
+      _channelId,
+      'Cargas Nuevas',
+      channelDescription: 'Canal exclusivo para ofertas de fletes comerciales',
       importance: Importance.max,
       priority: Priority.high,
       playSound: true,
       enableVibration: true,
       showWhen: true,
-      icon: 'ic_notification', 
+      icon: 'ic_notification',
+      sound: RawResourceAndroidNotificationSound(_soundName),
     );
 
     const NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
 
     await flutterLocalNotificationsPlugin.show(
-      0,
-      message.notification?.title ?? 'Título por defecto',
-      message.notification?.body ?? 'Mensaje por defecto',
+      message.hashCode,
+      message.notification?.title ?? 'Nueva carga disponible',
+      message.notification?.body ?? 'Revisa los detalles del flete ahora.',
       platformChannelSpecifics,
       payload: jsonEncode(message.data),
     );
   }
 
- 
-
   // 🔧 Crear canal de notificación
   Future<void> _createNotificationChannel() async {
     const AndroidNotificationChannel channel = AndroidNotificationChannel(
-      'your_channel_id',
-      'Viajes nuevos',
-      description: 'Canal para notificaciones de nuevos viajes',
+      _channelId,
+      'Cargas Nuevas',
+      description: 'Canal exclusivo para ofertas de fletes comerciales',
       importance: Importance.high,
+      playSound: true,
+      sound: RawResourceAndroidNotificationSound(_soundName),
     );
 
     await flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(channel);
   }
 }
- // 🔕 Notificación en background
-  @pragma('vm:entry-point')
-   Future<void> _backgroundHandler(RemoteMessage message) async {
-    await Firebase.initializeApp();
-    print('🔕 Notificación en background');
-    print('Título: ${message.notification?.title}');
-    print('Mensaje: ${message.notification?.body}');
-    log('📦 Data payload: ${message.data}');
-  }
+
+// 🔕 Notificación en background
+@pragma('vm:entry-point')
+Future<void> _backgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  print('🔕 Notificación en background');
+  print('Título: ${message.notification?.title}');
+  print('Mensaje: ${message.notification?.body}');
+  log('📦 Data payload: ${message.data}');
+}

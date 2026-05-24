@@ -13,10 +13,19 @@ class DriverStatusViewmodel extends ChangeNotifier {
   ConnectionStatus? _connectionStatus;
   bool _isLoading = false;
   WebSocketDriverService? _webSocketService;
+  StreamSubscription<geo.Position>? _positionStreamSubscription;
 
   Map<String, dynamic>? tripData;
   final int _remainingTime = 15;
+
+  double _currentHeading = 0.0;
+  LatLng? _currentPosition;
+  BitmapDescriptor? _driverIcon;
+
   int get remainingTime => _remainingTime;
+  double get currentHeading => _currentHeading;
+  LatLng? get currentPosition => _currentPosition;
+  BitmapDescriptor? get driverIcon => _driverIcon;
   Timer? _timer;
   bool isTimerRunning = false;
   bool get isLoading => _isLoading;
@@ -31,6 +40,9 @@ class DriverStatusViewmodel extends ChangeNotifier {
       bool gpsReady = await GpsValidatorService.ensureLocationServiceAndPermission(context);
       if (!gpsReady) return null;
 
+      // Cargamos el nuevo icono circular
+      await _loadMarkerIcon();
+
       final prefs = await SharedPreferences.getInstance();
       final driverId = prefs.getInt('userId');
 
@@ -44,10 +56,12 @@ class DriverStatusViewmodel extends ChangeNotifier {
         desiredAccuracy: geo.LocationAccuracy.high,
       );
 
-      print("📍 Ubicación obtenida: Lat: ${position.latitude}, Lng: ${position.longitude}");
+      _currentHeading = position.heading;
+      _currentPosition = LatLng(position.latitude, position.longitude);
+      print("📍 Ubicación inicial: Lat: ${position.latitude}, Lng: ${position.longitude}, Rumbo: $_currentHeading");
 
       // ✅ Convertir Position a LatLng
-      LatLng latLngPosition = LatLng(position.latitude, position.longitude);
+      LatLng latLngPosition = _currentPosition!;
 
       // Llamar a StatusController para conectar al conductor
       final statusService = DriverStatusSerive();
@@ -64,6 +78,8 @@ class DriverStatusViewmodel extends ChangeNotifier {
           });
       _webSocketService!.connect();
 
+      _startLocationTracking();
+
       return latLngPosition;
     } catch (e) {
       print("⚠️ Error al conectar: $e");
@@ -72,6 +88,48 @@ class DriverStatusViewmodel extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  /// Carga el icono circular para el marcador del conductor.
+  Future<void> _loadMarkerIcon() async {
+    _driverIcon = await BitmapDescriptor.fromAssetImage(
+      const ImageConfiguration(size: Size(40, 40)),
+      'assets/images/driver_circle_icon.png', // Cambia esto por tu nuevo asset circular
+    );
+    notifyListeners();
+  }
+
+  void _startLocationTracking() {
+    _positionStreamSubscription?.cancel();
+    _positionStreamSubscription = geo.Geolocator.getPositionStream(
+      locationSettings: const geo.LocationSettings(
+        accuracy: geo.LocationAccuracy.high,
+        distanceFilter: 2, // Equilibrio entre precisión y estabilidad
+      ),
+    ).listen((geo.Position position) {
+      // Al usar un icono circular, el heading ya no es crítico para el Marker,
+      // pero lo mantenemos suavizado por si decides rotar la cámara del mapa.
+      if (position.speed > 1.0 && position.heading > 0) {
+        _currentHeading = _interpolateHeading(_currentHeading, position.heading, 0.20);
+      }
+
+      _currentPosition = LatLng(position.latitude, position.longitude);
+      notifyListeners();
+    });
+  }
+
+  /// Suaviza la transición entre el rumbo actual y el nuevo, manejando el wrap-around de 360 grados.
+  double _interpolateHeading(double oldHeading, double newHeading, double alpha) {
+    double diff = newHeading - oldHeading;
+
+    // Ajuste para el camino más corto en un círculo
+    if (diff > 180) {
+      diff -= 360;
+    } else if (diff < -180) {
+      diff += 360;
+    }
+
+    return (oldHeading + alpha * diff) % 360;
   }
 
   Future<void> disconnectDriverViewmodel() async {
@@ -91,8 +149,11 @@ class DriverStatusViewmodel extends ChangeNotifier {
       await statusService.disconnectDriver(driverId);
       setStatus(ConnectionStatus.DISCONNECTED);
 
+      _positionStreamSubscription?.cancel();
+      _positionStreamSubscription = null;
+
       _webSocketService?.disconnect();
-      _webSocketService =  null;
+      _webSocketService = null;
 
       notifyListeners();
     } catch (e) {
@@ -128,8 +189,15 @@ class DriverStatusViewmodel extends ChangeNotifier {
     }
   }
 
+  @override
+  void dispose() {
+    _positionStreamSubscription?.cancel();
+    _timer?.cancel();
+    super.dispose();
+  }
+
   void setStatus(ConnectionStatus status) {
     _connectionStatus = status;
-    notifyListeners(); 
+    notifyListeners();
   }
 }

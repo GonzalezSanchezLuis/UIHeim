@@ -154,7 +154,7 @@ class _UserMapWidgetState extends State<UserMapWidget> {
       Colors.blueAccent,
       size: 25.w,
     );
-    _driverIcon = await _getMarkerFromIconDriver(Icons.navigation, Colors.black, size: 45.w);
+    _driverIcon = await _getMarkerFromIconDriver(Icons.circle, Colors.greenAccent, size: 45.w);
 
     if (_mapReady && widget.driverLocation != null) {
       print("🛠 Desde _loadCustomIcons: Agregando marcador del conductor");
@@ -195,11 +195,14 @@ class _UserMapWidgetState extends State<UserMapWidget> {
     };
 
     if (widget.driverLocation != null && _driverIcon != null) {
-      updatedMarkers.add(
-        Marker(markerId: const MarkerId('driver'), position: widget.driverLocation!, icon: _driverIcon!
-            // icon: _driverIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-            ),
-      );
+      updatedMarkers.add(Marker(
+        markerId: const MarkerId('driver'),
+        position: widget.driverLocation!,
+        icon: _driverIcon!,
+        rotation: 0,
+        anchor: const Offset(0.5, 0.5),
+        zIndex: 10,
+      ));
     }
 
     print("📍 Dibujando ${widget.route.length} puntos en la ruta:");
@@ -218,13 +221,10 @@ class _UserMapWidgetState extends State<UserMapWidget> {
       endCap: Cap.roundCap,
     );
 
-    if (_markers.isEmpty) {
-      setState(() {
-        _polylines.clear();
-        _markers = updatedMarkers;
-        _polylines = {routePolyline};
-      });
-    }
+    setState(() {
+      _markers = updatedMarkers;
+      _polylines = {routePolyline};
+    });
     _centerMap(pointsToInclude);
   }
 
@@ -287,7 +287,14 @@ class _UserMapWidgetState extends State<UserMapWidget> {
     print("🧩 ¿Driver icon está listo? ${_driverIcon != null}");
     print("🎯 Total de marcadores antes: ${_markers.length}");
 
-    final marker = Marker(markerId: const MarkerId("driver"), position: location, icon: _driverIcon!, zIndex: 2);
+    final marker = Marker(
+      markerId: const MarkerId("driver"),
+      position: location,
+      icon: _driverIcon!,
+      rotation: 0,
+      anchor: const Offset(0.5, 0.5),
+      zIndex: 10,
+    );
 
     setState(() {
       _markers.removeWhere((m) => m.markerId.value == "driver");
@@ -295,60 +302,36 @@ class _UserMapWidgetState extends State<UserMapWidget> {
     });
   }
 
-  Future<BitmapDescriptor> _getMarkerFromIconDriver(
-    IconData iconData,
-    Color fillColor, {
-    double size = 80.0,
-    Color borderColor = Colors.white,
-  }) async {
-    try {
-      final pictureRecorder = PictureRecorder();
-      final canvas = Canvas(pictureRecorder);
+  Future<BitmapDescriptor> _getMarkerFromIconDriver(IconData iconData, Color fillColor, {required double size, Color borderColor = Colors.black, double? borderWidth}) async {
+    final pictureRecorder = PictureRecorder();
+    final canvas = Canvas(pictureRecorder);
 
-      final double adaptiveBorderWidth = size * 0.1;
-      final iconSize = size;
+    final double centerOffset = size / 2;
+    final center = Offset(centerOffset, centerOffset);
+    final radius = size / 2;
 
-      final center = Offset(iconSize / 2, iconSize / 2);
-      final radius = iconSize / 2;
+    final double adaptiveBorder = borderWidth ?? (size * 0.08);
 
-      final borderPaint = Paint()
-        ..color = borderColor
-        ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, radius, Paint()..color = borderColor);
+    canvas.drawCircle(center, radius - adaptiveBorder, Paint()..color = fillColor);
 
-      canvas.drawCircle(center, radius, borderPaint);
-
-      final fillPaint = Paint()
-        ..color = fillColor
-        ..style = PaintingStyle.fill;
-
-      canvas.drawCircle(center, radius - adaptiveBorderWidth, fillPaint);
-
-      final textPainter = TextPainter(textDirection: TextDirection.ltr);
-      final textStyle = TextStyle(
-        fontSize: iconSize * 0.65,
+    final textPainter = TextPainter(textDirection: TextDirection.ltr);
+    textPainter.text = TextSpan(
+      text: String.fromCharCode(iconData.codePoint),
+      style: TextStyle(
+        fontSize: size * 0.8,
         fontFamily: iconData.fontFamily,
         package: iconData.fontPackage,
-        color: Colors.white,
-      );
+        color: Colors.black, 
+      ),
+    );
+    textPainter.layout();
 
-      textPainter.text = TextSpan(text: String.fromCharCode(iconData.codePoint), style: textStyle);
-      textPainter.layout();
-      final iconOffset = Offset(
-        center.dx - (textPainter.width / 2),
-        center.dy - (textPainter.height / 2),
-      );
+    textPainter.paint(canvas, Offset(center.dx - (textPainter.width / 2), center.dy - (textPainter.height / 2)));
 
-      textPainter.paint(canvas, iconOffset);
-
-      final image = await pictureRecorder.endRecording().toImage(iconSize.toInt(), iconSize.toInt());
-      final byteData = await image.toByteData(format: ImageByteFormat.png);
-
-      if (byteData == null) throw Exception("No se pudo generar el ícono");
-      return BitmapDescriptor.fromBytes(byteData.buffer.asUint8List());
-    } catch (e) {
-      print("❌ Error generando ícono con borde: $e");
-      return BitmapDescriptor.defaultMarker;
-    }
+    final image = await pictureRecorder.endRecording().toImage(size.toInt(), size.toInt());
+    final byteData = await image.toByteData(format: ImageByteFormat.png);
+    return BitmapDescriptor.fromBytes(byteData!.buffer.asUint8List());
   }
 
   Future<BitmapDescriptor> _getMarkerFromIcon(IconData iconData, Color color, {double size = 80.0}) async {

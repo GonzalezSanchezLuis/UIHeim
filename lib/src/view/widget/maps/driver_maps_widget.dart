@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -9,11 +8,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class DriverMapWidget extends StatefulWidget {
   final LatLng? driverLocation;
+  final double? heading;
   final List<LatLng> route;
   final List<LatLng>? driverToOriginRoute;
   final void Function(LatLng)? onDriverConnected;
 
-  const DriverMapWidget({super.key, required this.driverLocation, required this.route, this.driverToOriginRoute, this.onDriverConnected});
+  const DriverMapWidget({super.key, required this.driverLocation, this.heading, required this.route, this.driverToOriginRoute, this.onDriverConnected});
 
   @override
   State<DriverMapWidget> createState() => _DriverMapWidgetState();
@@ -43,6 +43,7 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
 
   Timer? _movementTimer;
   int _currentRouteIndex = 0;
+  double _lastBearing = 0.0;
 
   @override
   void initState() {
@@ -55,27 +56,34 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
     super.didUpdateWidget(oldWidget);
     if (!_mapReady) return;
 
-    final hasLocationNow = widget.driverLocation != null;
     final locationChanged = widget.driverLocation != oldWidget.driverLocation;
+    final routeChanged = widget.route != oldWidget.route || widget.driverToOriginRoute != oldWidget.driverToOriginRoute;
 
-    final routeReceived = widget.route.isNotEmpty && oldWidget.route.isEmpty;
-    final driverToOriginReceived = widget.driverToOriginRoute != null && oldWidget.driverToOriginRoute == null;
-
-    if (routeReceived || driverToOriginReceived) {
-      Future.delayed(const Duration(milliseconds: 300), () {
-        _drawRoute();
-      });
+    // Dibujamos la ruta si ha cambiado
+    if (routeChanged) {
+      _drawRoute();
     }
 
-    if (widget.driverLocation != null && widget.driverLocation != oldWidget.driverLocation) {
-      _updateDriverMarker(widget.driverLocation!);
-      if (_followDriver) {
-        _animateCamera(widget.driverLocation!);
+    if (widget.driverLocation != null) {
+      // Calculamos el ángulo si la ubicación cambió y tenemos una posición previa
+      if (widget.heading != null && widget.heading != 0) {
+        _lastBearing = widget.heading!;
+      } else if (locationChanged && oldWidget.driverLocation != null) {
+        double distance = Geolocator.distanceBetween(
+          oldWidget.driverLocation!.latitude,
+          oldWidget.driverLocation!.longitude,
+          widget.driverLocation!.latitude,
+          widget.driverLocation!.longitude,
+        );
+
+        // Solo actualizamos el ángulo si el movimiento es significativo (> 1 metro)
+        if (distance > 1.0) {
+          _lastBearing = _getBearing(oldWidget.driverLocation!, widget.driverLocation!);
+        }
       }
-    }
 
-    if (hasLocationNow) {
-      _updateDriverMarker(widget.driverLocation!);
+      // Actualizamos el marcador con la última rotación conocida
+      _updateDriverMarker(widget.driverLocation!, rotation: _lastBearing);
 
       if (!_hasCenteredOnDriver) {
         _hasCenteredOnDriver = true;
@@ -85,14 +93,8 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
         _animateCamera(widget.driverLocation!);
       }
     }
-    if (widget.route != oldWidget.route || widget.driverToOriginRoute != oldWidget.driverToOriginRoute) {
-      _drawRoute();
-    }
   }
 
-
-
-  
   Future<void> _animateCamera(LatLng target, {double? zoom}) async {
     if (!_mapReady || _mapController == null || !mounted) return;
 
@@ -119,7 +121,7 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
         );
         target = LatLng(position.latitude, position.longitude);
         if (_isIconsLoaded) {
-          _updateDriverMarker(target);
+          _updateDriverMarker(target, rotation: _lastBearing);
         }
       } catch (_) {
         if (mounted) {
@@ -142,7 +144,7 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
       markerId: const MarkerId("driver_location"),
       icon: _driverIcon,
       position: location,
-      rotation: rotation,
+      rotation: 0,
       flat: true,
       anchor: const Offset(0.5, 0.5),
       zIndex: 10,
@@ -220,13 +222,15 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
 
   Future<void> _loadCustomIcons() async {
     try {
-      final double adaptiveSize = 70.w;
+      final double adaptiveSize = 50.w;
 
-      _driverIcon = await _getMarkerFromIcon(Icons.navigation, Colors.black, size: adaptiveSize);
+      
+      _driverIcon = await _getMarkerFromIcon(Icons.circle, Colors.greenAccent, size: adaptiveSize);
+
       _originIcon = await _getMarkerFromIconOriginToDestination(Icons.circle, Colors.green, size: adaptiveSize);
       _destinationIcon = await _getMarkerFromIconOriginToDestination(Icons.circle, Colors.blueAccent, size: adaptiveSize);
       _isIconsLoaded = true;
-      if (widget.driverLocation != null) _updateDriverMarker(widget.driverLocation!);
+      if (widget.driverLocation != null) _updateDriverMarker(widget.driverLocation!, rotation: _lastBearing);
       setState(() {});
     } catch (e) {
       _driverIcon = BitmapDescriptor.defaultMarker;
@@ -250,7 +254,7 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
     return BitmapDescriptor.fromBytes(byteData!.buffer.asUint8List());
   }
 
-  Future<BitmapDescriptor> _getMarkerFromIcon(IconData iconData, Color fillColor, {required double size, Color borderColor = Colors.white, double? borderWidth}) async {
+  Future<BitmapDescriptor> _getMarkerFromIcon(IconData iconData, Color fillColor, {required double size, Color borderColor = Colors.black, double? borderWidth}) async {
     final pictureRecorder = PictureRecorder();
     final canvas = Canvas(pictureRecorder);
 
@@ -266,7 +270,7 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
     final textPainter = TextPainter(textDirection: TextDirection.ltr);
     textPainter.text = TextSpan(
       text: String.fromCharCode(iconData.codePoint),
-      style: TextStyle(fontSize: size * 0.8, fontFamily: iconData.fontFamily, package: iconData.fontPackage, color: Colors.white),
+      style: TextStyle(fontSize: size * 0.8, fontFamily: iconData.fontFamily, package: iconData.fontPackage, color: Colors.black),
     );
     textPainter.layout();
 
@@ -296,9 +300,11 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
       _updateDriverMarker(interpolated, rotation: _getBearing(start, end));
 
       _isAnimatingCamera = true;
-      _mapController!.animateCamera(CameraUpdate.newCameraPosition(
-        CameraPosition(target: interpolated, zoom: 17, tilt: 45.0),
-      )).whenComplete(() => _isAnimatingCamera = false);
+      _mapController!
+          .animateCamera(CameraUpdate.newCameraPosition(
+            CameraPosition(target: interpolated, zoom: 17, tilt: 45.0),
+          ))
+          .whenComplete(() => _isAnimatingCamera = false);
 
       step++;
       t = step / stepsPerSegment;
@@ -371,12 +377,11 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
               });
 
               Future.microtask(() {
-              if (widget.driverLocation != null) {
-                  _updateDriverMarker(widget.driverLocation!);
+                if (widget.driverLocation != null) {
+                  _updateDriverMarker(widget.driverLocation!, rotation: _lastBearing);
                   _animateCamera(widget.driverLocation!, zoom: _activeLocationZoom);
                   _hasCenteredOnDriver = true;
                 }
-
               });
               if (widget.route.isNotEmpty) {
                 _drawRoute();
@@ -410,7 +415,8 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
               ),
             ),
           ),
-        if (!_mapReady) Container(
+        if (!_mapReady)
+          Container(
             color: Colors.white.withOpacity(0.8),
             child: const Center(
               child: CircularProgressIndicator(

@@ -42,7 +42,7 @@ class RouteDriverViewmodel extends ChangeNotifier {
         final destination = LatLng(ToDouble(data['destinationLat']), ToDouble(data['destinationLng']));
 
         moveData = {'origin': origin, 'destination': destination, ...data};
-       // _startTimer();
+        _startTimer();
         isTimerRunning = true;
         notifyListeners();
 
