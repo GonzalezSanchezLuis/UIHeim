@@ -42,7 +42,6 @@ class LocationService {
     }
   }
 
-  /// Obtiene dirección a partir de coordenadas
   Future<String?> getAddressFromCoordinates(double latitude, double longitude) async {
     try {
       List<Placemark> placemarks = await placemarkFromCoordinates(latitude, longitude);
@@ -57,7 +56,7 @@ class LocationService {
     }
   }
 
-  /// Convierte dirección en coordenadas
+
   Future<Map<String, double>?> getCoordinatesFromAddress(String address) async {
     try {
       List<Location> locations = await locationFromAddress(address);

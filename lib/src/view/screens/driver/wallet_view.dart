@@ -39,7 +39,7 @@ class _WalletViewState extends State<WalletView> {
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
         title:  Text(
-          "Ganancias",
+          "Registrar método de pago",
           style: StyleFontsTitle.titleStyle,
         ),
         backgroundColor: Colors.black,

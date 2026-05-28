@@ -221,7 +221,7 @@ class _HomeDriverState extends State<HomeDriverView> {
                             ),
                           ),
                         ),
-                        Container(
+                      /*  Container(
                           width: 1.w,
                           height: 35.h,
                           color: Colors.grey.withOpacity(0.3),
@@ -268,8 +268,8 @@ class _HomeDriverState extends State<HomeDriverView> {
                               ),
                             ),
                           );
-                        }),
-                      ],
+                        }),*/
+                      ]
                     ),
                   ),
                 ),

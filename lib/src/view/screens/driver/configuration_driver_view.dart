@@ -5,6 +5,7 @@ import 'package:holi/src/service/auth/auth_service.dart';
 import 'package:holi/src/view/screens/about/about_view.dart';
 import 'package:holi/src/view/screens/auth/login_view.dart';
 import 'package:holi/src/view/screens/driver/vehicle_information.dart';
+import 'package:holi/src/view/screens/payment/payment_account_driver_view.dart';
 import 'package:holi/src/view/screens/tearm/legal_view.dart';
 import 'package:holi/src/view/screens/driver/profile_view.dart';
 import 'package:holi/src/view/screens/tearm/tearm_and_condition_view.dart';
@@ -52,6 +53,13 @@ class _ConfigurationDriverState extends State<ConfigurationDriver> {
             },
           ),
           _buildSettingOption(
+            title: "Configurar método de pago",
+            icon: Icons.credit_card_outlined,
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const PaymentAccountDriverView()));
+            },
+          ),
+          _buildSettingOption(
             title: "Info del vehículo",
             icon: Icons.car_rental,
             onTap: () {
@@ -72,6 +80,7 @@ class _ConfigurationDriverState extends State<ConfigurationDriver> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => const TearmAndCondition()));
             },
           ),
+          
           _buildSettingOption(
             title: "Acerca de",
             icon: Icons.info,

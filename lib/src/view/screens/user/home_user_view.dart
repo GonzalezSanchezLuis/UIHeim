@@ -106,16 +106,18 @@ class _HomeUserState extends State<HomeUserView> {
 
     _moveNotificationUserViewModel = MoveNotificationUserViewmodel();
     final sessionVM = Provider.of<SessionViewModel>(context, listen: false);
-    final userId = sessionVM.userId?.toString() ?? '0';
+    final int intUserId = double.tryParse(sessionVM.userId?.toString() ?? '0')?.toInt() ?? 0;
+    final String userId = intUserId.toString();
 
-    _websocketUserService = WebsocketUserService(
-        userId: userId,
-        onMessage: _onUserWebSocketMessage);
+    print("🎯 [DEBUG SOCKET] Intentando conectar al canal exacto: /topic/user/$userId");
+
+    _websocketUserService = WebsocketUserService(userId: userId, onMessage: _onUserWebSocketMessage);
     _websocketUserService.connect();
   }
 
   @override
   void dispose() {
+    print("🔌 [WS USER] Desconectando WebSocket");
     _stopDriverLocationPolling();
     _websocketUserService.disconnect();
     _websocketFinishedMoveService?.disconnect();
@@ -123,42 +125,83 @@ class _HomeUserState extends State<HomeUserView> {
   }
 
   Future<void> _onUserWebSocketMessage(Map<String, dynamic> data) async {
-    debugPrint("🧲 Mensaje del backend recibido: $data");
+    try {
+      print("📩 [WS USER] ¡MENSAJE RECIBIDO! -> ${jsonEncode(data)}");
 
-    final driverVM = Provider.of<GetDriverLocationViewmodel>(context, listen: false);
-    driverVM.applyPayload(data);
+      final driverVM = Provider.of<GetDriverLocationViewmodel>(context, listen: false);
+      driverVM.applyPayload(data);
 
-    if (data['move'] != null) {
-      final move = Map<String, dynamic>.from(data['move'] as Map);
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('active_move_data', jsonEncode(move));
-      await _persistActiveMoveRoute();
+ 
+      final dynamic movePayload = data['move'];
+      final bool hasMoveProp = movePayload != null && movePayload is Map;
+      final bool hasDirectIds = data['driverId'] != null || data['moveId'] != null;
 
-      if (!mounted) return;
-      setState(() {
-        _currentActiveMoveData = move;
-      });
+      if (hasMoveProp || hasDirectIds) {
+        print("✅ [WS USER] Procesando asignación de mudanza...");
 
-      final moveId = move['moveId'];
-      if (moveId != null) {
-        final int parsedMoveId = moveId is int ? moveId : int.tryParse(moveId.toString()) ?? 0;
-        if (parsedMoveId > 0) {
-          _handleMoveAssigned(parsedMoveId);
-          _startDriverLocationPolling();
+        // Extracción segura del mapa de datos
+        final Map<String, dynamic> incomingMove = hasMoveProp ? Map<String, dynamic>.from(movePayload as Map) : data;
+
+        final Map<String, dynamic> updatedMove = {
+          ...(_currentActiveMoveData ?? {}),
+          ...incomingMove,
+        };
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('active_move_data', jsonEncode(updatedMove));
+        await _persistActiveMoveRoute();
+
+        if (!mounted) return;
+        setState(() {
+          print("🚀 [UI UPDATE] Finalizando búsqueda: isWaitingForDriver = false");
+          _currentActiveMoveData = updatedMove;
+          isWaitingForDriver = false;
+          showPriceModal = false;
+          showHomeButtons = false;
+        });
+
+        final moveId = updatedMove['moveId'];
+        if (moveId != null) {
+          final int parsedMoveId = moveId is int ? moveId : int.tryParse(moveId.toString()) ?? 0;
+          if (parsedMoveId > 0) {
+            _handleMoveAssigned(parsedMoveId);
+            _startDriverLocationPolling();
+          }
         }
       }
-    } else if (data['driverLat'] != null && data['driverLng'] != null && mounted) {
-      setState(() {
-        _currentActiveMoveData = {
-          ...?_currentActiveMoveData,
-          'driverLat': data['driverLat'],
-          'driverLng': data['driverLng'],
-        };
-      });
-      _startDriverLocationPolling();
-    }
 
-    _moveNotificationUserViewModel.addNotification(data);
+      // También procesamos coordenadas (pueden venir solas o dentro del objeto move)
+      final double? lat = ToDouble(data['driverLat'] ?? (hasMoveProp ? movePayload['driverLat'] : null));
+      final double? lng = ToDouble(data['driverLng'] ?? (hasMoveProp ? movePayload['driverLng'] : null));
+
+      if (lat != null && lng != null && mounted) {
+        print("📍 [WS USER] Ubicación del conductor: $lat, $lng");
+        driverVM.updateDriverCoordinates(lat, lng);
+
+        if (isWaitingForDriver) {
+          print("🚩 [WS USER] Forzando salida de espera por recepción de GPS.");
+          setState(() {
+            isWaitingForDriver = false;
+            showPriceModal = false;
+            showHomeButtons = false;
+          });
+        }
+
+        final moveId = _currentActiveMoveData?['moveId'];
+        if (moveId != null) {
+          final int parsedMoveId = moveId is int ? moveId : int.tryParse(moveId.toString()) ?? 0;
+          if (parsedMoveId > 0) {
+            _handleMoveAssigned(parsedMoveId);
+          }
+        }
+        _startDriverLocationPolling();
+      }
+
+      _moveNotificationUserViewModel.addNotification(data);
+    } catch (e, stack) {
+      print("❌ [WS USER ERROR] Fallo crítico al procesar mensaje: $e");
+      print(stack);
+    }
   }
 
   void _startDriverLocationPolling() {
@@ -224,7 +267,9 @@ class _HomeUserState extends State<HomeUserView> {
 
   @override
   Widget build(BuildContext context) {
-    final bool driverIsAssigned = _currentActiveMoveData != null;
+    // Consideramos el viaje asignado solo si tenemos el driverId para evitar el crash de tipos
+    final bool driverIsAssigned = _currentActiveMoveData != null && (_currentActiveMoveData!['driverId'] != null || _currentActiveMoveData!['moveId'] != null);
+
     return PopScope(
       canPop: !driverIsAssigned,
       onPopInvokedWithResult: (didPop, result) {
@@ -252,7 +297,6 @@ class _HomeUserState extends State<HomeUserView> {
               ),
             Consumer<GetDriverLocationViewmodel>(
               builder: (context, driverVM, _) {
-                print('_currentActiveMoveData (nuestra fuente única): $_currentActiveMoveData');
                 if (currentPageIndex == 0 && driverIsAssigned) {
                   return Stack(
                     children: [
@@ -277,14 +321,14 @@ class _HomeUserState extends State<HomeUserView> {
                             ),
                             padding: EdgeInsets.all(10.w),
                             child: DriverInfoCard(
-                              driverId: _currentActiveMoveData!['driverId'],
+                              driverId: _currentActiveMoveData!['driverId'] ?? 0,
                               enrollVehicle: _currentActiveMoveData!['enrollVehicle'] ?? '',
                               driverImageUrl: _currentActiveMoveData!['driverImageUrl'] ?? '',
                               vehicleImageUrl: 'assets/images/vehicle.png',
                               phone: _currentActiveMoveData!['driverPhone'] ?? '',
                               nameDriver: _currentActiveMoveData!['driverName'] ?? '',
                               vehicleType: _currentActiveMoveData!['vehicleType'] ?? '',
-                              amount: ToDouble(_currentActiveMoveData!['amount']),
+                              amount: ToDouble(_currentActiveMoveData!['amount'] ?? 0),
                               accountNumber: _currentActiveMoveData!['accountNumber'] ?? '',
                             ),
                           ),
@@ -356,8 +400,7 @@ class _HomeUserState extends State<HomeUserView> {
   }
 
   Widget _buildHomePage(BuildContext context) {
-    // final bool driverIsAssigned = _currentActiveMoveData != null;
-    final bool driverIsAssigned = _currentActiveMoveData != null && _currentActiveMoveData!.isNotEmpty;
+    final bool driverIsAssigned = _currentActiveMoveData != null && (_currentActiveMoveData!['driverId'] != null || _currentActiveMoveData!['moveId'] != null);
 
     final LatLng origin = _resolveMapOrigin();
     final LatLng destination = _resolveMapDestination();
@@ -508,16 +551,14 @@ class _HomeUserState extends State<HomeUserView> {
     if (widget.route != null && widget.route!.isNotEmpty) return widget.route!.first;
     if (widget.origin != null) return widget.origin!;
     if (_tripOrigin != null) return _tripOrigin!;
-    return _latLngFromMoveData(_currentActiveMoveData, isDestination: false) ??
-        const LatLng(3.3784759685695906, -72.95412998954771);
+    return _latLngFromMoveData(_currentActiveMoveData, isDestination: false) ?? const LatLng(3.3784759685695906, -72.95412998954771);
   }
 
   LatLng _resolveMapDestination() {
     if (widget.route != null && widget.route!.isNotEmpty) return widget.route!.last;
     if (widget.destination != null) return widget.destination!;
     if (_tripDestination != null) return _tripDestination!;
-    return _latLngFromMoveData(_currentActiveMoveData, isDestination: true) ??
-        const LatLng(3.3784759685695906, -72.95412998954771);
+    return _latLngFromMoveData(_currentActiveMoveData, isDestination: true) ?? const LatLng(3.3784759685695906, -72.95412998954771);
   }
 
   LatLng? _latLngFromMoveData(Map<String, dynamic>? data, {required bool isDestination}) {
@@ -836,6 +877,13 @@ class _HomeUserState extends State<HomeUserView> {
     try {
       final Map<String, dynamic> moveData = Map<String, dynamic>.from(jsonDecode(savedMoveDataRaw) as Map);
       if (moveData.isEmpty) return;
+
+      // Si los datos están incompletos (falta driverId), limpiamos para evitar el crash
+      if (moveData['driverId'] == null) {
+        debugPrint("⚠️ Datos persistidos corruptos detectados. Limpiando...");
+        await _clearPersistedActiveTrip();
+        return;
+      }
 
       debugPrint("🚨 Recuperando viaje activo del disco local después de un cierre...");
 

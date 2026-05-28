@@ -16,7 +16,18 @@ class DriverLocationViewmodel extends ChangeNotifier {
   bool _isSendingFromTimer = false;
   Timer? _sendTimer;
 
+
+final bool _activarSimuladorPrueba = false;
+  Timer? _viajeSimuladoTimer;
+
   void startLocationUpdates(int driverId) {
+
+   /*if (_activarSimuladorPrueba) {
+      debugPrint("🕹️ [MODO SIMULADOR] Interceptando inicio de rastreo del conductor ID: $driverId");
+      _ejecutarViajeSimulado(driverId);
+      return; // Detiene la ejecución aquí. El GPS real y el Timer NO se encenderán.
+    } */
+
     _initPositionStream(driverId);
     _startPeriodicSend(driverId);
     _serviceStatusSubscription = Geolocator.getServiceStatusStream().listen((ServiceStatus status) {
@@ -80,6 +91,51 @@ class DriverLocationViewmodel extends ChangeNotifier {
     notifyListeners();
   }
 
+
+  // 🔄 MÉTODO AUXILIAR: Mueve al conductor por el sur de Bogotá hacia la Caracas
+  void _ejecutarViajeSimulado(int driverId) {
+    _viajeSimuladoTimer?.cancel();
+
+    // Tu ruta exacta: Sale de la Cr 13a Bis y recorre la Av. Caracas hacia el norte
+    final List<LatLng> puntosRuta = [
+      const LatLng(4.568310, -74.116650), // Cr 13a Bis # 50b-09 Sur (Salida)
+      const LatLng(4.568010, -74.116750),
+      const LatLng(4.567820, -74.117420), // Giro por Cl 51 Sur
+      const LatLng(4.567550, -74.118450),
+      const LatLng(4.567340, -74.119250), // Esquina Caracas (Molinos)
+      const LatLng(4.568250, -74.119050), // Avanzando por la Caracas
+      const LatLng(4.569420, -74.118780), // Frente a Estación Molinos
+      const LatLng(4.570650, -74.118500),
+      const LatLng(4.571850, -74.118220), // Fin del tramo de prueba
+    ];
+
+    int indiceActual = 0;
+
+    // Dispara una coordenada automática cada 3 segundos hacia tu servidor
+    _viajeSimuladoTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
+      if (indiceActual < puntosRuta.length) {
+        final coordenada = puntosRuta[indiceActual];
+
+        // Actualizamos el estado interno para que la app sepa dónde está
+        _currentLocation = DriverLocationModel(coordenada.latitude, coordenada.longitude);
+        notifyListeners();
+
+        try {
+          // LLAMADA REAL A TU SERVICIO: Envía el punto al backend
+          await _locationService.sendLocation(_currentLocation!, driverId);
+          debugPrint("🚗 [Simulador Activo] Enviando coordenada: ${coordenada.latitude}, ${coordenada.longitude} (${indiceActual + 1}/${puntosRuta.length})");
+        } catch (e) {
+          debugPrint("❌ [Simulador Activo] Error en envío: $e");
+        }
+
+        indiceActual++;
+      } else {
+        debugPrint("🏁 [Simulador Activo] Fin de la ruta. Reiniciando bucle para seguir testeando...");
+        indiceActual = 0; // Se reinicia para que el carro no se quede quieto si sigues probando
+      }
+    });
+  }
+
   @override
   void dispose() {
     super.dispose();
@@ -88,5 +144,7 @@ class DriverLocationViewmodel extends ChangeNotifier {
     _serviceStatusSubscription?.cancel();
     _locationSubscription = null;
     _sendTimer = null;
+    _viajeSimuladoTimer?.cancel();
+    debugPrint("🛑 Simulación de viaje detenida.");
   }
 }

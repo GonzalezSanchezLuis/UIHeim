@@ -48,15 +48,14 @@ class _UserMapWidgetState extends State<UserMapWidget> {
   @override
   void didUpdateWidget(covariant UserMapWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.route != oldWidget.route && _mapReady) {
-      _drawRoute();
-    }
 
-    if (widget.driverLocation != null && widget.driverLocation != oldWidget.driverLocation && _mapReady) {
-      print("📍 [didUpdateWidget] Nueva ubicación del conductor: ${widget.driverLocation}");
-      _updateDriverMarker(widget.driverLocation!);
-      //_moveCameraToDriver(widget.driverLocation!);
-      _drawRoute();
+    final routeChanged = widget.route != oldWidget.route;
+    final driverMoved = widget.driverLocation != oldWidget.driverLocation;
+
+    if ((routeChanged || driverMoved) && _mapReady) {
+      // Solo centramos el mapa si la ruta cambió o si es la primera vez que aparece el conductor
+      bool shouldCenter = routeChanged || (oldWidget.driverLocation == null && widget.driverLocation != null);
+      _drawRoute(shouldCenter: shouldCenter);
     }
   }
 
@@ -87,7 +86,7 @@ class _UserMapWidgetState extends State<UserMapWidget> {
               _updateDriverMarker(widget.driverLocation!);
               _moveCameraToDriver(widget.driverLocation);
             }
-            if (widget.route.isNotEmpty) {
+            if (widget.route.isNotEmpty || widget.driverLocation != null) {
               _drawRoute();
             } else {
               _moveCameraToDriver(widget.driverLocation);
@@ -154,29 +153,18 @@ class _UserMapWidgetState extends State<UserMapWidget> {
       Colors.blueAccent,
       size: 25.w,
     );
-    _driverIcon = await _getMarkerFromIconDriver(Icons.circle, Colors.greenAccent, size: 45.w);
+    _driverIcon = await _getMarkerFromIconDriver(Icons.circle, Colors.greenAccent, size: 30.w);
 
     if (_mapReady && widget.driverLocation != null) {
       print("🛠 Desde _loadCustomIcons: Agregando marcador del conductor");
       _updateDriverMarker(widget.driverLocation!);
       _moveCameraToDriver(widget.driverLocation!);
     }
-    if (mounted) {
-      setState(() {
-        _drawRoute();
-      });
-    }
+    if (mounted) _drawRoute();
   }
 
-  void _drawRoute() {
-    if (!_mapReady || widget.route.isEmpty) {
-      print("⚠️ No hay suficientes puntos para dibujar la ruta.");
-      return;
-    }
-
-    Future.delayed(const Duration(microseconds: 300), () {
-      _centerMap(widget.route);
-    });
+  void _drawRoute({bool shouldCenter = false}) {
+    if (!_mapReady) return;
 
     List<LatLng> pointsToInclude = List.from(widget.route);
     pointsToInclude.add(widget.origin);
@@ -205,27 +193,28 @@ class _UserMapWidgetState extends State<UserMapWidget> {
       ));
     }
 
-    print("📍 Dibujando ${widget.route.length} puntos en la ruta:");
-    for (var i = 0; i < widget.route.length; i++) {
-      print("   Punto $i: ${widget.route[i].latitude}, ${widget.route[i].longitude}");
+    Set<Polyline> updatedPolylines = {};
+    if (widget.route.isNotEmpty) {
+      updatedPolylines.add(Polyline(
+        polylineId: const PolylineId('user_route'),
+        color: AppTheme.primarycolor,
+        width: 6.w.toInt(),
+        points: widget.route,
+        geodesic: false,
+        jointType: JointType.round,
+        startCap: Cap.roundCap,
+        endCap: Cap.roundCap,
+      ));
     }
-
-    final Polyline routePolyline = Polyline(
-      polylineId: const PolylineId('user_route'),
-      color: AppTheme.primarycolor,
-      width: 6.w.toInt(),
-      points: widget.route,
-      geodesic: false,
-      jointType: JointType.round,
-      startCap: Cap.roundCap,
-      endCap: Cap.roundCap,
-    );
 
     setState(() {
       _markers = updatedMarkers;
-      _polylines = {routePolyline};
+      _polylines = updatedPolylines;
     });
-    _centerMap(pointsToInclude);
+
+    if (shouldCenter && pointsToInclude.isNotEmpty) {
+      _centerMap(pointsToInclude);
+    }
   }
 
   Future<void> _centerMap(List<LatLng> points) async {
@@ -322,7 +311,7 @@ class _UserMapWidgetState extends State<UserMapWidget> {
         fontSize: size * 0.8,
         fontFamily: iconData.fontFamily,
         package: iconData.fontPackage,
-        color: Colors.black, 
+        color: Colors.black,
       ),
     );
     textPainter.layout();
