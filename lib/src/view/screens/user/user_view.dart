@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'dart:developer';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/view/screens/driver/join_driver_view.dart';
 import 'package:holi/src/view/screens/user/configuration_user_view.dart';
 import 'package:holi/src/view/widget/card/account_card_widget.dart';
+import 'package:holi/src/viewmodels/auth/sesion_viewmodel.dart';
 import 'package:holi/src/viewmodels/user/profile_user_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class User extends StatefulWidget {
   const User({super.key});
@@ -18,8 +21,27 @@ class _UserState extends State<User> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      context.read<ProfileUserViewModel>().fetchUserData();
+    Future.microtask(() async {
+      final sessionVM = context.read<SessionViewModel>();
+      final profileVM = context.read<ProfileUserViewModel>();
+      final prefs = await SharedPreferences.getInstance();
+
+      // ✅ Sincronización de seguridad para usuarios recién registrados
+      int? userId = prefs.getInt('userId');
+      if (userId == null && sessionVM.userId != null) {
+        userId = int.tryParse(sessionVM.userId.toString());
+        if (userId != null) {
+          await prefs.setInt('userId', userId);
+          log("💾 [UserSync] userId persistido tras registro: $userId");
+        }
+      }
+
+      // Aseguramos que el rol de cliente esté presente
+      if (prefs.getString('role') == null) {
+        await prefs.setString('role', 'client');
+      }
+
+      await profileVM.fetchUserData();
     });
   }
 
@@ -38,9 +60,9 @@ class _UserState extends State<User> {
       );
     }
 
-      final imageUrl = profileUserViewModel.profile.urlAvatarProfile;
-      final fullName = profileUserViewModel.profile.fullName ?? 'Nombre no disponible';
-      return Scaffold(
+    final imageUrl = profileUserViewModel.profile.urlAvatarProfile;
+    final fullName = profileUserViewModel.profile.fullName ?? 'Nombre no disponible';
+    return Scaffold(
       backgroundColor: AppTheme.colorbackgroundview,
       body: SingleChildScrollView(
         child: Center(
@@ -48,7 +70,6 @@ class _UserState extends State<User> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               SizedBox(height: 60.h),
-
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
                 child: Row(
@@ -67,7 +88,7 @@ class _UserState extends State<User> {
                         ],
                       ),
                       child: CircleAvatar(
-                        radius: 30.r, 
+                        radius: 30.r,
                         backgroundColor: Colors.black,
                         backgroundImage: (imageUrl != null && imageUrl.isNotEmpty) ? NetworkImage(imageUrl) : null,
                         child: (imageUrl == null || imageUrl.isEmpty) ? Icon(Icons.person, size: 30.sp, color: Colors.white) : null,
@@ -102,26 +123,23 @@ class _UserState extends State<User> {
                   ],
                 ),
               ),
-
               SizedBox(height: 30.h),
-
               AccountCard(
                 title: "Mi cuenta",
                 subtitle: "Configuración",
-                width: 0.9.sw, 
-                height: 60.h, 
+                width: 0.9.sw,
+                height: 60.h,
                 icon: Icon(
                   Icons.settings_outlined,
                   size: 22.sp,
                 ),
                 onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ConfigurationUser())),
               ),
-
               SizedBox(height: 5.h),
               AccountCard(
                 title: "Otros",
-                subtitle: "Mueve tu carga con facilidad",
-                width: 0.9.sw, // Consistencia universal
+                subtitle: "Nos gustaria trabajar contigo",
+                width: 0.9.sw,
                 height: 60.h,
                 icon: Icon(
                   Icons.local_shipping_outlined,
@@ -129,7 +147,6 @@ class _UserState extends State<User> {
                 ),
                 onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const JoinDriver())),
               ),
-
               SizedBox(height: 10.h),
             ],
           ),

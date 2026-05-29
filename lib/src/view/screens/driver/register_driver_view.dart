@@ -10,6 +10,7 @@ import 'package:holi/src/view/screens/driver/home_driver_view.dart';
 import 'package:holi/src/view/screens/tearm/privacy_policy_view.dart';
 import 'package:holi/src/view/screens/tearm/tearm_and_condition_view.dart';
 import 'package:holi/src/viewmodels/auth/auth_viewmodel.dart';
+import 'package:holi/src/viewmodels/auth/sesion_viewmodel.dart';
 import 'package:holi/src/viewmodels/fcm/fcm_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -41,7 +42,7 @@ class _RegisterDriverState extends State<RegisterDriver> {
         backgroundColor: AppTheme.colorbackgroundview,
         appBar: AppBar(
           backgroundColor: AppTheme.primarycolor,
-          title:  Text(
+          title: Text(
             "Únete a la tribu de conductores",
             style: StyleFontsTitle.titleStyle,
           ),
@@ -70,21 +71,20 @@ class _RegisterDriverState extends State<RegisterDriver> {
                       keyboardType: TextInputType.phone,
                       validator: (value) {
                         if (value == null || value.isEmpty) return 'El teléfono es obligatorio';
-                        if(!RegExp(r'^3[0-9]{9}$').hasMatch(value)) return 'Ingresa un celular válido (10 dígitos)';
+                        if (!RegExp(r'^3[0-9]{9}$').hasMatch(value)) return 'Ingresa un celular válido (10 dígitos)';
                       }),
                   SizedBox(height: 20.h),
                   _buildField(
-                    controller:_documentController, 
-                    label:  "Número de documento",
+                    controller: _documentController,
+                    label: "Número de documento",
                     keyboardType: TextInputType.number,
                     validator: (value) {
                       if (value == null || value.isEmpty) return 'El documento es obligatorio';
                       if (!RegExp(r'^[0-9]{7,10}$').hasMatch(value)) return 'Documento inválido';
                       return null;
                     },
-                    ),
+                  ),
                   SizedBox(height: 20.h),
-
                   _buildField(
                     controller: _licenseController,
                     label: "Licencia de conducir",
@@ -98,12 +98,11 @@ class _RegisterDriverState extends State<RegisterDriver> {
                       return null;
                     },
                   ),
-
                   SizedBox(height: 20.h),
                   _buildField(
                     controller: _licenseCategoryController,
                     label: "Categoría (Ej: C2, B2)",
-                    textCapitalization: TextCapitalization.characters, 
+                    textCapitalization: TextCapitalization.characters,
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) return 'La categoría es obligatoria';
                       // RegEx para formatos como A1, B2, C3, etc.
@@ -129,15 +128,15 @@ class _RegisterDriverState extends State<RegisterDriver> {
                   ),
                   SizedBox(height: 20.h),
                   _buildField(
-                    controller :_enrollVehicleController,
-                    label: "Placas del vehículo",
-                    validator: (value){
-                      if (value == null || value.isEmpty) return 'La placa es obligatoria';
+                      controller: _enrollVehicleController,
+                      label: "Placas del vehículo",
+                      validator: (value) {
+                        if (value == null || value.isEmpty) return 'La placa es obligatoria';
                         if (!RegExp(r'^[A-Z]{3}[0-9]{3}$|^[A-Z]{3}[0-9]{2}[A-Z]{1}$').hasMatch(value.toUpperCase())) {
                           return 'Formato inválido (Ej: ABC123)';
                         }
                         return null;
-                    }),
+                      }),
                   SizedBox(height: 30.h),
                   Column(
                     mainAxisSize: MainAxisSize.min,
@@ -175,7 +174,6 @@ class _RegisterDriverState extends State<RegisterDriver> {
                                   ..onTap = () {
                                     print("Navegar a PRIVACIDAD");
                                     Navigator.push(context, MaterialPageRoute(builder: (context) => const PrivacyPolicyView()));
-                                  
                                   },
                               ),
                               const TextSpan(
@@ -262,8 +260,12 @@ class _RegisterDriverState extends State<RegisterDriver> {
       setState(() => _isLoading = true);
       try {
         final prefs = await SharedPreferences.getInstance();
-        final userId = prefs.getInt('userId');
-        const  role = 'DRIVER';
+        final sessionVM = Provider.of<SessionViewModel>(context, listen: false);
+
+        // Intentamos obtener el ID del disco, si no, lo tomamos de la sesión en memoria
+        final int? userId = prefs.getInt('userId') ?? (sessionVM.userId != null ? int.tryParse(sessionVM.userId.toString()) : null);
+
+        const role = 'DRIVER';
 
         log("id del usuario actual $userId");
 
@@ -277,25 +279,25 @@ class _RegisterDriverState extends State<RegisterDriver> {
           return;
         }
         final fcmToken = await FirebaseMessaging.instance.getToken();
-        
-        final success = await registerDriverViewModel.registerDriver(
-          userId: userId,
-          document: _documentController.text.trim(),
-          phone: _phoneController.text.trim(),
-          licenseNumber: _licenseController.text.trim(),
-          licenseCategory: _licenseCategoryController.text.trim(),
-          vehicleType: _typeVehicleController.text.trim(),
-          enrollVehicle: _enrollVehicleController.text.trim(),
-          fcmToken:fcmToken!,
-          role: role
 
-        );
+        final success = await registerDriverViewModel.registerDriver(
+            userId: userId,
+            document: _documentController.text.trim(),
+            phone: _phoneController.text.trim(),
+            licenseNumber: _licenseController.text.trim(),
+            licenseCategory: _licenseCategoryController.text.trim(),
+            vehicleType: _typeVehicleController.text.trim(),
+            enrollVehicle: _enrollVehicleController.text.trim(),
+            fcmToken: fcmToken!,
+            role: role);
 
         setState(() => _isLoading = false);
 
         if (success) {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('role', 'DRIVER');
+          // ✅ PERSISTENCIA INMEDIATA: Guardamos el ID del usuario para evitar el ID 0 o nulo
+          if (userId != null) await prefs.setInt('userId', userId);
 
           _showFlushbar('Todo salio bien', 'Hemos registrado tus datos con éxito.', AppTheme.confirmationscolor, Icons.check_circle_outline);
           setState(() => _isLoading = false);

@@ -5,6 +5,8 @@ import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/service/location/background_location_service.dart';
 import 'package:holi/src/view/screens/move/moving_summary_view.dart';
 import 'package:holi/src/viewmodels/move/finish_move_viewmodel.dart';
+import 'package:holi/src/viewmodels/driver/driver_status_viewmodel.dart';
+import 'package:holi/src/viewmodels/driver/route_driver_viewmodel.dart';
 import 'package:holi/src/viewmodels/move/update_status_move_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:slide_to_act/slide_to_act.dart';
@@ -194,6 +196,12 @@ class _BottomMoveCardState extends State<BottomMoveCard> {
                           await BackgroundLocationService.stop();
                           WakelockPlus.disable();
                           await ScreenHelper.disableTravelMode();
+
+                          // 🧹 LIMPIEZA TOTAL: Borramos el viaje del disco y reseteamos el mapa
+                          if (mounted) {
+                            await Provider.of<DriverStatusViewmodel>(context, listen: false).clearTripData();
+                            Provider.of<RouteDriverViewmodel>(context, listen: false).handleMoveFinished();
+                          }
 
                           if (success) {
                             Navigator.push(

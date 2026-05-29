@@ -73,15 +73,9 @@ class DriverStatusViewmodel extends ChangeNotifier {
 
       _webSocketService = WebSocketDriverService(
           driverId: driverId,
-          onMessage: (data) async {
-            print("🧾 Mensaje WebSocket recibido: $data");
-
-            // Si llega información de un viaje (asignación), la guardamos inmediatamente
-            if (data.containsKey('move') || data.containsKey('moveId')) {
-              tripData = data;
-              await _persistTripData(data);
-              notifyListeners();
-            }
+          onMessage: (data) {
+            // Solo logueamos, no guardamos en tripData aquí para no saltarnos el modal de aceptación
+            log("🧾 [DriverStatus] Mensaje WebSocket recibido: $data");
           });
       _webSocketService!.connect();
 
@@ -214,14 +208,16 @@ class DriverStatusViewmodel extends ChangeNotifier {
   /// Guarda los datos del viaje en la memoria del teléfono (SharedPreferences)
   Future<void> _persistTripData(Map<String, dynamic> data) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('driver_active_trip', jsonEncode(data));
-    log("💾 Datos del viaje y coordenadas de ruta guardados localmente.");
+    final String jsonData = jsonEncode(data);
+    await prefs.setString('driver_active_trip', jsonData);
+    log("💾 [DriverStatus] Guardando viaje en disco: $jsonData");
   }
 
   /// Intenta recuperar un viaje activo de la memoria
   Future<void> loadPersistedTrip() async {
     final prefs = await SharedPreferences.getInstance();
     final String? savedTrip = prefs.getString('driver_active_trip');
+    log("🔍 [DriverStatus] Buscando viaje persistido en SharedPreferences...");
 
     if (savedTrip != null && savedTrip.isNotEmpty) {
       try {
@@ -235,31 +231,39 @@ class DriverStatusViewmodel extends ChangeNotifier {
         if (driverId != null && _webSocketService == null) {
           _webSocketService = WebSocketDriverService(
             driverId: driverId,
-            onMessage: (data) async {
-              if (data.containsKey('move') || data.containsKey('moveId')) {
-                tripData = data;
-                await _persistTripData(data);
-                notifyListeners();
-              }
+            onMessage: (data) {
+              log("🧾 [DriverStatus] Mensaje WebSocket recibido (reconexión): $data");
             },
           );
           _webSocketService!.connect();
         }
 
         notifyListeners();
-        log("🚗 Viaje recuperado automáticamente de la memoria local.");
+        log("🚗 [DriverStatus] Viaje recuperado exitosamente desde disco.");
       } catch (e) {
         log("❌ Error al recuperar viaje persistido: $e");
       }
+    } else {
+      log("ℹ️ [DriverStatus] No se encontró ningún viaje activo en el disco.");
     }
+  }
+
+  /// Registra el inicio de un viaje aceptado y lo persiste inmediatamente
+  Future<void> acceptTrip(Map<String, dynamic> data) async {
+    log("🤝 [DriverStatus] Guardando viaje aceptado en persistencia...");
+    tripData = data;
+    await _persistTripData(data);
+    _startLocationTracking(); // Aseguramos rastreo activo
+    notifyListeners();
   }
 
   /// Elimina los datos del viaje de la memoria cuando el servicio termina
   Future<void> clearTripData() async {
+    log("🏁 [DriverStatus] Finalizando viaje. Limpiando datos...");
     tripData = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('driver_active_trip');
     notifyListeners();
-    log("🧹 Memoria de viaje limpiada.");
+    log("🧹 [DriverStatus] Memoria de viaje limpiada correctamente.");
   }
 }

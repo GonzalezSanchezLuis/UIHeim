@@ -153,7 +153,7 @@ class _UserMapWidgetState extends State<UserMapWidget> {
       Colors.blueAccent,
       size: 25.w,
     );
-    _driverIcon = await _getMarkerFromIconDriver(Icons.circle, Colors.greenAccent, size: 30.w);
+    _driverIcon = await _getMarkerFromIconDriver(Icons.circle, Colors.greenAccent, size: 15.w);
 
     if (_mapReady && widget.driverLocation != null) {
       print("🛠 Desde _loadCustomIcons: Agregando marcador del conductor");

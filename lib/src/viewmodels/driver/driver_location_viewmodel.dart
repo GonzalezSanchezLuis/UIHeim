@@ -22,10 +22,10 @@ final bool _activarSimuladorPrueba = false;
 
   void startLocationUpdates(int driverId) {
 
-   /*if (_activarSimuladorPrueba) {
+  /* if (_activarSimuladorPrueba) {
       debugPrint("🕹️ [MODO SIMULADOR] Interceptando inicio de rastreo del conductor ID: $driverId");
       _ejecutarViajeSimulado(driverId);
-      return; // Detiene la ejecución aquí. El GPS real y el Timer NO se encenderán.
+      return; 
     } */
 
     _initPositionStream(driverId);

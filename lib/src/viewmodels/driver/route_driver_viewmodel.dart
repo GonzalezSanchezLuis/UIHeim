@@ -21,7 +21,7 @@ class RouteDriverViewmodel extends ChangeNotifier {
 
   final String _googleMapsApiKey = 'AIzaSyDF6pFogbufSdpW3nIeCgQMRFyoSEd1Rmw';
 
-  Future<void> updateMoveData(Map<String, dynamic> data) async {
+  Future<void> updateMoveData(Map<String, dynamic> data, {bool isRequest = false}) async {
     print("Datos recibidos - Conductor----: ${data['driverLat']},${data['driverLng']}");
     final driverLatString = data['driverLat']?.toString();
     final driverLngString = data['driverLng']?.toString();
@@ -42,8 +42,12 @@ class RouteDriverViewmodel extends ChangeNotifier {
         final destination = LatLng(ToDouble(data['destinationLat']), ToDouble(data['destinationLng']));
 
         moveData = {'origin': origin, 'destination': destination, ...data};
-        _startTimer();
-        isTimerRunning = true;
+
+        if (isRequest) {
+        
+          _startTimer();
+          isTimerRunning = true;
+        }
         notifyListeners();
 
         await Future.wait([_fetchRealRoute(origin, destination), if (_driverLocation != null) _fetchDriverRoute(_driverLocation!, origin)]);
@@ -61,7 +65,7 @@ class RouteDriverViewmodel extends ChangeNotifier {
       _timer!.cancel();
     }
 
-   _remainingTime = 15;
+    _remainingTime = 15;
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_remainingTime > 0) {
@@ -83,7 +87,7 @@ class RouteDriverViewmodel extends ChangeNotifier {
   }
 
   void handleIncomingMove(Map<String, dynamic> data) {
-    updateMoveData(data);
+    updateMoveData(data, isRequest: true);
   }
 
   void stopTimerAndRemoveRequest() {
@@ -178,6 +182,7 @@ class RouteDriverViewmodel extends ChangeNotifier {
       rethrow;
     }
   }
+
   @override
   void dispose() {
     _timer?.cancel();

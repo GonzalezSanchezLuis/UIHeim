@@ -63,7 +63,7 @@ class _HomeUserState extends State<HomeUserView> {
 
   final LocationViewModel locationViewModel = LocationViewModel();
   late final MoveNotificationUserViewmodel _moveNotificationUserViewModel;
-  late final WebsocketUserService _websocketUserService;
+  WebsocketUserService? _websocketUserService;
   WebsocketFinishedMoveService? _websocketFinishedMoveService;
   int currentPageIndex = 0;
   bool showPriceModal = false;
@@ -87,7 +87,6 @@ class _HomeUserState extends State<HomeUserView> {
     _initFcm();
     _checkSession();
     _updateModalState();
-    _loadUserId();
     print("✅ initState ejecutado");
     print("ORIGIN desde widget: ${widget.origin}");
     print("DESTINO desde widget: ${widget.destination}");
@@ -105,21 +104,49 @@ class _HomeUserState extends State<HomeUserView> {
     }
 
     _moveNotificationUserViewModel = MoveNotificationUserViewmodel();
+
+    // ✅ Inicializar el socket de forma asíncrona garantizando que el ID esté presente
+    Future.microtask(() async {
+      await _initializeUserSession();
+    });
+  }
+
+  Future<void> _initializeUserSession() async {
     final sessionVM = Provider.of<SessionViewModel>(context, listen: false);
-    final int intUserId = double.tryParse(sessionVM.userId?.toString() ?? '0')?.toInt() ?? 0;
-    final String userId = intUserId.toString();
+    final prefs = await SharedPreferences.getInstance();
 
-    print("🎯 [DEBUG SOCKET] Intentando conectar al canal exacto: /topic/user/$userId");
+    // 1. Sincronización de seguridad: Si el ID no está en el VM pero sí en disco (post-registro), cargarlo.
+    if (sessionVM.userId == null || sessionVM.userId == 0) {
+      final storedUserId = prefs.getInt('userId');
+      if (storedUserId != null && storedUserId != 0) {
+        sessionVM.setUserId(storedUserId);
+        debugPrint("💾 [HomeUserView] userId sincronizado desde SharedPreferences: $storedUserId");
+      }
+    }
 
-    _websocketUserService = WebsocketUserService(userId: userId, onMessage: _onUserWebSocketMessage);
-    _websocketUserService.connect();
+    // 2. Extraer el ID asegurando que no sea 0 mediante un parseo robusto
+    final int intUserId = (double.tryParse(sessionVM.userId?.toString() ?? '0') ?? 0).toInt();
+
+    if (intUserId != 0) {
+      final String userIdStr = intUserId.toString();
+      debugPrint("🎯 [HomeUserView] Conectando WebSocket al canal: /topic/user/$userIdStr");
+
+      _websocketUserService = WebsocketUserService(userId: userIdStr, onMessage: _onUserWebSocketMessage);
+      _websocketUserService?.connect();
+
+      if (mounted) {
+        setState(() => userId = intUserId);
+      }
+    } else {
+      debugPrint("⚠️ [HomeUserView] El userId sigue siendo 0. El WebSocket no se conectará correctamente.");
+    }
   }
 
   @override
   void dispose() {
     print("🔌 [WS USER] Desconectando WebSocket");
     _stopDriverLocationPolling();
-    _websocketUserService.disconnect();
+    _websocketUserService?.disconnect();
     _websocketFinishedMoveService?.disconnect();
     super.dispose();
   }
@@ -131,7 +158,6 @@ class _HomeUserState extends State<HomeUserView> {
       final driverVM = Provider.of<GetDriverLocationViewmodel>(context, listen: false);
       driverVM.applyPayload(data);
 
- 
       final dynamic movePayload = data['move'];
       final bool hasMoveProp = movePayload != null && movePayload is Map;
       final bool hasDirectIds = data['driverId'] != null || data['moveId'] != null;
