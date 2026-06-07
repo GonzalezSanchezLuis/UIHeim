@@ -4,18 +4,27 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:holi/config/app_config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:facebook_app_events/facebook_app_events.dart';
 
 class AuthService {
+  final _facebookAppEvents = FacebookAppEvents();
+
   Future<Map<String, dynamic>?> registerUser({
     required String name,
     required String email,
     required String password,
   }) async {
-    return _register("/users/register", {
+    final data = await _register("/users/register", {
       "fullName": name,
       'email': email,
       'password': password,
     });
+    if (data != null && !data.containsKey('error')) {
+      await _facebookAppEvents.logCompletedRegistration(
+        registrationMethod: 'App Form Client',
+      );
+    }
+    return data;
   }
 
   Future<Map<String, dynamic>?> registerDriver({
@@ -29,7 +38,7 @@ class AuthService {
     required String fcmToken,
     required String role
   }) async {
-    return _register("/drivers/register", {
+    final data = await _register("/drivers/register", {
       'userId': userId,
       'phone': phoneNumber,
       'document' :document,
@@ -40,6 +49,17 @@ class AuthService {
       'fcmToken': fcmToken,
       'role': role
     });
+  if (data != null && !data.containsKey('error')) {
+      await _facebookAppEvents.logEvent(
+        name: 'fb_mobile_complete_registration', 
+        parameters: {
+          'fb_registration_method': 'App Form Driver',
+          'user_role': role,
+          'vehicle_type': vehicleType, 
+        },
+      );
+    }
+    return data;
   } 
 
   Future<Map<String, dynamic>?> _register(String endpoint, Map<String, dynamic> body) async {
@@ -60,7 +80,8 @@ class AuthService {
 
       final data = jsonDecode(response.body);
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        await _facebookAppEvents.logCompletedRegistration(registrationMethod: 'App Form');
         return data;
       } else {
         return {'error': data['message'] ?? "Error desconocido"};

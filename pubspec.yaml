@@ -67,6 +67,7 @@ dependencies:
   wakelock_plus: ^1.4.0
   screen_brightness: ^2.1.7
   flutter_screenutil: ^5.9.3
+  facebook_app_events: ^0.28.0
 
 
   # The following adds the Cupertino Icons font to your application.

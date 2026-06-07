@@ -57,6 +57,8 @@
         android:exported="false" />
 
         <meta-data android:name="com.google.android.gms.maps.useViewLifecycleInFragment" android:value="true"/>
+        <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="\ 1680554923064027"/>
+         <meta-data android:name="com.facebook.sdk.ClientToken" android:value="55610498300f5ddda8ca3abdf2d2d267"/>   
 
         <meta-data android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDF6pFogbufSdpW3nIeCgQMRFyoSEd1Rmw"/>
