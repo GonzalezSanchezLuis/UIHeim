@@ -41,48 +41,46 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCdnPIlxwhy201-SMUwADnVE4YneqcJ-e8',
-    appId: '1:7135146275:web:21edfcefba1402cf8adc96',
-    messagingSenderId: '7135146275',
-    projectId: 'holi-10c28',
-    authDomain: 'holi-10c28.firebaseapp.com',
-    storageBucket: 'holi-10c28.firebasestorage.app',
-    measurementId: 'G-22HP2BCR49',
+    apiKey: 'AIzaSyAuxb74IVIa8fxmfKEe63PtfYd5TejFns4',
+    appId: '1:277686504554:web:0857ecb939bdd421070e13',
+    messagingSenderId: '277686504554',
+    projectId: 'heim-1af5d',
+    authDomain: 'heim-1af5d.firebaseapp.com',
+    storageBucket: 'heim-1af5d.firebasestorage.app',
+    measurementId: 'G-CJR4Q607L3',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCXjI9UD3kDNc0mWdZDsASXCaZIQ4isLqQ',
-    appId: '1:7135146275:android:2df16f505a39cb328adc96',
-    messagingSenderId: '7135146275',
-    projectId: 'holi-10c28',
-    storageBucket: 'holi-10c28.firebasestorage.app',
+    apiKey: 'AIzaSyD-NFlsxRlKgGjDRfCAPNr2Xl5umWzHnoQ',
+    appId: '1:277686504554:android:640c7700de109f11070e13',
+    messagingSenderId: '277686504554',
+    projectId: 'heim-1af5d',
+    storageBucket: 'heim-1af5d.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDWU1fqytFFYNltienuUSj9kkkdzD12Rsw',
-    appId: '1:7135146275:ios:f2587176f06612508adc96',
-    messagingSenderId: '7135146275',
-    projectId: 'holi-10c28',
-    storageBucket: 'holi-10c28.firebasestorage.app',
+    apiKey: 'AIzaSyBj-8CKIaRO63YHa5QvMjpztRRL9B9NAs8',
+    appId: '1:277686504554:ios:382ffdcff0978a58070e13',
+    messagingSenderId: '277686504554',
+    projectId: 'heim-1af5d',
+    storageBucket: 'heim-1af5d.firebasestorage.app',
     iosBundleId: 'com.example.holi',
   );
-
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyDWU1fqytFFYNltienuUSj9kkkdzD12Rsw',
-    appId: '1:7135146275:ios:f2587176f06612508adc96',
-    messagingSenderId: '7135146275',
-    projectId: 'holi-10c28',
-    storageBucket: 'holi-10c28.firebasestorage.app',
+    apiKey: 'AIzaSyBj-8CKIaRO63YHa5QvMjpztRRL9B9NAs8',
+    appId: '1:277686504554:ios:382ffdcff0978a58070e13',
+    messagingSenderId: '277686504554',
+    projectId: 'heim-1af5d',
+    storageBucket: 'heim-1af5d.firebasestorage.app',
     iosBundleId: 'com.example.holi',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyCdnPIlxwhy201-SMUwADnVE4YneqcJ-e8',
-    appId: '1:7135146275:web:1a7e177dcf582fb38adc96',
-    messagingSenderId: '7135146275',
-    projectId: 'holi-10c28',
-    authDomain: 'holi-10c28.firebaseapp.com',
-    storageBucket: 'holi-10c28.firebasestorage.app',
-    measurementId: 'G-665SQFT06J',
+    apiKey: 'AIzaSyAuxb74IVIa8fxmfKEe63PtfYd5TejFns4',
+    appId: '1:277686504554:web:e5ac5e4c8e42f41f070e13',
+    messagingSenderId: '277686504554',
+    projectId: 'heim-1af5d',
+    authDomain: 'heim-1af5d.firebaseapp.com',
+    storageBucket: 'heim-1af5d.firebasestorage.app',
+    measurementId: 'G-L45PP8X2X7',
   );
 }

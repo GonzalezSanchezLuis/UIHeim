@@ -11,6 +11,7 @@ import 'package:holi/src/viewmodels/move/confirm_move_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:holi/src/viewmodels/location/location_viewmodel.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:holi/src/core/analytics/analytics_mixin.dart';
 
 class CalculatePrice extends StatefulWidget {
   const CalculatePrice({super.key});
@@ -19,7 +20,7 @@ class CalculatePrice extends StatefulWidget {
   _CalculatePriceState createState() => _CalculatePriceState();
 }
 
-class _CalculatePriceState extends State<CalculatePrice> {
+class _CalculatePriceState extends State<CalculatePrice> with AnalyticsMixin {
   final TextEditingController _originAddressController = TextEditingController();
   final TextEditingController _destinationAddressController = TextEditingController();
   bool _isCalculating = false;
@@ -32,6 +33,12 @@ class _CalculatePriceState extends State<CalculatePrice> {
   final LocationViewModel locationViewModel = LocationViewModel();
 
   Map<String, double>? _destinationCoords;
+
+  @override
+  void initState() {
+    super.initState();
+    // El seguimiento de la pantalla se gestiona en HomeUserView para evitar registros prematuros.
+  }
 
   Future<void> _updateSuggestions(String query) async {
     if (query.isEmpty) {
@@ -77,7 +84,6 @@ class _CalculatePriceState extends State<CalculatePrice> {
                   _buildMovingTypeSelector(),
                   SizedBox(height: 25.h),
                   _buildAddressSection(locationViewModel),
-                
                   SizedBox(height: 35.h),
                   _buildSubmitButton(locationViewModel),
                   SizedBox(height: MediaQuery.of(context).viewInsets.bottom > 0 ? 50.h : 20.h),
@@ -95,18 +101,18 @@ class _CalculatePriceState extends State<CalculatePrice> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Precios fijos basados en el volumen de tu carga y la distancia. Planifica los costos de tu negocio sin sorpresas. Debes tener encueta que cancelaras el valor del viaje al momento de terminar de cargar.",
+          "Encuentra un vehículo para tu mercancía en minutos, conoce el precio antes de solicitar el servicio y evita perder tiempo buscando un transportista.",
           style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w500, color: Colors.grey[700]),
         ),
         SizedBox(height: 20.h),
-         Text(
+        Text(
           "Detalles de envio",
           style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold, color: Colors.black87),
         ),
         SizedBox(height: 15.h),
         Row(
           children: [
-       _buildUnifiedSmallCard(
+            _buildUnifiedSmallCard(
               label: "Express",
               desc: "Cajas/Paquetes",
               icon: Icons.local_post_office_outlined,
@@ -138,9 +144,9 @@ class _CalculatePriceState extends State<CalculatePrice> {
     );
   }
 
-Widget _buildUnifiedSmallCard({
+  Widget _buildUnifiedSmallCard({
     required String label,
-    required String desc, 
+    required String desc,
     required IconData icon,
     required dynamic value,
     required dynamic groupValue,
@@ -153,7 +159,7 @@ Widget _buildUnifiedSmallCard({
         onTap: () => onTap(value),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: EdgeInsets.symmetric(vertical: 5.h), 
+          padding: EdgeInsets.symmetric(vertical: 5.h),
           decoration: BoxDecoration(
             color: isSelected ? Colors.black : Colors.white,
             borderRadius: BorderRadius.circular(10.r),
@@ -184,13 +190,13 @@ Widget _buildUnifiedSmallCard({
                   ),
                 ],
               ),
-              SizedBox(height: 2.h), 
+              SizedBox(height: 2.h),
               Text(
                 desc,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: isSelected ? Colors.white70 : Colors.grey.shade600,
-                  fontSize: 9.sp, 
+                  fontSize: 9.sp,
                   fontWeight: FontWeight.w400,
                 ),
               ),
@@ -200,7 +206,6 @@ Widget _buildUnifiedSmallCard({
       ),
     );
   }
-
 
   Widget _buildAddressSection(LocationViewModel locationViewModel) {
     return Column(
@@ -248,11 +253,10 @@ Widget _buildUnifiedSmallCard({
             padding: EdgeInsets.symmetric(vertical: 14.h),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
           ),
-          onPressed: (_selectedMovingType == null )
+          onPressed: (_selectedMovingType == null)
               ? null
               : () async {
                   if (_formKey.currentState!.validate()) {
-                
                     await viewmodel.handleRequestVehicle(
                       context: context,
                       typeOfMove: _selectedMovingType,
@@ -264,7 +268,12 @@ Widget _buildUnifiedSmallCard({
                     );
                   }
                 },
-          child: viewmodel.isLoading ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2,) : Text("Continuar", style: TextStyle(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.bold)),
+          child: viewmodel.isLoading
+              ? const CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                )
+              : Text("Continuar", style: TextStyle(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.bold)),
         );
       },
     );
@@ -316,7 +325,7 @@ Widget _buildUnifiedSmallCard({
 
                         setState(() {
                           _destinationAddressController.text = prediction.description;
-                          _suggestions = []; 
+                          _suggestions = [];
                         });
                         FocusScope.of(context).unfocus();
                       },
@@ -335,6 +344,3 @@ Widget _buildUnifiedSmallCard({
           );
   }
 }
-
-
-

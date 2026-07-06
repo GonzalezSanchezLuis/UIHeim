@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "7135146275",
-    "project_id": "holi-10c28",
-    "storage_bucket": "holi-10c28.firebasestorage.app"
+    "project_number": "277686504554",
+    "project_id": "heim-1af5d",
+    "storage_bucket": "heim-1af5d.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:7135146275:android:2df16f505a39cb328adc96",
+        "mobilesdk_app_id": "1:277686504554:android:640c7700de109f11070e13",
         "android_client_info": {
           "package_name": "com.heim.app.co"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCXjI9UD3kDNc0mWdZDsASXCaZIQ4isLqQ"
+          "current_key": "AIzaSyD-NFlsxRlKgGjDRfCAPNr2Xl5umWzHnoQ"
         }
       ],
       "services": {

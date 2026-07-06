@@ -1,8 +1,14 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:holi/config/app_config.dart';
+import 'package:holi/firebase_options.dart';
+import 'package:holi/src/core/analytics/analytics_events.dart';
+import 'package:holi/src/core/analytics/analytics_service.dart';
+import 'package:holi/src/core/dl/dependency_injection.dart';
 import 'package:holi/src/service/auth/auth_service.dart';
 import 'package:holi/src/service/fcm/firebase_messaging_service.dart';
 import 'package:holi/src/service/location/background_location_service.dart';
@@ -46,7 +52,13 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
+  setupAnalytics();
+  final analytics = locator<IAnalyticsService>();
+  analytics.logEvent(AnalyticsEvents.appOpen);
   // FlutterForegroundTask.initCommunicationPort();
 //BackgroundLocationService.initService();
 
@@ -133,7 +145,11 @@ void main() async {
 
 class App extends StatelessWidget {
   final GlobalKey<NavigatorState> navigatorKey;
-  const App({super.key, required this.navigatorKey});
+  final FirebaseAnalyticsObserver _observer = FirebaseAnalyticsObserver(
+    analytics: FirebaseAnalytics.instance,
+  );
+   App({super.key, required this.navigatorKey});
+  
 
   @override
   Widget build(BuildContext context) {
@@ -142,7 +158,7 @@ class App extends StatelessWidget {
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
-            return MultiProvider(
+        return MultiProvider(
           providers: [
             ChangeNotifierProvider(create: (_) => RestoreMoveViewmodel()),
             Provider<UpdateStatusMoveService>(create: (context) => UpdateStatusMoveService()),
@@ -185,7 +201,7 @@ class App extends StatelessWidget {
                       Provider.of<RouteDriverViewmodel>(context, listen: false),
                     )),
           ],
-            child: MaterialApp(
+          child: MaterialApp(
               navigatorKey: navigatorKey,
               theme: ThemeData(
                 textTheme: GoogleFonts.latoTextTheme(Theme.of(context).textTheme).copyWith(
@@ -194,11 +210,10 @@ class App extends StatelessWidget {
               ),
               debugShowCheckedModeBanner: false,
               // home: const WrapperView(),
+              navigatorObservers: [_observer],
               home: const WrapperView()),
         );
       },
     );
-
-
   }
 }

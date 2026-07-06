@@ -13,10 +13,17 @@ class JoinDriver extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
-           backgroundColor: AppTheme.primarycolor,
-        title: Text("Nos gustaria trabajar contigo", style: StyleFontsTitle.titleStyle,),
+        backgroundColor: AppTheme.primarycolor,
+        title: Text(
+          "Nos gustaria trabajar contigo",
+          style: StyleFontsTitle.titleStyle,
+        ),
         leading: IconButton(
-          icon:  Icon(Icons.arrow_back_ios_rounded,color: Colors.white,size: 20.w,),
+          icon: Icon(
+            Icons.arrow_back_ios_rounded,
+            color: Colors.white,
+            size: 20.w,
+          ),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -32,8 +39,7 @@ class JoinDriver extends StatelessWidget {
                   gradient: LinearGradient(
                     colors: [
                       AppTheme.confirmationscolor,
-                      AppTheme.primarycolor, 
-
+                      AppTheme.primarycolor,
                     ],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
@@ -42,9 +48,9 @@ class JoinDriver extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                     SizedBox(height: 50.h),
+                    SizedBox(height: 50.h),
                     // Título principal
-                     Padding(
+                    Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20.w),
                       child: Text(
                         'Para los que eligen el camino propio En Heim, tú no trabajas para una app, la app trabaja para ti.',
@@ -55,8 +61,8 @@ class JoinDriver extends StatelessWidget {
                         ),
                       ),
                     ),
-                     SizedBox(height: 20.h),
-                     Padding(
+                    SizedBox(height: 20.h),
+                    Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20.w),
                       child: Text(
                         'Para los dueños de su propio camino. En Heim, tú no eres un número más; eres el socio logístico que las empresas están buscando.',
@@ -66,7 +72,7 @@ class JoinDriver extends StatelessWidget {
                         ),
                       ),
                     ),
-                   SizedBox(height: 20.w),
+                    SizedBox(height: 20.w),
 
                     // Imagen SVG del repartidor
                     Center(
@@ -75,12 +81,12 @@ class JoinDriver extends StatelessWidget {
                         height: 180.h,
                       ),
                     ),
-                     SizedBox(height: 20.h),
+                    SizedBox(height: 20.h),
                   ],
                 ),
               ),
-               SizedBox(height: 40.h),
-               Center(
+              SizedBox(height: 40.h),
+              Center(
                 child: Text(
                   "Por qué los mejores nos eligen.",
                   style: TextStyle(
@@ -90,22 +96,22 @@ class JoinDriver extends StatelessWidget {
                   textAlign: TextAlign.right,
                 ),
               ),
-               SizedBox(height: 25.h),
+              SizedBox(height: 25.h),
               // Sección de beneficios
               _buildFeatureCard(
                 icon: Icons.monetization_on_sharp,
                 title: 'Tus primeros pasos van por nuestra cuenta',
                 description: 'Queremos que pruebes la libertad de Heim sin pagar un solo peso. Tus primeras 4 rutas son totalmente gratis para ti. Sin letras pequeñas.',
               ),
-               SizedBox(height: 15.h),
+              SizedBox(height: 15.h),
               _buildFeatureCard(
                 icon: Icons.headset_mic_rounded,
                 title: 'Gente real, respaldando a gente real.',
                 description: 'Sabemos lo que es estar en la calle. Por eso, aquí no hablas con algoritmos. Tienes un equipo humano que te conoce y te responde',
               ),
-               SizedBox(height: 30.h),
+              SizedBox(height: 30.h),
               buildRequirementsSection(),
-               SizedBox(height: 40.h),
+              SizedBox(height: 40.h),
             ],
           ),
         ),
@@ -120,8 +126,8 @@ class JoinDriver extends StatelessWidget {
     required String description,
   }) {
     return Container(
-      margin:  EdgeInsets.symmetric(horizontal: 20.w),
-      padding:  EdgeInsets.all(16.w),
+      margin: EdgeInsets.symmetric(horizontal: 20.w),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16.r),
@@ -140,17 +146,17 @@ class JoinDriver extends StatelessWidget {
             radius: 25.r,
             child: Icon(icon, color: Colors.green, size: 25.r),
           ),
-            SizedBox(height: 10.h),
+          SizedBox(height: 10.h),
           Text(
             title,
-            style:  TextStyle(
+            style: TextStyle(
               fontSize: 17.sp,
               fontWeight: FontWeight.bold,
               color: Colors.black,
             ),
             textAlign: TextAlign.center,
           ),
-           SizedBox(height: 8.h),
+          SizedBox(height: 8.h),
           Text(
             description,
             style: TextStyle(
@@ -168,35 +174,36 @@ class JoinDriver extends StatelessWidget {
 // Nueva sección de requisitos
 Widget buildRequirementsSection() {
   return Container(
-    width: double.infinity,
-    child: Column(
-    crossAxisAlignment: CrossAxisAlignment.center,
-    children: [
-       Text(
-        '¿Eres uno de los nuestros?',
-        style: TextStyle(
-          fontSize: 20.sp,
-          fontWeight: FontWeight.bold,
-          color: Colors.black,
-        ),
-      ),
-       SizedBox(height: 20.h),
-     Center(
-          child: SingleChildScrollView( // Por si la pantalla es muy pequeña, que no rompa
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildRequirementCard(icon: Icons.person, title: '+18 años'),
-                SizedBox(width: 10.w), // Espacio adaptable entre tarjetas
-                _buildRequirementCard(icon: Icons.smartphone, title: 'Un teléfono\ninteligente'),
-                SizedBox(width: 10.w),
-                _buildRequirementCard(icon: Icons.local_shipping, title: 'Vehiculo de\ncarga'),
-              ],
+      width: double.infinity,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            '¿Eres uno de los nuestros?',
+            style: TextStyle(
+              fontSize: 20.sp,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
             ),
           ),
-     ),
-    /*  Row(
+          SizedBox(height: 20.h),
+          Center(
+            child: SingleChildScrollView(
+              // Por si la pantalla es muy pequeña, que no rompa
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildRequirementCard(icon: Icons.person, title: '+18 años'),
+                  SizedBox(width: 10.w), // Espacio adaptable entre tarjetas
+                  _buildRequirementCard(icon: Icons.smartphone, title: 'Un teléfono\ninteligente'),
+                  SizedBox(width: 10.w),
+                  _buildRequirementCard(icon: Icons.local_shipping, title: 'Vehiculo de\ncarga'),
+                ],
+              ),
+            ),
+          ),
+          /*  Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _buildRequirementCard(
@@ -215,12 +222,12 @@ Widget buildRequirementsSection() {
           ),
         ],
       ),*/
-       SizedBox(height: 30.h,),
-      const ButtonRegisterDriver(),
-      
-    ],
-    )
-  );
+          SizedBox(
+            height: 30.h,
+          ),
+          const ButtonRegisterDriver(),
+        ],
+      ));
 }
 
 // Widget para una tarjeta de requisito
@@ -243,11 +250,11 @@ Widget _buildRequirementCard({required IconData icon, required String title}) {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Icon(icon, size: 28.r, color: Colors.black),
-          SizedBox(height: 8.h),
+        SizedBox(height: 8.h),
         Text(
           title,
           textAlign: TextAlign.center,
-          style:  TextStyle(fontSize: 12.sp, color: Colors.black),
+          style: TextStyle(fontSize: 12.sp, color: Colors.black),
         ),
       ],
     ),

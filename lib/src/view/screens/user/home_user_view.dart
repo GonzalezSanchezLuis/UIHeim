@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-
+import 'package:holi/src/core/analytics/analytics_mixin.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -57,7 +57,7 @@ class HomeUserView extends StatefulWidget {
   _HomeUserState createState() => _HomeUserState();
 }
 
-class _HomeUserState extends State<HomeUserView> {
+class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
   List<LatLng> _realRoute = [];
   String _selectedPaymentMethod = 'Nequi';
 
@@ -84,13 +84,13 @@ class _HomeUserState extends State<HomeUserView> {
   @override
   void initState() {
     super.initState();
+    trackScreenView('home_screen'); // Rastrear la pantalla inicial al cargar
     _initFcm();
     _checkSession();
     _updateModalState();
     print("✅ initState ejecutado");
     print("ORIGIN desde widget: ${widget.origin}");
     print("DESTINO desde widget: ${widget.destination}");
-
     _rehydrateActiveTrip();
 
     if (widget.origin != null && widget.destination != null) {
@@ -380,6 +380,14 @@ class _HomeUserState extends State<HomeUserView> {
                   return CustomBottomNavBar(
                     currentIndex: currentPageIndex,
                     onTap: (index) {
+                      // Rastrear la vista de pantalla solo cuando se cambia de pestaña
+                      if (index == 1 && currentPageIndex != 1) {
+                        trackScreenView('calculate_price_screen');
+                      } else if (index == 2 && currentPageIndex != 2) {
+                        trackScreenView('history_move_screen');
+                      } else if (index == 3 && currentPageIndex != 3) {
+                        trackScreenView('user_profile_screen');
+                      }
                       setState(() {
                         currentPageIndex = index;
                       });
@@ -708,6 +716,8 @@ class _HomeUserState extends State<HomeUserView> {
   }
 
   Widget _buildDataMove() {
+    trackScreenView('move_summary_modal_opened');
+    trackEvent('view_calculated_price_summary');
     print("🔢 Precio bruto recibido: ${widget.calculatedPrice}");
     String? priceString = widget.calculatedPrice?.replaceAll(",", "");
     Decimal correctedPrice = Decimal.tryParse(priceString ?? '0') ?? Decimal.zero;
@@ -745,6 +755,7 @@ class _HomeUserState extends State<HomeUserView> {
               ],
             ),
           ),
+          Text('Total a pagar, precio fijo garantizado.', style: TextStyle(fontSize: 10.sp, color: Colors.white)),
           SizedBox(height: 5.h),
           Divider(color: Colors.grey.withOpacity(0.3), thickness: 1),
           SizedBox(height: 7.h),
@@ -869,7 +880,7 @@ class _HomeUserState extends State<HomeUserView> {
                 destinationAddressText: widget.destinationName,
                 paymentMethod: _selectedPaymentMethod,
                 accessType: widget.accessType,
-                buttonText: noDriverFound ? "Reintentar búsqueda" : "Confirmar y continuar",
+                buttonText: noDriverFound ? "Reintentar búsqueda" : "Buscar vehículo",
                 onConfirmed: () {
                   setState(() {
                     showPriceModal = false;

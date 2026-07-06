@@ -44,14 +44,7 @@ class DriverStatusViewmodel extends ChangeNotifier {
       // Cargamos el nuevo icono circular
       await _loadMarkerIcon();
 
-      final prefs = await SharedPreferences.getInstance();
-      final driverId = prefs.getInt('userId');
-
-      if (driverId == null) {
-        print("❌ Driver ID no encontrado en SharedPreferences.");
-        return null;
-      }
-
+      final driverId = await _getDriverId();
       // Obtener la ubicación actual del conductor
       geo.Position position = await geo.Geolocator.getCurrentPosition(
         desiredAccuracy: geo.LocationAccuracy.high,
@@ -138,14 +131,7 @@ class DriverStatusViewmodel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final driverId = prefs.getInt('userId');
-
-      if (driverId == null) {
-        print("❌ Driver ID no encontrado en SharedPreferences.");
-        return;
-      }
-
+      final driverId = await _getDriverId();
       final statusService = DriverStatusSerive();
       await statusService.disconnectDriver(driverId);
       setStatus(ConnectionStatus.DISCONNECTED);
@@ -166,15 +152,9 @@ class DriverStatusViewmodel extends ChangeNotifier {
   }
 
   Future<void> loadDriverStatusViewmodel() async {
+    final prefs = await SharedPreferences.getInstance();
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final driverId = prefs.getInt('userId');
-
-      if (driverId == null) {
-        print("User ID no encontrado en SharedPreferences.");
-        return;
-      }
-
+      final driverId = await _getDriverId();
       final statusService = DriverStatusSerive();
       final driverStatusResponse = await statusService.loadDriverStatus(driverId);
 
@@ -191,6 +171,17 @@ class DriverStatusViewmodel extends ChangeNotifier {
     } catch (e) {
       debugPrint("⚠️ Error al cargar estado: $e");
     }
+  }
+
+  /// Obtiene el ID del conductor desde SharedPreferences y lanza una excepción si no se encuentra.
+  Future<int> _getDriverId() async {
+    final prefs = await SharedPreferences.getInstance();
+    final driverId = prefs.getInt('userId');
+    if (driverId == null || driverId == 0) {
+      log("❌ Error crítico: No se pudo obtener un driverId válido desde SharedPreferences.");
+      throw Exception("Driver ID no encontrado o es inválido (0)");
+    }
+    return driverId;
   }
 
   @override
