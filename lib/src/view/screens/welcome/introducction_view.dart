@@ -5,6 +5,7 @@ import 'package:holi/src/view/screens/auth/create_account_view.dart';
 import 'dart:async';
 import 'package:holi/src/view/screens/auth/login_view.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class IntroductionView extends StatefulWidget {
   const IntroductionView({super.key});
@@ -86,8 +87,11 @@ class _IntroductionViewState extends State<IntroductionView> {
                       child: SizedBox(
                         height: 45.h,
                         child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
+                          onPressed: () async {
+                            final prefs = await SharedPreferences.getInstance();
+                            await prefs.setBool('intro_view', true);
+                            if (!context.mounted) return;
+                            Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(builder: (context) => const LoginView()),
                             );
@@ -110,8 +114,11 @@ class _IntroductionViewState extends State<IntroductionView> {
                         child: SizedBox(
                       height: 45.h,
                       child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
+                        onPressed: () async {
+                          final prefs = await SharedPreferences.getInstance();
+                          await prefs.setBool('intro_view', true);
+                          if (!context.mounted) return;
+                          Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(builder: (context) => const CreateAccount()),
                           );

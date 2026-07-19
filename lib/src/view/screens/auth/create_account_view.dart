@@ -9,7 +9,6 @@ import 'package:holi/src/view/screens/user/home_user_view.dart';
 import 'package:holi/src/view/widget/button/button_account_widget.dart';
 import 'package:holi/src/service/auth/auth_service.dart';
 import 'package:holi/src/viewmodels/auth/auth_viewmodel.dart';
-import 'package:holi/src/viewmodels/fcm/fcm_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -34,7 +33,6 @@ class _CreateAccountState extends State<CreateAccount> {
 
   // Variables de desplazamiento
   final double _emailYOffset = 100;
-  final double _passwordYOffset = 180;
 
   @override
   Widget build(BuildContext context) {
@@ -224,9 +222,7 @@ class _CreateAccountState extends State<CreateAccount> {
         if (success) {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool('intro_view', true);
-          final role = prefs.getString('role');
-          final userId = prefs.getInt('userId');
-
+         
           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeUserView()));
         } else {
           if (mounted) setState(() => _isLoading = false);

@@ -146,12 +146,12 @@ class _UserMapWidgetState extends State<UserMapWidget> {
     _originIcon = await _getMarkerFromIcon(
       Icons.circle,
       AppTheme.greenColors,
-      size: 25.w,
+      size: 30.w,
     );
     _destinationIcon = await _getMarkerFromIcon(
       Icons.circle,
       Colors.blueAccent,
-      size: 25.w,
+      size: 30.w,
     );
     _driverIcon = await _getMarkerFromIconDriver(Icons.circle, Colors.greenAccent, size: 15.w);
 
@@ -238,7 +238,6 @@ class _UserMapWidgetState extends State<UserMapWidget> {
       double adaptivePadding = 80.w;
 
       await _mapController!.animateCamera(
-          // CameraUpdate.newLatLngBounds(bounds, 100),
           CameraUpdate.newLatLngBounds(bounds, adaptivePadding));
     } catch (e) {
       print("🎯 Error centrando mapa: $e");

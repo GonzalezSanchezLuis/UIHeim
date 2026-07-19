@@ -7,7 +7,6 @@ import 'package:holi/src/model/predictions/prediction_mdel.dart';
 import 'package:holi/src/service/location/location_service.dart';
 import 'package:holi/src/view/widget/validate_form/validated_text_form_field.dart';
 import 'package:holi/src/viewmodels/move/calculate_price_viewmodel.dart';
-import 'package:holi/src/viewmodels/move/confirm_move_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:holi/src/viewmodels/location/location_viewmodel.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -102,7 +101,7 @@ class _CalculatePriceState extends State<CalculatePrice> with AnalyticsMixin {
       children: [
         Text(
           "Encuentra un vehículo para tu mercancía en minutos, conoce el precio antes de solicitar el servicio y evita perder tiempo buscando un transportista.",
-          style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w500, color: Colors.grey[700]),
+          style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500, color: Colors.grey[700]),
         ),
         SizedBox(height: 20.h),
         Text(
@@ -257,6 +256,14 @@ class _CalculatePriceState extends State<CalculatePrice> with AnalyticsMixin {
               ? null
               : () async {
                   if (_formKey.currentState!.validate()) {
+                    trackEvent(
+                      'calculate_price_requested',
+                      params: {
+                        'move_type': _selectedMovingType.toString().split('.').last, 
+                        'origin_address': _originAddressController.text.trim(),
+                        'destination_address': _destinationAddressController.text.trim(),
+                      },
+                    );
                     await viewmodel.handleRequestVehicle(
                       context: context,
                       typeOfMove: _selectedMovingType,
@@ -273,7 +280,7 @@ class _CalculatePriceState extends State<CalculatePrice> with AnalyticsMixin {
                   color: Colors.white,
                   strokeWidth: 2,
                 )
-              : Text("Continuar", style: TextStyle(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.bold)),
+              : Text("Calcular precio", style: TextStyle(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.bold)),
         );
       },
     );

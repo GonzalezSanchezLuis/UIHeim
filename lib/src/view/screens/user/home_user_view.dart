@@ -84,9 +84,8 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
   @override
   void initState() {
     super.initState();
-    trackScreenView('home_screen'); // Rastrear la pantalla inicial al cargar
+    trackScreenView('home_screen');
     _initFcm();
-    _checkSession();
     _updateModalState();
     print("✅ initState ejecutado");
     print("ORIGIN desde widget: ${widget.origin}");
@@ -372,7 +371,7 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
               bottom: 30.h,
               child: Consumer<GetDriverLocationViewmodel>(
                 builder: (context, driverVM, _) {
-                  final moveData = driverVM.moveData;
+                  //final moveData = driverVM.moveData;
                   if (currentPageIndex == 0 && (driverIsAssigned || showPriceModal || isWaitingForDriver)) {
                     return const SizedBox.shrink();
                   }
@@ -414,16 +413,16 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
       ),
       child: Row(
         children: [
-          Icon(Icons.map_outlined, color: Color(0xFF4ADE80), size: 20.sp),
-          SizedBox(width: 12.w),
+          Icon(Icons.local_shipping_outlined, color: const Color(0xFF4ADE80), size: 20.sp),
+          SizedBox(width: 5.w),
           Expanded(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  " Aún somos pocos, gracias por tu paciencia si la búsqueda tarda.",
-                  style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 11.sp),
+                  " Precios claros. Sin sorpresas.",
+                  style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 11.sp, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -465,7 +464,7 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
                   builder: (context, driverVM, _) {
                     return SafeArea(
                       top: false,
-                      minimum: EdgeInsets.only(bottom: 8.h),
+                      minimum: EdgeInsets.only(bottom: 0.h),
                       child: Container(
                         constraints: BoxConstraints(maxHeight: constraints.maxHeight * 0.55),
                         decoration: BoxDecoration(
@@ -481,7 +480,7 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
                             ),
                           ],
                         ),
-                        padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 12.h),
+                        padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 10.h),
                         child: SingleChildScrollView(
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
@@ -655,19 +654,6 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
     }
   }
 
-  Future<void> _checkSession() async {
-    if (!await _isLoggedIn()) {
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/login');
-      }
-    }
-  }
-
-  Future<bool> _isLoggedIn() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.containsKey('userId');
-  }
-
   Future<void> _loadUserId() async {
     final prefs = await SharedPreferences.getInstance();
     final storedUserId = prefs.getInt('userId');
@@ -693,20 +679,20 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
         elevation: 2,
         margin: EdgeInsets.symmetric(vertical: 6.h),
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 12.w),
+          padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 5.w),
           child: Row(
             children: [
               Icon(
                 icon,
-                color: AppTheme.greenColors,
-                size: 22.sp,
+                color: Colors.grey,
+                size: 18.sp,
               ),
-              SizedBox(width: 10.w),
+              SizedBox(width: 5.w),
               Expanded(child: DefaultTextStyle(style: TextStyle(fontSize: 14.sp), child: titleWidget)),
               Icon(
                 Icons.chevron_right,
                 color: Colors.grey,
-                size: 20.sp,
+                size: 22.sp,
               ),
             ],
           ),
@@ -716,8 +702,6 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
   }
 
   Widget _buildDataMove() {
-    trackScreenView('move_summary_modal_opened');
-    trackEvent('view_calculated_price_summary');
     print("🔢 Precio bruto recibido: ${widget.calculatedPrice}");
     String? priceString = widget.calculatedPrice?.replaceAll(",", "");
     Decimal correctedPrice = Decimal.tryParse(priceString ?? '0') ?? Decimal.zero;
@@ -825,9 +809,9 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
           ),
           Divider(color: Colors.grey.withOpacity(0.3), thickness: 1),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 5.w),
+            padding: EdgeInsets.symmetric(horizontal: 1.w),
             child: _buildSettingMethodPay(
-              icon: Icons.money,
+              icon: Icons.credit_card,
               titleWidget: Text.rich(
                 TextSpan(
                   text: 'Mi forma de pago es con ',
@@ -863,7 +847,7 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 10.w),
             child: SizedBox(
-              height: 45.h,
+              height: 40.h,
               width: double.infinity,
               child: ConfirmButton(
                 typeOfMove: widget.typeOfMove!,
@@ -900,7 +884,6 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
               ),
             ),
           ),
-          SizedBox(height: 4.h),
         ],
       ),
     );

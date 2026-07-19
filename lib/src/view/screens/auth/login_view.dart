@@ -1,6 +1,4 @@
-import 'dart:developer';
 import 'package:another_flushbar/flushbar.dart';
-import 'package:holi/src/view/screens/welcome/introducction_view.dart';
 import 'package:holi/src/viewmodels/auth/auth_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
@@ -9,6 +7,7 @@ import 'package:holi/src/view/screens/support/support_view.dart';
 import 'package:holi/src/view/screens/user/home_user_view.dart';
 import 'package:holi/src/view/widget/button/button_account_widget.dart';
 import 'package:holi/src/viewmodels/auth/password_reset_viewmodel.dart';
+import 'package:holi/src/viewmodels/auth/sesion_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -293,30 +292,15 @@ class _LoginState extends State<LoginView> {
 
     final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
 
-    try {
-      if (mounted) setState(() => _isLoading = true);
-      final response = await authViewModel.login(email, password);
+    if (mounted) setState(() => _isLoading = true);
 
-      // if (mounted) setState(() => _isLoading = true);
+    final success = await authViewModel.login(email, password);
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('intro_view', true);
-      final role = prefs.getString('role');
-
-      log("ROL OBTENIDO: $role");
-
-      if (role == "USER") {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeUserView()));
-      } else if (role == "DRIVER") {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeDriverView()));
-      }
-    } catch (e) {
+    if (!success) {
       if (mounted) setState(() => _isLoading = false);
-      final error = authViewModel.errorMessage ?? "Correo o contraseña incorrectos.";
-
       Flushbar(
         title: 'Error',
-        message: error,
+        message: authViewModel.errorMessage ?? "Correo o contraseña incorrectos.",
         backgroundColor: AppTheme.warningcolor,
         icon: const Icon(
           Icons.error_outline,
@@ -328,10 +312,38 @@ class _LoginState extends State<LoginView> {
         duration: const Duration(seconds: 3),
         flushbarPosition: FlushbarPosition.TOP,
       ).show(context);
+      return;
     }
-    /* finally {
+
+    // Sincroniza SessionViewModel en memoria con lo guardado en prefs.
+    await context.read<SessionViewModel>().loadSession();
+
+    final prefs = await SharedPreferences.getInstance();
+    final role = prefs.getString('role');
+    final userId = prefs.getInt('userId');
+    final token = prefs.getString('token');
+
+    print("🧭 [LoginView] Navegando con role=$role, userId=$userId, token=$token");
+
+    if (!mounted) return;
+
+    if (role == "USER") {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeUserView()));
+    } else if (role == "DRIVER") {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeDriverView()));
+    } else {
       if (mounted) setState(() => _isLoading = false);
-    }*/
+      Flushbar(
+        title: 'Error',
+        message: "No se pudo obtener el rol del usuario",
+        backgroundColor: AppTheme.warningcolor,
+        icon: const Icon(Icons.error_outline, size: 28.0, color: Colors.white),
+        borderRadius: BorderRadius.circular(8),
+        margin: const EdgeInsets.all(8),
+        duration: const Duration(seconds: 3),
+        flushbarPosition: FlushbarPosition.TOP,
+      ).show(context);
+    }
   }
 
   @override
