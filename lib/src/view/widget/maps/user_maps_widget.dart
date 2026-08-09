@@ -50,13 +50,14 @@ class _UserMapWidgetState extends State<UserMapWidget> {
     super.didUpdateWidget(oldWidget);
 
     final routeChanged = widget.route != oldWidget.route;
+    print("🔄 [UserMapWidget] didUpdateWidget: routeChanged = $routeChanged (old: ${oldWidget.route.length}, new: ${widget.route.length})");
+    print("🗺️ [UserMapWidget] _mapReady: $_mapReady");
+
     final driverMoved = widget.driverLocation != oldWidget.driverLocation;
 
-    if ((routeChanged || driverMoved) && _mapReady) {
-      // Solo centramos el mapa si la ruta cambió o si es la primera vez que aparece el conductor
-      bool shouldCenter = routeChanged || (oldWidget.driverLocation == null && widget.driverLocation != null);
-      _drawRoute(shouldCenter: shouldCenter);
-    }
+    // Siempre que la ruta cambie o el conductor se mueva, redibujamos y centramos.
+    // El centrado es clave para mantener la vista completa.
+    if ((routeChanged || driverMoved) && _mapReady) _drawRoute(shouldCenter: true);
   }
 
   @override
@@ -75,21 +76,17 @@ class _UserMapWidgetState extends State<UserMapWidget> {
           zoomControlsEnabled: false,
           markers: _markers,
           polylines: _polylines,
-          padding: EdgeInsets.only(bottom: 250.h, top: 10.h, right: 0, left: 0),
+          padding: EdgeInsets.only(bottom: 150.h, top: 10.h, right: 0, left: 0),
           onMapCreated: (controller) async {
             _mapController = controller;
             _controller.complete(controller);
             _mapReady = true;
+            print("✅ [UserMapWidget] onMapCreated: Mapa listo. widget.route.length: ${widget.route.length}");
 
-            if (widget.driverLocation != null) {
-              print("🚀 onMapCreated: driverLocation disponible, creando marcador...");
-              _updateDriverMarker(widget.driverLocation!);
-              _moveCameraToDriver(widget.driverLocation);
-            }
+            // Al crear el mapa, si ya hay datos, los dibujamos y centramos la vista.
             if (widget.route.isNotEmpty || widget.driverLocation != null) {
-              _drawRoute();
-            } else {
-              _moveCameraToDriver(widget.driverLocation);
+              // El `shouldCenter: true` asegura que la cámara se posicione correctamente desde el inicio.
+              _drawRoute(shouldCenter: true);
             }
           },
         ),
@@ -158,20 +155,17 @@ class _UserMapWidgetState extends State<UserMapWidget> {
     if (_mapReady && widget.driverLocation != null) {
       print("🛠 Desde _loadCustomIcons: Agregando marcador del conductor");
       _updateDriverMarker(widget.driverLocation!);
-      _moveCameraToDriver(widget.driverLocation!);
     }
     if (mounted) _drawRoute();
   }
 
   void _drawRoute({bool shouldCenter = false}) {
+    print("🎨 [UserMapWidget] _drawRoute llamado. _mapReady: $_mapReady, widget.route.length: ${widget.route.length}");
     if (!_mapReady) return;
+    print("🎨 [UserMapWidget] _drawRoute: Dibujando ruta con ${widget.route.length} puntos.");
 
-    List<LatLng> pointsToInclude = List.from(widget.route);
-    pointsToInclude.add(widget.origin);
-    pointsToInclude.add(widget.destination);
-
-    if (widget.driverLocation != null) pointsToInclude.add(widget.driverLocation!);
-
+    // Siempre incluimos origen y destino en los marcadores.
+    // El destino real es el último punto de la ruta si existe.
     final Set<Marker> updatedMarkers = {
       Marker(markerId: const MarkerId('origin'), position: widget.origin, icon: _originIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen), anchor: const Offset(0.5, 0.5)),
       Marker(
@@ -182,6 +176,9 @@ class _UserMapWidgetState extends State<UserMapWidget> {
       ),
     };
 
+    print("📍 [UserMapWidget] _drawRoute: Añadiendo marcadores. Origen: ${widget.origin}, Destino: ${widget.destination}");
+
+    // Si tenemos la ubicación del conductor y el ícono está listo, lo agregamos.
     if (widget.driverLocation != null && _driverIcon != null) {
       updatedMarkers.add(Marker(
         markerId: const MarkerId('driver'),
@@ -194,6 +191,9 @@ class _UserMapWidgetState extends State<UserMapWidget> {
     }
 
     Set<Polyline> updatedPolylines = {};
+
+    // Si hay una ruta, la dibujamos.
+    print("เส้น [UserMapWidget] _drawRoute: widget.route.isNotEmpty = ${widget.route.isNotEmpty}");
     if (widget.route.isNotEmpty) {
       updatedPolylines.add(Polyline(
         polylineId: const PolylineId('user_route'),
@@ -212,13 +212,31 @@ class _UserMapWidgetState extends State<UserMapWidget> {
       _polylines = updatedPolylines;
     });
 
-    if (shouldCenter && pointsToInclude.isNotEmpty) {
+    // Si se debe centrar, calculamos los puntos a incluir en la vista.
+    if (shouldCenter) {
+      final List<LatLng> pointsToInclude = [];
+      if (widget.route.isNotEmpty) {
+        pointsToInclude.addAll(widget.route);
+      } else {
+        pointsToInclude.addAll([widget.origin, widget.destination]);
+      }
+      if (widget.driverLocation != null) pointsToInclude.add(widget.driverLocation!);
       _centerMap(pointsToInclude);
+      if (pointsToInclude.isNotEmpty) _centerMap(pointsToInclude);
     }
   }
 
   Future<void> _centerMap(List<LatLng> points) async {
     try {
+      // Si no hay ruta, mostramos la vista general de Colombia.
+      if (widget.route.isEmpty && _mapController != null) {
+        print("🗺️ No hay ruta activa. Mostrando vista de Colombia.");
+        await _mapController!.animateCamera(
+          CameraUpdate.newLatLngZoom(const LatLng(4.5709, -74.2973), 5.5), // Coordenadas y zoom para Colombia
+        );
+        return;
+      }
+
       if (points.length < 2) {
         print("⚠️ Muy pocos puntos para centrar el mapa");
         if (points.isNotEmpty && _mapController != null) {
@@ -235,10 +253,19 @@ class _UserMapWidgetState extends State<UserMapWidget> {
       }
 
       final bounds = _calculateBounds(points);
+
+      // Check if the bounds represent a single point (or very close to it)
+      // This happens when origin and destination are the same, or only one point is provided.
+      if (bounds.southwest.latitude == bounds.northeast.latitude &&
+          bounds.southwest.longitude == bounds.northeast.longitude) {
+        await _mapController!.animateCamera(
+          CameraUpdate.newLatLngZoom(bounds.southwest, 14.0), // Default zoom for a single point
+        );
+        return;
+      }
       double adaptivePadding = 80.w;
 
-      await _mapController!.animateCamera(
-          CameraUpdate.newLatLngBounds(bounds, adaptivePadding));
+      await _mapController!.animateCamera(CameraUpdate.newLatLngBounds(bounds, adaptivePadding));
     } catch (e) {
       print("🎯 Error centrando mapa: $e");
 
@@ -346,19 +373,6 @@ class _UserMapWidgetState extends State<UserMapWidget> {
     } catch (e) {
       print("❌ Error generando ícono: $e");
       return BitmapDescriptor.defaultMarker;
-    }
-  }
-
-  Future<void> _moveCameraToDriver(LatLng? driverPosition) async {
-    try {
-      if (driverPosition == null) return;
-
-      final controller = await _controller.future;
-      await controller.animateCamera(
-        CameraUpdate.newLatLngZoom(driverPosition, 16),
-      );
-    } catch (e) {
-      print("❌ Error al mover la cámara al conductor: $e");
     }
   }
 

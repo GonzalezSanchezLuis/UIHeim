@@ -6,12 +6,17 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 @pragma('vm:entry-point')
 class FirebaseMessagingService {
+  /// Llamado cuando llega un mensaje FCM en foreground (sin tap).
   static Function(Map<String, dynamic> data)? onNewTripData;
+
+  /// Llamado cuando el usuario toca la notificación local.
+  static Function(Map<String, dynamic> data)? onNotificationOpened;
+
   static final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   static const String _soundName = 'audiologoheim';
   static const String _channelId = 'heim_trips_channel_v1';
-  // 🔔 Inicializa todo: notificaciones locales + listeners de FCM
+
   Future<void> initialize() async {
     await Firebase.initializeApp();
     initializeNotifications();
@@ -21,6 +26,8 @@ class FirebaseMessagingService {
       print('Título: ${message.notification?.title}');
       print('Mensaje: ${message.notification?.body}');
       print(message.data);
+
+      
 
       if (onNewTripData != null) {
         onNewTripData!(message.data);
@@ -33,18 +40,19 @@ class FirebaseMessagingService {
     print('📱 Token FCM: $token');
   }
 
-  // 🔔 Inicializa las notificaciones locales
   void initializeNotifications() {
-    const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('ic_notification');
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('ic_notification');
 
-    const InitializationSettings initializationSettings = InitializationSettings(android: initializationSettingsAndroid);
+    const InitializationSettings initializationSettings =
+        InitializationSettings(android: initializationSettingsAndroid);
 
     flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
         if (response.payload != null) {
-          final data = jsonDecode(response.payload!);
-          onNewTripData?.call(data);
+          final data = Map<String, dynamic>.from(jsonDecode(response.payload!) as Map);
+          onNotificationOpened?.call(data);
         }
       },
     );
@@ -52,8 +60,7 @@ class FirebaseMessagingService {
     _createNotificationChannel();
   }
 
-  // 🔔 Mostrar notificación local
-  void showNotification(RemoteMessage message) async {
+  Future<void> showNotification(RemoteMessage message) async {
     const AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
       _channelId,
       'Cargas Nuevas',
@@ -67,7 +74,8 @@ class FirebaseMessagingService {
       sound: RawResourceAndroidNotificationSound(_soundName),
     );
 
-    const NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
+    const NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
 
     await flutterLocalNotificationsPlugin.show(
       message.hashCode,
@@ -78,7 +86,6 @@ class FirebaseMessagingService {
     );
   }
 
-  // 🔧 Crear canal de notificación
   Future<void> _createNotificationChannel() async {
     const AndroidNotificationChannel channel = AndroidNotificationChannel(
       _channelId,
@@ -89,16 +96,20 @@ class FirebaseMessagingService {
       sound: RawResourceAndroidNotificationSound(_soundName),
     );
 
-    await flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(channel);
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
   }
 }
 
-// 🔕 Notificación en background
 @pragma('vm:entry-point')
 Future<void> _backgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   print('🔕 Notificación en background');
   print('Título: ${message.notification?.title}');
   print('Mensaje: ${message.notification?.body}');
+  print('📦 Data payload: ${message.data}');
   log('📦 Data payload: ${message.data}');
+
+ 
 }

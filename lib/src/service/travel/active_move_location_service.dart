@@ -1,5 +1,5 @@
-import 'package:holi/src/service/moves/moving_details_service.dart';
-import 'package:holi/src/service/moves/restore_move_service.dart';
+import 'package:holi/src/service/travel/moving_details_service.dart';
+import 'package:holi/src/service/travel/restore_move_service.dart';
 
 /// Obtiene el estado más reciente del viaje (incl. driverLat/driverLng) vía HTTP.
 class ActiveMoveLocationService {

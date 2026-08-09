@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_config.dart';
@@ -6,6 +7,7 @@ import 'package:holi/config/app_config.dart';
 import 'package:flutter/material.dart';
 
 typedef MessageCallback = void Function(Map<String, dynamic> data);
+final onMoveCancelled = StreamController<String>.broadcast();
 
 class WebsocketUserService {
   StompClient? _client;
@@ -33,7 +35,7 @@ class WebsocketUserService {
     _client!.activate();
   }
 
-  void _onConnect(StompFrame frame) {
+ void _onConnect(StompFrame frame) {
     _client!.subscribe(
         destination: '/topic/user/$userId',
         callback: (frame) {
@@ -45,6 +47,8 @@ class WebsocketUserService {
         );
         print("SOCKET USUARIO CONECTADO EXITOSAMENTE");
   }
+
+
 
   bool get isConnected => _client?.isActive ?? false;
 

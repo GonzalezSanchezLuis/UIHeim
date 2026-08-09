@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
-import 'package:holi/src/view/screens/move/driver_information_view.dart';
+import 'package:holi/src/view/screens/travel/driver_information_view.dart';
 import 'package:holi/src/viewmodels/driver/driver_data_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';

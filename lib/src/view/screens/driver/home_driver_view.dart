@@ -14,9 +14,9 @@ import 'package:holi/src/utils/format_price.dart';
 import 'package:holi/src/view/screens/auth/login_view.dart';
 import 'package:holi/src/view/screens/driver/driver_view.dart';
 import 'package:holi/src/view/screens/driver/wallet_view.dart';
-import 'package:holi/src/view/screens/move/history_move_view.dart';
+import 'package:holi/src/view/screens/travel/history_move_view.dart';
 import 'package:holi/src/viewmodels/fcm/fcm_viewmodel.dart';
-import 'package:holi/src/viewmodels/move/restore_move_viewmodel.dart';
+import 'package:holi/src/viewmodels/travel/restore_move_viewmodel.dart';
 import 'package:holi/src/view/widget/button/button_card_home_widget.dart';
 import 'package:holi/src/view/widget/card/bottom_move_card.dart';
 import 'package:holi/src/view/widget/card/floating_move_card_wrapper.dart';
@@ -28,7 +28,7 @@ import 'package:holi/src/viewmodels/driver/profile_driver_viewmodel.dart';
 import 'package:holi/src/viewmodels/driver/route_driver_viewmodel.dart';
 import 'package:holi/src/viewmodels/driver/driver_location_viewmodel.dart';
 import 'package:holi/src/viewmodels/driver/driver_status_viewmodel.dart';
-import 'package:holi/src/viewmodels/move/websocket/move_notification_driver_viewmodel.dart';
+import 'package:holi/src/viewmodels/travel/websocket/move_notification_driver_viewmodel.dart';
 import 'package:holi/src/viewmodels/payment/wallet_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -73,7 +73,6 @@ class _HomeDriverState extends State<HomeDriverView> {
       await _validateGpsAndPermissions(context);
       await _setInitialLocation();
       Provider.of<DriverStatusViewmodel>(context, listen: false).loadDriverStatusViewmodel();
-      final driverLocationVM = Provider.of<DriverLocationViewmodel>(context, listen: false);
       final sessionVM = Provider.of<SessionViewModel>(context, listen: false);
 
       final prefs = await SharedPreferences.getInstance();
@@ -167,7 +166,6 @@ class _HomeDriverState extends State<HomeDriverView> {
               if (restoredMove != null && _currentMoveData == null) {
                 log("🔄 [HomeDriverView] Sincronizando UI con viaje recuperado");
 
-                // Extraemos la información del viaje (el objeto 'move' si viene del WebSocket)
                 final Map<String, dynamic> dataToRestore = restoredMove.containsKey('move') ? Map<String, dynamic>.from(restoredMove['move']) : Map<String, dynamic>.from(restoredMove);
 
                 WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -217,7 +215,7 @@ class _HomeDriverState extends State<HomeDriverView> {
             }),
             if (!isMoveDataPresent)
               Positioned(
-                top: 50.h,
+                top: 20.h,
                 left: 15.w,
                 child: SafeArea(
                   child: Container(
@@ -256,54 +254,6 @@ class _HomeDriverState extends State<HomeDriverView> {
                           ),
                         ),
                       ),
-                      /*  Container(
-                          width: 1.w,
-                          height: 35.h,
-                          color: Colors.grey.withOpacity(0.3),
-                          margin: EdgeInsets.symmetric(horizontal: 5.w),
-                        ),
-                        Consumer<WalletViewmodel>(builder: (context, walletViewModel, _) {
-                          if (walletViewModel.isLoading) {
-                            return Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 20.w),
-                              child: SizedBox(height: 18.h, width: 18.h, child: const CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
-                            );
-                          }
-
-                          final double available = walletViewModel.wallet?.availableBalance ?? 0.00;
-                          final double pending = walletViewModel.wallet?.pendingBalance ?? 0.00;
-
-                          final double totalBalance = available + pending;
-
-                          final String formattedBalance = totalBalance.toStringAsFixed(2);
-                          final String raw = formatPriceMovingDetails(formattedBalance);
-
-                          return GestureDetector(
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const WalletView())),
-                            child: Container(
-                              constraints: BoxConstraints(maxWidth: 160.w),
-                              padding: EdgeInsets.only(left: 8.w, right: 15.w, top: 10.h, bottom: 10.h),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                /* Flexible(
-                                    child: Text(
-                                      raw,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: 18.sp,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
-                                    ), 
-                                  ), */
-                                  SizedBox(width: 8.w),
-                                  Icon(Icons.arrow_forward_ios, size: 14.sp, color: Colors.white70),
-                                ],
-                              ),
-                            ),
-                          );
-                        }),*/
                     ]),
                   ),
                 ),
@@ -320,106 +270,101 @@ class _HomeDriverState extends State<HomeDriverView> {
             // Tarjeta inferior con botones
             _currentMoveData == null
                 ? Positioned(
-                    bottom: 0,
+                    bottom: MediaQuery.of(context).padding.bottom,
                     left: 0,
                     right: 0,
                     child: Consumer2<RouteDriverViewmodel, DriverStatusViewmodel>(
                       builder: (context, directionsViewModel, driverViewModel, child) {
                         final bool hasMoveData = directionsViewModel.moveData != null && directionsViewModel.moveData!.isNotEmpty && _currentMoveData == null;
-                        final double bottomPanelHeightFactor = hasMoveData ? 0.38 : (profileViewModel.isDriverActive ? 0.16 : 0.22);
-                        final double bottomInset = MediaQuery.paddingOf(context).bottom;
+                        final double bottomPanelHeightFactor = hasMoveData ? 0.40 : (profileViewModel.isDriverActive ? 0.12 : 0.22);
+                        //  final double bottomInset = MediaQuery.paddingOf(context).bottom;
 
-                        return Padding(
-                          padding: EdgeInsets.only(bottom: bottomInset),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 400),
-                            curve: Curves.fastOutSlowIn,
-                            height: MediaQuery.of(context).size.height * bottomPanelHeightFactor,
-                            decoration: BoxDecoration(
-                              color: Colors.black,
-                              borderRadius: BorderRadius.only(
-                                topRight: Radius.circular(20.r),
-                                topLeft: Radius.circular(20.r),
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 8,
-                                ),
-                              ],
+                        return AnimatedContainer(
+                          duration: const Duration(milliseconds: 400),
+                          curve: Curves.fastOutSlowIn,
+                          height: MediaQuery.of(context).size.height * bottomPanelHeightFactor,
+                          decoration: BoxDecoration(
+                            color: Colors.black,
+                            borderRadius: BorderRadius.only(
+                              topRight: Radius.circular(20.r),
+                              topLeft: Radius.circular(20.r),
                             ),
-                            child: Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-                                child: driverViewModel.connectionStatus == null
-                                    ? const Center(
-                                        child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                      ))
-                                    : hasMoveData
-                                        ? MoveRequestCard(
-                                            moveData: directionsViewModel.moveData!,
-                                            onMoveAccepted: (data) async {
-                                              log("🤝 [HomeDriverView] Aceptando viaje. Iniciando persistencia...");
-                                              directionsViewModel.stopTimerAndRemoveRequest();
-
-                                              // ✅ GUARDAR EL VIAJE INMEDIATAMENTE EN DISCO
-                                              await Provider.of<DriverStatusViewmodel>(context, listen: false).acceptTrip(data);
-
-                                              // await BackgroundLocationService.start();
-                                              WakelockPlus.enable();
-                                              await ScreenHelper.enableTravelMode();
-                                              setState(() {
-                                                _currentMoveData = data;
-                                              });
-                                            },
-                                          )
-                                        : Row(
-                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                            children: [
-                                              if (profileViewModel.isDriverActive) ...[
-                                                Expanded(
-                                                  child: driverViewModel.connectionStatus!.isConnected ? _buildDisconnectCard() : _buildConnectCard(),
-                                                ),
-                                                SizedBox(width: 10.w),
-                                                _buildHistoryButton(),
-                                              ] else
-                                                const Expanded(
-                                                  child: VerifcationPendingCard(),
-                                                ),
-                                            ],
-                                          )),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 8,
+                              ),
+                            ],
                           ),
+                          child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                              child: driverViewModel.connectionStatus == null
+                                  ? const Center(
+                                      child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                    ))
+                                  : hasMoveData
+                                      ? MoveRequestCard(
+                                          moveData: directionsViewModel.moveData!,
+                                          onMoveAccepted: (data) async {
+                                            log("🤝 [HomeDriverView] Aceptando viaje. Iniciando persistencia...");
+                                            directionsViewModel.stopTimerAndRemoveRequest();
+                                            await Provider.of<DriverStatusViewmodel>(context, listen: false).acceptTrip(data);
+
+                                            // await BackgroundLocationService.start();
+                                            WakelockPlus.enable();
+                                            await ScreenHelper.enableTravelMode();
+                                            setState(() {
+                                              _currentMoveData = data;
+                                            });
+                                          },
+                                        )
+                                      : Row(
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          children: [
+                                            if (profileViewModel.isDriverActive) ...[
+                                              Expanded(
+                                                child: driverViewModel.connectionStatus!.isConnected ? _buildDisconnectCard() : _buildConnectCard(),
+                                              ),
+                                              SizedBox(width: 10.w),
+                                              _buildHistoryButton(),
+                                            ] else
+                                              const Expanded(
+                                                child: VerifcationPendingCard(),
+                                              ),
+                                          ],
+                                        )),
                         );
                       },
                     ),
                   )
                 : Positioned(
-                    bottom: 0,
+                    // Este es el caso cuando hay un viaje activo (_currentMoveData != null)
+                    bottom: MediaQuery.of(context).padding.bottom,
                     left: 0,
                     right: 0,
-                    child: SafeArea(
-                      child: Consumer<SessionViewModel>(
-                        builder: (context, sessionVM, child) {
-                          debugPrint("🔥 sessionVM.isInitialized: ${sessionVM.isInitialized}");
-                          debugPrint("🔥 _currentMoveData: $_currentMoveData");
+                    child: Consumer<SessionViewModel>(
+                      builder: (context, sessionVM, child) {
+                        debugPrint("🔥 sessionVM.isInitialized: ${sessionVM.isInitialized}");
+                        debugPrint("🔥 _currentMoveData: $_currentMoveData");
 
-                          final rawMoveId = _currentMoveData?['moveId'];
-                          final moveId = rawMoveId is int ? rawMoveId : int.tryParse(rawMoveId?.toString() ?? '');
+                        final rawMoveId = _currentMoveData?['moveId'];
+                        final moveId = rawMoveId is int ? rawMoveId : int.tryParse(rawMoveId?.toString() ?? '');
 
-                          print("ID DE LA MUDANZA $moveId");
-                          final driverId = sessionVM.userId;
+                        print("ID DE LA MUDANZA $moveId");
+                        final driverId = sessionVM.userId;
 
-                          if (moveId == null || driverId == null) {
-                            return Text('Datos inválidos');
-                          }
+                        if (moveId == null || driverId == null) {
+                          return Text('Datos inválidos');
+                        }
 
-                          return BottomMoveCard(
-                            moveId: moveId,
-                            driverId: driverId,
-                          );
-                        },
-                      ),
-                    )),
+                        return BottomMoveCard(
+                          moveId: moveId,
+                          driverId: driverId,
+                        );
+                      },
+                    ),
+                  )
           ],
         );
       });

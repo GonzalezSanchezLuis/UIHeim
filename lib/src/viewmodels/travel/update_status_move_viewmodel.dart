@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/enums/status_of_the_move.dart';
-import 'package:holi/src/model/move/move_status_update_model.dart';
-import 'package:holi/src/service/moves/update_status_move_service.dart';
+import 'package:holi/src/model/travel/move_status_update_model.dart';
+import 'package:holi/src/service/travel/update_status_move_service.dart';
 
 class UpdateStatusMoveViewmodel extends ChangeNotifier {
   final UpdateStatusMoveService _updateStatusMoveService = UpdateStatusMoveService();

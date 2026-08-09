@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:holi/src/service/moves/accept_move_service.dart';
+import 'package:holi/src/service/travel/accept_move_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AcceptMoveViewmodel extends ChangeNotifier {

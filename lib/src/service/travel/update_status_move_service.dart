@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:holi/src/core/enums/status_of_the_move.dart';
-import 'package:holi/src/model/move/move_status_update_model.dart';
+import 'package:holi/src/model/travel/move_status_update_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:holi/config/app_config.dart';
 

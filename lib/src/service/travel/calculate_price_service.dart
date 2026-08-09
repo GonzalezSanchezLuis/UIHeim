@@ -17,6 +17,8 @@ class CalculatePriceService {
     required double? originLng,
     required double? destinationLat,
     required double? destinationLng,
+    required String? addressee,
+    required String? recipientPhoneNumber
    
   }) async {
     try {
@@ -31,6 +33,8 @@ class CalculatePriceService {
         if (originLng != null) 'originLng': originLng,
         if (destinationLat != null) 'destinationLat': destinationLat,
         if (destinationLng != null) 'destinationLng': destinationLng,
+        "addressee":addressee,
+        "recipientPhoneNumber": recipientPhoneNumber
       };
 
       log("DATA QUE SE ENVIA PARA EL SERVIDOR $requestBody");

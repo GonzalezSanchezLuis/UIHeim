@@ -3,7 +3,7 @@ import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/core/theme/fonts/style_fonts_title.dart';
 import 'package:holi/src/utils/format_price.dart';
 import 'package:holi/src/view/screens/driver/home_driver_view.dart';
-import 'package:holi/src/viewmodels/move/moving_summary_viewmodel.dart';
+import 'package:holi/src/viewmodels/travel/moving_summary_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 

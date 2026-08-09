@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:holi/src/service/moves/moving_details_service.dart';
+import 'package:holi/src/service/travel/moving_details_service.dart';
 
 class MovingDetailsViewmodel extends ChangeNotifier {
   MovingDetailsService movingDetailsService = MovingDetailsService();

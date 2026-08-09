@@ -12,10 +12,10 @@ import 'package:holi/src/core/dl/dependency_injection.dart';
 import 'package:holi/src/service/auth/auth_service.dart';
 import 'package:holi/src/service/fcm/firebase_messaging_service.dart';
 import 'package:holi/src/service/location/background_location_service.dart';
-import 'package:holi/src/service/moves/accept_move_service.dart';
-import 'package:holi/src/service/moves/update_status_move_service.dart';
+import 'package:holi/src/service/travel/accept_move_service.dart';
+import 'package:holi/src/service/travel/update_status_move_service.dart';
 import 'package:holi/src/view/screens/driver/home_driver_view.dart';
-import 'package:holi/src/viewmodels/move/restore_move_viewmodel.dart';
+import 'package:holi/src/viewmodels/travel/restore_move_viewmodel.dart';
 import 'package:holi/src/view/screens/user/home_user_view.dart';
 import 'package:holi/src/view/screens/welcome/wrapper_view.dart';
 import 'package:holi/src/viewmodels/auth/auth_viewmodel.dart';
@@ -27,15 +27,15 @@ import 'package:holi/src/viewmodels/driver/route_driver_viewmodel.dart';
 import 'package:holi/src/viewmodels/driver/driver_location_viewmodel.dart';
 import 'package:holi/src/viewmodels/driver/driver_status_viewmodel.dart';
 import 'package:holi/src/viewmodels/location/location_viewmodel.dart';
-import 'package:holi/src/viewmodels/move/accept_move_viewmodel.dart';
-import 'package:holi/src/viewmodels/move/calculate_price_viewmodel.dart';
-import 'package:holi/src/viewmodels/move/confirm_move_viewmodel.dart';
-import 'package:holi/src/viewmodels/move/finish_move_viewmodel.dart';
-import 'package:holi/src/viewmodels/move/moving_history_viewmodel.dart';
-import 'package:holi/src/viewmodels/move/moving_details_viewmodel.dart';
-import 'package:holi/src/viewmodels/move/moving_summary_viewmodel.dart';
-import 'package:holi/src/viewmodels/move/update_status_move_viewmodel.dart';
-import 'package:holi/src/viewmodels/move/websocket/move_notification_driver_viewmodel.dart';
+import 'package:holi/src/viewmodels/travel/accept_move_viewmodel.dart';
+import 'package:holi/src/viewmodels/travel/calculate_price_viewmodel.dart';
+import 'package:holi/src/viewmodels/travel/confirm_move_viewmodel.dart';
+import 'package:holi/src/viewmodels/travel/finish_move_viewmodel.dart';
+import 'package:holi/src/viewmodels/travel/moving_history_viewmodel.dart';
+import 'package:holi/src/viewmodels/travel/moving_details_viewmodel.dart';
+import 'package:holi/src/viewmodels/travel/moving_summary_viewmodel.dart';
+import 'package:holi/src/viewmodels/travel/update_status_move_viewmodel.dart';
+import 'package:holi/src/viewmodels/travel/websocket/move_notification_driver_viewmodel.dart';
 import 'package:holi/src/viewmodels/payment/payment_driver_account_viewmodel.dart';
 import 'package:holi/src/viewmodels/payment/wallet_viewmodel.dart';
 import 'package:holi/src/viewmodels/user/get_driver_location_viewmodel.dart';
@@ -90,66 +90,99 @@ void main() async {
   await FirebaseMessaging.instance.requestPermission();
 
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-    print('📲 Notificación abierta por el conductor');
-
-    if (message.data.isNotEmpty) {
-      print('📦 Datos del viaje: ${message.data}');
-
-      final role = message.data['role'];
-
-      // Espera a que el contexto esté disponible
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        final context = navigatorKey.currentContext;
-        if (context != null && context.mounted) {
-          final viewModel = Provider.of<RouteDriverViewmodel>(context, listen: false);
-          final getDriverLocationViewmodel = Provider.of<GetDriverLocationViewmodel>(context, listen: false);
-          viewModel.updateMoveData(message.data);
-          getDriverLocationViewmodel.setMoveData(message.data);
-
-          if (role == 'DRIVER') {
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (_) => const HomeDriverView()),
-              (route) => false,
-            );
-          } else {
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (_) => const HomeUserView()),
-              (route) => false,
-            );
-          }
-        } else {
-          print('⚠️ Contexto no disponible aún');
-        }
-      });
-    }
+    print('📲 Notificación abierta desde background');
+    _handleNotificationOpen(message.data);
   });
 
-  RemoteMessage? initialMessage = await FirebaseMessaging.instance.getInitialMessage();
-  if (initialMessage != null && initialMessage.data.isNotEmpty) {
-    Future.delayed(Duration.zero, () {
-      final context = navigatorKey.currentContext;
-      if (context != null && context.mounted) {
-        final viewModel = Provider.of<RouteDriverViewmodel>(context, listen: false);
-        viewModel.updateMoveData(initialMessage.data);
+  FirebaseMessagingService.onNotificationOpened = (data) {
+    // Tap sobre notificación local (app en foreground)
+    _handleNotificationOpen(Map<String, dynamic>.from(data));
+  };
 
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const HomeDriverView()),
-          (route) => false,
-        );
-      }
-    });
-  }
+  final RemoteMessage? initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+  final Map<String, dynamic>? pendingInitialNotification =
+      (initialMessage != null && initialMessage.data.isNotEmpty)
+          ? Map<String, dynamic>.from(initialMessage.data)
+          : null;
 
-  runApp(ChangeNotifierProvider.value(value: sessionVM, child: App(navigatorKey: navigatorKey)));
+  runApp(ChangeNotifierProvider.value(
+    value: sessionVM,
+    child: App(
+      navigatorKey: navigatorKey,
+      pendingInitialNotification: pendingInitialNotification,
+    ),
+  ));
 }
 
-class App extends StatelessWidget {
+void _handleNotificationOpen(Map<String, dynamic> data) {
+  if (data.isEmpty) return;
+  print('📦 Datos del viaje (notificación): $data');
+
+  void navigate() {
+    final context = navigatorKey.currentContext;
+    if (context == null || !context.mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => navigate());
+      return;
+    }
+
+    final role = (data['role'] ?? '').toString().toUpperCase();
+    final getDriverLocationViewmodel =
+        Provider.of<GetDriverLocationViewmodel>(context, listen: false);
+         getDriverLocationViewmodel.setMoveData(data);
+
+    if (role == 'DRIVER') {
+      final viewModel = Provider.of<RouteDriverViewmodel>(context, listen: false);
+      viewModel.updateMoveData(data);
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const HomeDriverView()),
+        (route) => false,
+      );
+    } else {
+      // USER (u otro): abrir home del usuario con el payload para trazar la ruta
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (_) => HomeUserView(initialIncomingMoveData: data),
+        ),
+        (route) => false,
+      );
+    }
+  }
+
+  WidgetsBinding.instance.addPostFrameCallback((_) => navigate());
+}
+
+class App extends StatefulWidget {
   final GlobalKey<NavigatorState> navigatorKey;
+  final Map<String, dynamic>? pendingInitialNotification;
+
+  const App({
+    super.key,
+    required this.navigatorKey,
+    this.pendingInitialNotification,
+  });
+
+  @override
+  State<App> createState() => _AppState();
+}
+
+class _AppState extends State<App> {
   final FirebaseAnalyticsObserver _observer = FirebaseAnalyticsObserver(
     analytics: FirebaseAnalytics.instance,
   );
-   App({super.key, required this.navigatorKey});
-  
+
+  @override
+  void initState() {
+    super.initState();
+    final pending = widget.pendingInitialNotification;
+    if (pending != null && pending.isNotEmpty) {
+      // Cold start: esperar a que el árbol (Providers + navigator) esté listo
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Future.delayed(const Duration(milliseconds: 400), () {
+          _handleNotificationOpen(pending);
+        });
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -166,7 +199,6 @@ class App extends StatelessWidget {
             ChangeNotifierProvider(create: (context) => LocationViewModel()),
             ChangeNotifierProvider(create: (context) => ConfirmMoveViewModel()),
             ChangeNotifierProvider(create: (context) => DriverStatusViewmodel()),
-            // ChangeNotifierProvider(create: (context) => RouteDriverViewmodel()),
             ChangeNotifierProvider(create: (context) => DriverLocationViewmodel()),
             ChangeNotifierProvider(create: (context) => AcceptMoveViewmodel(AcceptMoveService())),
             ChangeNotifierProvider(create: (context) => GetDriverLocationViewmodel()),
@@ -176,7 +208,6 @@ class App extends StatelessWidget {
             ChangeNotifierProvider(create: (context) => PasswordResetViewmodel()),
             ChangeNotifierProvider(create: (context) => RouteUserViewmodel()),
             ChangeNotifierProvider(create: (_) => ProfileDriverViewModel()..fetchDriverData()),
-            //  ChangeNotifierProvider(create: (context) => MoveNotificationDriverViewmodel()),
             ChangeNotifierProvider(create: (context) => MovingSummaryViewmodel()),
             ChangeNotifierProvider(create: (context) => MovingHistoryViewmodel()),
             ChangeNotifierProvider(create: (context) => MovingDetailsViewmodel()),
@@ -202,14 +233,13 @@ class App extends StatelessWidget {
                     )),
           ],
           child: MaterialApp(
-              navigatorKey: navigatorKey,
+              navigatorKey: widget.navigatorKey,
               theme: ThemeData(
                 textTheme: GoogleFonts.latoTextTheme(Theme.of(context).textTheme).copyWith(
                   bodyMedium: GoogleFonts.ubuntu(textStyle: Theme.of(context).textTheme.bodyMedium),
                 ),
               ),
               debugShowCheckedModeBanner: false,
-              // home: const WrapperView(),
               navigatorObservers: [_observer],
               home: const WrapperView()),
         );

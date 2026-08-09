@@ -13,20 +13,7 @@ class WebSocketDriverService {
 
   WebSocketDriverService({required this.driverId, required this.onMessage});
 
-  /*void connect() {
-    _client = StompClient(
-      config: StompConfig.SockJS(
-        url: "$apiBaseUrl/ws",
-        onConnect: _onConnect,
-        onWebSocketError: (error) => print('WebSocket error: $error'),
-        onDisconnect: (_) => print('WebSocket disconnected'),
-        onStompError: (frame) => print('STOMP error: ${frame.body}'),
-      ),
-    );
-
-    _client.activate();
-  }*/
-
+ 
 void connect() {
     String cleanUrl = apiBaseUrl.trim().replaceAll('#', '');
 

@@ -6,7 +6,7 @@ import 'package:holi/src/core/theme/fonts/style_fonts_title.dart';
 import 'package:holi/src/model/predictions/prediction_mdel.dart';
 import 'package:holi/src/service/location/location_service.dart';
 import 'package:holi/src/view/widget/validate_form/validated_text_form_field.dart';
-import 'package:holi/src/viewmodels/move/calculate_price_viewmodel.dart';
+import 'package:holi/src/viewmodels/travel/calculate_price_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:holi/src/viewmodels/location/location_viewmodel.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -22,7 +22,8 @@ class CalculatePrice extends StatefulWidget {
 class _CalculatePriceState extends State<CalculatePrice> with AnalyticsMixin {
   final TextEditingController _originAddressController = TextEditingController();
   final TextEditingController _destinationAddressController = TextEditingController();
-  bool _isCalculating = false;
+  final TextEditingController _addresseeController = TextEditingController();
+  final TextEditingController _recipientPhoneNumberController = TextEditingController();
 
   MoveType? _selectedMovingType;
   List<Prediction> _suggestions = [];
@@ -30,8 +31,6 @@ class _CalculatePriceState extends State<CalculatePrice> with AnalyticsMixin {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final locationService = LocationService(googleApiKey: "AIzaSyDF6pFogbufSdpW3nIeCgQMRFyoSEd1Rmw");
   final LocationViewModel locationViewModel = LocationViewModel();
-
-  Map<String, double>? _destinationCoords;
 
   @override
   void initState() {
@@ -100,8 +99,8 @@ class _CalculatePriceState extends State<CalculatePrice> with AnalyticsMixin {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Encuentra un vehículo para tu mercancía en minutos, conoce el precio antes de solicitar el servicio y evita perder tiempo buscando un transportista.",
-          style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500, color: Colors.grey[700]),
+          "Encuentra un vehículo para tu mercancía en minutos, conoce el precio antes de solicitar el servicio y evita perder tiempo buscando un especialista de carga.",
+          style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w500, color: Colors.grey[700]),
         ),
         SizedBox(height: 20.h),
         Text(
@@ -239,6 +238,28 @@ class _CalculatePriceState extends State<CalculatePrice> with AnalyticsMixin {
           onChanged: _updateSuggestions,
         ),
         _buildSuggestionList(),
+        SizedBox(height: 15.h),
+        ValidatedTextFormField(
+          controller: _addresseeController,
+          label: "Quien recibira",
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return 'Este campo es obligatorio';
+            }
+            return null;
+          },
+        ),
+        SizedBox(height: 15.h),
+        ValidatedTextFormField(
+          controller: _recipientPhoneNumberController,
+          label: "Telefono quien recibe",
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return 'Este campo es obligatorio';
+            }
+            return null;
+          },
+        ),
       ],
     );
   }
@@ -259,7 +280,7 @@ class _CalculatePriceState extends State<CalculatePrice> with AnalyticsMixin {
                     trackEvent(
                       'calculate_price_requested',
                       params: {
-                        'move_type': _selectedMovingType.toString().split('.').last, 
+                        'move_type': _selectedMovingType.toString().split('.').last,
                         'origin_address': _originAddressController.text.trim(),
                         'destination_address': _destinationAddressController.text.trim(),
                       },
@@ -272,6 +293,8 @@ class _CalculatePriceState extends State<CalculatePrice> with AnalyticsMixin {
                       destinationAddress: _destinationAddressController.text.trim(),
                       locationService: locationService,
                       locationViewModel: locationViewModel,
+                      addressee: _addresseeController.text.trim(),
+                      recipientPhoneNumber: _recipientPhoneNumberController.text.trim(),
                     );
                   }
                 },

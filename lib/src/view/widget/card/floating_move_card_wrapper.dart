@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import 'package:url_launcher/url_launcher.dart';
+
 class FloatingMoveCardWrapper extends StatefulWidget {
   final Map<String, dynamic> moveData;
 
@@ -14,8 +16,9 @@ class FloatingMoveCardWrapper extends StatefulWidget {
 class _FloatingMoveCardWrapperState extends State<FloatingMoveCardWrapper> with SingleTickerProviderStateMixin {
   double _opacity = 0.0;
   Offset _offset = const Offset(0, 0.2);
+  bool _isContentExpanded = true;
 
-@override
+  @override
   void initState() {
     super.initState();
     Future.delayed(const Duration(milliseconds: 100), () {
@@ -25,6 +28,26 @@ class _FloatingMoveCardWrapperState extends State<FloatingMoveCardWrapper> with 
           _offset = Offset.zero;
         });
       }
+    });
+  }
+
+  void _makePhoneCall(String phoneNumber) async {
+    final Uri launchUri = Uri(
+      scheme: 'tel',
+      path: phoneNumber,
+    );
+    if (await canLaunchUrl(launchUri)) {
+      await launchUrl(launchUri);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No se pudo realizar la llamada a $phoneNumber')),
+      );
+    }
+  }
+
+  void _toggleExpanded() {
+    setState(() {
+      _isContentExpanded = !_isContentExpanded;
     });
   }
 
@@ -47,7 +70,8 @@ class _FloatingMoveCardWrapperState extends State<FloatingMoveCardWrapper> with 
     List<String> parts = originalAddress.split(',');
     String reduced = parts.take(2).join(',').trim();
     final String userName = (moveData['fullName'] ?? moveData['userName'])?.toString() ?? '';
-
+    final String addressee = (moveData['addressee'] ?? moveData['fullName'])?.toString() ?? '';
+    final String recipientPhoneNumber = (moveData['recipientPhoneNumber'] ?? moveData['phoneNumber'])?.toString() ?? '';
     String destinationAddress = moveData['destination'];
     List<String> partsDestination = destinationAddress.split(',');
     String reducedDestination = partsDestination.take(2).join(',').trim();
@@ -66,100 +90,160 @@ class _FloatingMoveCardWrapperState extends State<FloatingMoveCardWrapper> with 
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-             Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.green, size: 14.sp),
-                SizedBox(width: 5.w),
-                Text(
-                  'Aceptado',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.bold,
+            GestureDetector(
+              onTap: _toggleExpanded,
+              behavior: HitTestBehavior.opaque,
+              child: Row(
+                children: [
+                  Icon(Icons.check_circle, color: Colors.green, size: 14.sp),
+                  SizedBox(width: 5.w),
+                  Expanded(
+                    child: Text(
+                      'Aceptado',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                  AnimatedRotation(
+                    duration: const Duration(milliseconds: 300),
+                    turns: _isContentExpanded ? 0.5 : 0.0,
+                    child: Icon(Icons.keyboard_arrow_up, color: Colors.white, size: 22.sp),
+                  ),
+                ],
+              ),
             ),
-             SizedBox(height: 5.h),
+            SizedBox(height: 5.h),
             Row(
               children: [
                 CircleAvatar(
                   radius: 10.r,
                   backgroundColor: Colors.grey[800],
                   backgroundImage: (moveData['avatarProfile'] != null && moveData['avatarProfile'].toString().isNotEmpty) ? NetworkImage(moveData['avatarProfile']) : null,
-                  child: (moveData['avatarProfile'] == null || moveData['avatarProfile'].toString().isEmpty) ?  Icon(Icons.person, size: 14.sp, color: Colors.white) : null,
+                  child: (moveData['avatarProfile'] == null || moveData['avatarProfile'].toString().isEmpty) ? Icon(Icons.person, size: 14.sp, color: Colors.white) : null,
                 ),
-                 SizedBox(width: 6.w),
+                SizedBox(width: 6.w),
                 Expanded(
-                  child: Text(
-                    'Vamos por la carga de $userName',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 13.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    maxLines: 1, 
-                      overflow: TextOverflow.ellipsis
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 8.h),
-            Row(
-              children: [
-                 Icon(Icons.circle, color: Colors.green, size: 10.sp),
-                 SizedBox(width: 5.w),
-                Expanded(
-                  child: Text(
-                    reduced,
-                    style:  TextStyle(color: Colors.white70, fontSize: 12.sp),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-             SizedBox(height: 8.h),
-            Row(
-              children: [
-                 Icon(Icons.circle, color: Colors.blueAccent, size: 10.sp),
-                SizedBox(width: 8.w),
-                Expanded(
-                  child: Text(
-                    reducedDestination,
-                    style: TextStyle(color: Colors.white70, fontSize: 12.sp),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 8.h),
-            Container(
-              width: double.infinity,
-              padding:  EdgeInsets.symmetric(vertical: 8.h, horizontal: 10.w),
-              decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(10.r),
-              ),
-              child:  Row(
-                children: [
-                  Icon(Icons.location_on, color: Colors.greenAccent, size: 13.sp),
-                  SizedBox(width: 8.w),
-                  Expanded(
-                    child: Text(
-                      'Tu presencia mantiene el viaje en marcha.',
+                  child: Text('Vamos por la carga de $userName',
                       style: TextStyle(
-                        color: Colors.greenAccent,
-                        fontSize: 11.sp,
-                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.bold,
                       ),
                       maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      overflow: TextOverflow.ellipsis),
+                ),
+              ],
+            ),
+            AnimatedCrossFade(
+              duration: const Duration(milliseconds: 300),
+              crossFadeState: _isContentExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+              firstChild: const SizedBox(width: double.infinity),
+              secondChild: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 8.h),
+                  Row(
+                    children: [
+                      Icon(Icons.circle, color: Colors.green, size: 10.sp),
+                      SizedBox(width: 5.w),
+                      Expanded(
+                        child: Text(
+                          reduced,
+                          style: TextStyle(color: Colors.white70, fontSize: 12.sp),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8.h),
+                  Row(
+                    children: [
+                      Icon(Icons.circle, color: Colors.blueAccent, size: 10.sp),
+                      SizedBox(width: 8.w),
+                      Expanded(
+                        child: Text(
+                          reducedDestination,
+                          style: TextStyle(color: Colors.white70, fontSize: 12.sp),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8.h),
+                  Row(
+                    children: [
+                      Icon(Icons.person, color: Colors.white, size: 10.sp),
+                      SizedBox(width: 8.w),
+                      Expanded(
+                        child: Text(
+                          "Recibe: $addressee",
+                          style: TextStyle(color: Colors.white70, fontSize: 12.sp),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8.h),
+                  Row(
+                    children: [
+                      Icon(Icons.call, color: Colors.white, size: 12.sp),
+                      SizedBox(width: 8.w),
+                      Expanded(
+                        child: Text(
+                          "Teléfono: $recipientPhoneNumber",
+                          style: TextStyle(color: Colors.white70, fontSize: 12.sp),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: recipientPhoneNumber.isNotEmpty
+                              ? () => _makePhoneCall(recipientPhoneNumber)
+                              : null,
+                          borderRadius: BorderRadius.circular(20.r),
+                          child: Padding(
+                            padding: EdgeInsets.all(6.r),
+                            child: Icon(Icons.phone_in_talk, color: Colors.white, size: 18.sp),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8.h),
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 10.w),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.location_on, color: Colors.greenAccent, size: 13.sp),
+                        SizedBox(width: 8.w),
+                        Expanded(
+                          child: Text(
+                            'Tu presencia mantiene el viaje en marcha.',
+                            style: TextStyle(
+                              color: Colors.greenAccent,
+                              fontSize: 11.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
-
           ],
         ),
       ),

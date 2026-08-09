@@ -3,7 +3,7 @@ import 'package:holi/src/core/theme/colors/app_theme.dart';
 import 'package:holi/src/core/theme/fonts/style_fonts_title.dart';
 import 'package:holi/src/view/widget/history_move_list_widget.dart';
 import 'package:holi/src/viewmodels/auth/sesion_viewmodel.dart';
-import 'package:holi/src/viewmodels/move/moving_history_viewmodel.dart';
+import 'package:holi/src/viewmodels/travel/moving_history_viewmodel.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
@@ -35,11 +35,11 @@ class _HistoryMoveState extends State<HistoryMoveView> {
     return Scaffold(
       backgroundColor: AppTheme.colorbackgroundview,
       appBar: AppBar(
-        elevation: 0, 
+        elevation: 0,
         backgroundColor: AppTheme.primarycolor,
-        centerTitle: true, 
+        centerTitle: true,
         title: Text(
-          "Todas mis mudanzas",
+          "Todos mis envios",
           style: StyleFontsTitle.titleStyle.copyWith(fontSize: 18.sp),
         ),
         leading: IconButton(
@@ -84,7 +84,7 @@ class _HistoryMoveState extends State<HistoryMoveView> {
                       Icon(Icons.history_outlined, size: 80.sp, color: Colors.grey[400]),
                       SizedBox(height: 10.h),
                       Text(
-                        'No hay historial de mudanzas.',
+                        'No hay historial de viajes.',
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: 18.sp, // Fuente adaptable

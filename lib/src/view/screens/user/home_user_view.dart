@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:another_flushbar/flushbar.dart';
 import 'package:holi/src/core/analytics/analytics_mixin.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
@@ -7,16 +8,13 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:holi/src/core/enums/move_type.dart';
 import 'package:holi/src/core/extensions/move_type_extension.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
-import 'package:holi/src/model/payment/payment_model.dart';
-import 'package:holi/src/service/moves/active_move_location_service.dart';
+import 'package:holi/src/service/travel/active_move_location_service.dart';
 import 'package:holi/src/service/websocket/websocket_finished_move_service.dart';
 import 'package:holi/src/service/websocket/websocket_user_service.dart';
-import 'package:holi/src/utils/format_price.dart';
 import 'package:holi/src/utils/to_double.dart';
-import 'package:holi/src/view/screens/move/driver_information_view.dart';
-import 'package:holi/src/view/screens/move/calculate_price_view.dart';
-import 'package:holi/src/view/screens/move/history_move_view.dart';
-import 'package:holi/src/view/screens/move/select_payment_method_view.dart';
+import 'package:holi/src/view/screens/travel/calculate_price_view.dart';
+import 'package:holi/src/view/screens/travel/history_move_view.dart';
+import 'package:holi/src/view/screens/travel/select_payment_method_view.dart';
 import 'package:holi/src/view/screens/payment/payment_view.dart';
 import 'package:holi/src/view/screens/user/user_view.dart';
 import 'package:holi/src/view/widget/button/button_card_home_widget.dart';
@@ -28,7 +26,7 @@ import 'package:holi/src/view/widget/user/build_waiting_widget.dart';
 import 'package:holi/src/viewmodels/auth/sesion_viewmodel.dart';
 import 'package:holi/src/viewmodels/fcm/fcm_viewmodel.dart';
 import 'package:holi/src/viewmodels/location/location_viewmodel.dart';
-import 'package:holi/src/viewmodels/move/websocket/move_notification_user_viewmodel.dart';
+import 'package:holi/src/viewmodels/travel/websocket/move_notification_user_viewmodel.dart';
 import 'package:holi/src/viewmodels/user/get_driver_location_viewmodel.dart';
 import 'package:holi/src/viewmodels/user/route_user_viewmodel.dart';
 import 'package:provider/provider.dart';
@@ -48,10 +46,29 @@ class HomeUserView extends StatefulWidget {
   final LatLng? destination;
   final String? originName;
   final String? destinationName;
+  final String? addressee;
+  final String? recipientPhoneNumber;
   final String? accessType;
   final Map<String, dynamic>? initialIncomingMoveData;
 
-  const HomeUserView({super.key, this.calculatedPrice, this.distanceKm, this.duration, this.typeOfMove, this.estimatedTime, this.route, this.destinationLat, this.destinationLng, this.origin, this.destination, this.originName, this.destinationName, this.accessType, this.initialIncomingMoveData});
+  const HomeUserView(
+      {super.key,
+      this.calculatedPrice,
+      this.distanceKm,
+      this.duration,
+      this.typeOfMove,
+      this.estimatedTime,
+      this.route,
+      this.destinationLat,
+      this.destinationLng,
+      this.origin,
+      this.destination,
+      this.originName,
+      this.destinationName,
+      this.accessType,
+      this.initialIncomingMoveData,
+      this.addressee,
+      this.recipientPhoneNumber});
 
   @override
   _HomeUserState createState() => _HomeUserState();
@@ -78,7 +95,10 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
   LatLng? _tripOrigin;
   LatLng? _tripDestination;
   Timer? _driverLocationPollTimer;
+  bool _isScheduleTravelModalOpen = false;
   bool _isPollingDriverLocation = false;
+  DateTime? _scheduledPickupDate;
+  final LatLng _defaultMapCenter = const LatLng(4.709870566194833, -74.07554855445838); // Default to a central point in Bogota
   final ActiveMoveLocationService _activeMoveLocationService = ActiveMoveLocationService();
 
   @override
@@ -104,7 +124,6 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
 
     _moveNotificationUserViewModel = MoveNotificationUserViewmodel();
 
-    // ✅ Inicializar el socket de forma asíncrona garantizando que el ID esté presente
     Future.microtask(() async {
       await _initializeUserSession();
     });
@@ -174,7 +193,13 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('active_move_data', jsonEncode(updatedMove));
-        await _persistActiveMoveRoute();
+
+        // FIX: Re-fetch and persist the route to ensure it's saved on trip acceptance.
+        final origin = _latLngFromMoveData(updatedMove, isDestination: false);
+        final destination = _latLngFromMoveData(updatedMove, isDestination: true);
+        if (origin != null && destination != null) {
+          await _fetchRouteFromCoords(origin, destination);
+        }
 
         if (!mounted) return;
         setState(() {
@@ -292,7 +317,6 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
 
   @override
   Widget build(BuildContext context) {
-    // Consideramos el viaje asignado solo si tenemos el driverId para evitar el crash de tipos
     final bool driverIsAssigned = _currentActiveMoveData != null && (_currentActiveMoveData!['driverId'] != null || _currentActiveMoveData!['moveId'] != null);
 
     return PopScope(
@@ -318,7 +342,15 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
                 top: MediaQuery.of(context).padding.top + 10.h,
                 left: 0,
                 right: 0,
-                child: _buildTopCoverageBanner(),
+                child: AnimatedOpacity(
+                  opacity: _isScheduleTravelModalOpen ? 0.0 : 1.0,
+                  duration: const Duration(milliseconds: 280),
+                  curve: Curves.easeOutCubic,
+                  child: IgnorePointer(
+                    ignoring: _isScheduleTravelModalOpen,
+                    child: _buildTopCoverageBanner(),
+                  ),
+                ),
               ),
             Consumer<GetDriverLocationViewmodel>(
               builder: (context, driverVM, _) {
@@ -336,26 +368,23 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
                       Positioned(
                         left: 0,
                         right: 0,
-                        bottom: 30.h,
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 5.w),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: AppTheme.primarycolor,
-                              borderRadius: BorderRadius.circular(30.r),
-                            ),
-                            padding: EdgeInsets.all(10.w),
-                            child: DriverInfoCard(
-                              driverId: _currentActiveMoveData!['driverId'] ?? 0,
-                              enrollVehicle: _currentActiveMoveData!['enrollVehicle'] ?? '',
-                              driverImageUrl: _currentActiveMoveData!['driverImageUrl'] ?? '',
-                              vehicleImageUrl: 'assets/images/vehicle.png',
-                              phone: _currentActiveMoveData!['driverPhone'] ?? '',
-                              nameDriver: _currentActiveMoveData!['driverName'] ?? '',
-                              vehicleType: _currentActiveMoveData!['vehicleType'] ?? '',
-                              amount: ToDouble(_currentActiveMoveData!['amount'] ?? 0),
-                              accountNumber: _currentActiveMoveData!['accountNumber'] ?? '',
-                            ),
+                        bottom: 0,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: AppTheme.primarycolor,
+                            borderRadius: BorderRadius.vertical(top: Radius.circular(25.r)),
+                          ),
+                          padding: EdgeInsets.all(10.w),
+                          child: DriverInfoCard(
+                            driverId: _currentActiveMoveData!['driverId'] ?? 0,
+                            enrollVehicle: _currentActiveMoveData!['enrollVehicle'] ?? '',
+                            driverImageUrl: _currentActiveMoveData!['driverImageUrl'] ?? '',
+                            vehicleImageUrl: 'assets/images/vehicle.png',
+                            phone: _currentActiveMoveData!['driverPhone'] ?? '',
+                            nameDriver: _currentActiveMoveData!['driverName'] ?? '',
+                            vehicleType: _currentActiveMoveData!['vehicleType'] ?? '',
+                            amount: ToDouble(_currentActiveMoveData!['amount'] ?? 0),
+                            accountNumber: _currentActiveMoveData!['accountNumber'] ?? '',
                           ),
                         ),
                       ),
@@ -435,9 +464,6 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
   Widget _buildHomePage(BuildContext context) {
     final bool driverIsAssigned = _currentActiveMoveData != null && (_currentActiveMoveData!['driverId'] != null || _currentActiveMoveData!['moveId'] != null);
 
-    final LatLng origin = _resolveMapOrigin();
-    final LatLng destination = _resolveMapDestination();
-
     return LayoutBuilder(
       builder: (context, constraints) {
         return Stack(
@@ -445,8 +471,8 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
             Positioned.fill(
               child: UserMapWidget(
                 route: _realRoute,
-                origin: origin,
-                destination: destination,
+                origin: _tripOrigin ?? _defaultMapCenter,
+                destination: _tripDestination ?? _defaultMapCenter,
                 driverLocation: context.watch<GetDriverLocationViewmodel>().driverLocation,
                 onLocationUpdated: (location) {
                   setState(() {
@@ -460,47 +486,60 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
                 left: 0,
                 right: 0,
                 bottom: 0,
-                child: Consumer<GetDriverLocationViewmodel>(
-                  builder: (context, driverVM, _) {
-                    return SafeArea(
-                      top: false,
-                      minimum: EdgeInsets.only(bottom: 0.h),
-                      child: Container(
-                        constraints: BoxConstraints(maxHeight: constraints.maxHeight * 0.55),
-                        decoration: BoxDecoration(
-                          color: Colors.black,
-                          borderRadius: BorderRadius.only(
-                            topRight: Radius.circular(20.r),
-                            topLeft: Radius.circular(20.r),
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 8.r,
+                child: AnimatedOpacity(
+                  opacity: _isScheduleTravelModalOpen ? 0.0 : 1.0,
+                  duration: const Duration(milliseconds: 380),
+                  curve: Curves.easeOutCubic,
+                  child: AnimatedSlide(
+                    offset: _isScheduleTravelModalOpen ? const Offset(0, 0.08) : Offset.zero,
+                    duration: const Duration(milliseconds: 420),
+                    curve: Curves.easeOutCubic,
+                    child: IgnorePointer(
+                      ignoring: _isScheduleTravelModalOpen,
+                      child: Consumer<GetDriverLocationViewmodel>(
+                        builder: (context, driverVM, _) {
+                          return SafeArea(
+                            top: false,
+                            minimum: EdgeInsets.only(bottom: 0.h),
+                            child: Container(
+                              constraints: BoxConstraints(maxHeight: constraints.maxHeight * 0.55),
+                              decoration: BoxDecoration(
+                                color: Colors.black,
+                                borderRadius: BorderRadius.only(
+                                  topRight: Radius.circular(20.r),
+                                  topLeft: Radius.circular(20.r),
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 8.r,
+                                  ),
+                                ],
+                              ),
+                              padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 10.h),
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (noDriverFound) ...[
+                                      _buildNoDriverRetryBanner(),
+                                    ],
+                                    if (showPriceModal) ...[
+                                      _buildDataMove(),
+                                    ],
+                                    if (isWaitingForDriver) ...[
+                                      const WaitingForDriverWidget(),
+                                    ],
+                                  ],
+                                ),
+                              ),
                             ),
-                          ],
-                        ),
-                        padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 10.h),
-                        child: SingleChildScrollView(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (noDriverFound) ...[
-                                _buildNoDriverRetryBanner(),
-                              ],
-                              if (showPriceModal) ...[
-                                _buildDataMove(),
-                              ],
-                              if (isWaitingForDriver) ...[
-                                const WaitingForDriverWidget(),
-                              ],
-                            ],
-                          ),
-                        ),
+                          );
+                        },
                       ),
-                    );
-                  },
+                    ),
+                  ),
                 ),
               ),
           ],
@@ -580,20 +619,6 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
     });
   }
 
-  LatLng _resolveMapOrigin() {
-    if (widget.route != null && widget.route!.isNotEmpty) return widget.route!.first;
-    if (widget.origin != null) return widget.origin!;
-    if (_tripOrigin != null) return _tripOrigin!;
-    return _latLngFromMoveData(_currentActiveMoveData, isDestination: false) ?? const LatLng(3.3784759685695906, -72.95412998954771);
-  }
-
-  LatLng _resolveMapDestination() {
-    if (widget.route != null && widget.route!.isNotEmpty) return widget.route!.last;
-    if (widget.destination != null) return widget.destination!;
-    if (_tripDestination != null) return _tripDestination!;
-    return _latLngFromMoveData(_currentActiveMoveData, isDestination: true) ?? const LatLng(3.3784759685695906, -72.95412998954771);
-  }
-
   LatLng? _latLngFromMoveData(Map<String, dynamic>? data, {required bool isDestination}) {
     if (data == null || data.isEmpty) return null;
     final latKey = isDestination ? 'destinationLat' : 'originLat';
@@ -629,6 +654,7 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
   }
 
   Future<void> _persistActiveMoveRoute() async {
+    print("💾 [PersistRoute] Intentando persistir ruta. _realRoute.length: ${_realRoute.length}");
     if (_realRoute.isEmpty) return;
     final prefs = await SharedPreferences.getInstance();
     final encoded = _realRoute.map((p) => [p.latitude, p.longitude]).toList();
@@ -637,6 +663,7 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
 
   List<LatLng>? _loadPersistedRoute(String? raw) {
     if (raw == null || raw.isEmpty) return null;
+    print("🔄 [LoadPersistRoute] Intentando cargar ruta persistida. Raw data length: ${raw.length}");
     try {
       final list = jsonDecode(raw) as List;
       return list
@@ -651,19 +678,6 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
     } catch (e) {
       debugPrint("Error al leer ruta persistida: $e");
       return null;
-    }
-  }
-
-  Future<void> _loadUserId() async {
-    final prefs = await SharedPreferences.getInstance();
-    final storedUserId = prefs.getInt('userId');
-
-    if (storedUserId != null) {
-      setState(() {
-        userId = storedUserId;
-      });
-    } else {
-      print("⚠️ userId no encontrado en SharedPreferences");
     }
   }
 
@@ -698,6 +712,34 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
           ),
         ),
       ),
+    );
+  }
+
+  String _formatScheduledPickupDate(DateTime date) {
+    final day = date.day.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    final year = date.year;
+    final hour = date.hour.toString().padLeft(2, '0');
+    final minute = date.minute.toString().padLeft(2, '0');
+    return '$day/$month/$year $hour:$minute';
+  }
+
+  void _openScheduleTravelModal() {
+    showScheduleTravelModal(
+      context: context,
+      onModalOpen: () {
+        setState(() => _isScheduleTravelModalOpen = true);
+      },
+      onModalClose: () {
+        if (mounted) {
+          setState(() => _isScheduleTravelModalOpen = false);
+        }
+      },
+      onDateSelected: (selectedDate) {
+        if (mounted) {
+          setState(() => _scheduledPickupDate = selectedDate);
+        }
+      },
     );
   }
 
@@ -739,10 +781,10 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
               ],
             ),
           ),
+          SizedBox(height: 1.h),
           Text('Total a pagar, precio fijo garantizado.', style: TextStyle(fontSize: 10.sp, color: Colors.white)),
-          SizedBox(height: 5.h),
-          Divider(color: Colors.grey.withOpacity(0.3), thickness: 1),
-          SizedBox(height: 7.h),
+          SizedBox(height: 2.h),
+          Divider(color: Colors.grey.withOpacity(0.3), thickness: 2),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 5.w),
             child: Row(
@@ -762,7 +804,7 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
                         ),
                       ),
                     ]),
-                    SizedBox(height: 5.h),
+                    SizedBox(height: 2.h),
                     // Fila Tiempo
                     Row(
                       children: [
@@ -777,7 +819,7 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
                         ),
                       ],
                     ),
-                    SizedBox(height: 5.h),
+                    SizedBox(height: 2.h),
                     Row(
                       children: [
                         Icon(Icons.route, color: secondaryTextColor, size: 18.sp),
@@ -791,23 +833,104 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
                         ),
                       ],
                     ),
+                    SizedBox(height: 2.h),
+                    Row(
+                      children: [
+                        Icon(Icons.person, color: secondaryTextColor, size: 18.sp),
+                        SizedBox(width: 4.w),
+                        Text(
+                          "Recibe",
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            color: secondaryTextColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 2.h),
+                    Row(
+                      children: [
+                        Icon(Icons.phone_android_rounded, color: secondaryTextColor, size: 18.sp),
+                        SizedBox(width: 4.w),
+                        Text(
+                          "Telefono",
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            color: secondaryTextColor,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    if (_scheduledPickupDate != null) ...[
+                      SizedBox(height: 5.h),
+                      GestureDetector(
+                        onTap: _openScheduleTravelModal,
+                        behavior: HitTestBehavior.opaque,
+                        child: Row(
+                          children: [
+                            Icon(Icons.event_available, color: secondaryTextColor, size: 18.sp),
+                            SizedBox(width: 4.w),
+                            Text(
+                              "Fecha programada",
+                              style: TextStyle(
+                                fontSize: 13.sp,
+                                color: secondaryTextColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ],
                 ),
-                const Spacer(),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(widget.typeOfMove?.displayName ?? '', style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold, color: primaryTextColor)),
-                    SizedBox(height: 5.h),
+                    SizedBox(height: 2.h),
                     Text("${widget.estimatedTime}", style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold, color: primaryTextColor)),
-                    SizedBox(height: 5.h),
+                    SizedBox(height: 2.h),
                     Text("${widget.distanceKm}", style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold, color: primaryTextColor)),
+                    SizedBox(height: 2.h),
+                    Text("${widget.addressee}", style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold, color: primaryTextColor)),
+                    SizedBox(height: 2.h),
+                    Text("${widget.recipientPhoneNumber}", style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold, color: primaryTextColor)),
+                    if (_scheduledPickupDate != null) ...[
+                      SizedBox(height: 5.h),
+                      GestureDetector(
+                        onTap: _openScheduleTravelModal,
+                        behavior: HitTestBehavior.opaque,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  _formatScheduledPickupDate(_scheduledPickupDate!),
+                                  style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold, color: primaryTextColor),
+                                ),
+                                SizedBox(width: 4.w),
+                                Icon(Icons.edit_outlined, color: secondaryTextColor, size: 14.sp),
+                              ],
+                            ),
+                            Text(
+                              "Toca para cambiar",
+                              style: TextStyle(
+                                fontSize: 10.sp,
+                                color: const Color(0xFF4ADE80),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ],
             ),
           ),
-          Divider(color: Colors.grey.withOpacity(0.3), thickness: 1),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 1.w),
             child: _buildSettingMethodPay(
@@ -845,45 +968,99 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
             ),
           ),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 10.w),
-            child: SizedBox(
-              height: 40.h,
-              width: double.infinity,
-              child: ConfirmButton(
-                typeOfMove: widget.typeOfMove!,
-                calculatedPrice: widget.calculatedPrice ?? '',
-                distanceKm: widget.distanceKm ?? '',
-                duration: widget.duration ?? '',
-                estimatedTime: widget.estimatedTime ?? '',
-                route: widget.route ?? [],
-                locationViewModel: locationViewModel,
-                userId: userId ?? 0,
-                destinationLat: widget.destinationLat,
-                destinationLng: widget.destinationLng,
-                originAddressText: widget.originName,
-                destinationAddressText: widget.destinationName,
-                paymentMethod: _selectedPaymentMethod,
-                accessType: widget.accessType,
-                buttonText: noDriverFound ? "Reintentar búsqueda" : "Buscar vehículo",
-                onConfirmed: () {
-                  setState(() {
-                    showPriceModal = false;
-                    isWaitingForDriver = true;
-                    noDriverFound = false;
-                  });
-                  Future.delayed(const Duration(seconds: 30), () {
-                    if (mounted && _currentActiveMoveData == null) {
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 1.h),
+            child: Column(
+              children: [
+                SizedBox(
+                  height: 45.h,
+                  width: double.infinity,
+                  child: ConfirmButton(
+                    typeOfMove: widget.typeOfMove!,
+                    calculatedPrice: widget.calculatedPrice ?? '',
+                    distanceKm: widget.distanceKm ?? '',
+                    duration: widget.duration ?? '',
+                    estimatedTime: widget.estimatedTime ?? '',
+                    route: widget.route ?? [],
+                    locationViewModel: locationViewModel,
+                    userId: userId ?? 0,
+                    destinationLat: widget.destinationLat,
+                    destinationLng: widget.destinationLng,
+                    originAddressText: widget.originName,
+                    destinationAddressText: widget.destinationName,
+                    paymentMethod: _selectedPaymentMethod,
+                    accessType: widget.accessType,
+                    scheduledTravel: _scheduledPickupDate,
+                    addressee: widget.addressee,
+                    recipientPhoneNumber: widget.recipientPhoneNumber,
+                    buttonText: _scheduledPickupDate != null ? "Programar viaje" : (noDriverFound ? "Reintentar búsqueda" : "Buscar vehículo ahora"),
+                    onConfirmed: () {
+                      final bool isScheduledMove = _scheduledPickupDate != null;
+
+                      // Mudanza programada: no disparar búsqueda de conductor.
+                      if (isScheduledMove) {
+                        setState(() {
+                          showPriceModal = false;
+                          isWaitingForDriver = false;
+                          noDriverFound = false;
+                          showHomeButtons = true;
+                          _scheduledPickupDate = null;
+                        });
+                        if (mounted) {
+                          Flushbar(
+                            message: "¡Todo bien! ya se programo tu viaje",
+                            backgroundColor: AppTheme.confirmationscolor,
+                            duration: const Duration(seconds: 3),
+                            flushbarPosition: FlushbarPosition.TOP,
+                            borderRadius: BorderRadius.circular(8),
+                            margin: const EdgeInsets.all(8),
+                            icon: const Icon(
+                              Icons.check_circle,
+                              color: Colors.white,
+                            ),
+                          ).show(context);
+                        }
+                        _resetMoveState(); // Clear the state after scheduling
+                        return;
+                      }
+
                       setState(() {
-                        isWaitingForDriver = false;
-                        showPriceModal = true;
-                        noDriverFound = true;
+                        showPriceModal = false;
+                        isWaitingForDriver = true;
+                        noDriverFound = false;
                       });
-                    }
-                  });
-                },
-              ),
+                      Future.delayed(const Duration(seconds: 30), () {
+                        if (mounted && _currentActiveMoveData == null) {
+                          setState(() {
+                            isWaitingForDriver = false;
+                            showPriceModal = true;
+                            noDriverFound = true;
+                          });
+                        }
+                      });
+                    },
+                  ),
+                ),
+                if (_scheduledPickupDate == null) ...[
+                  SizedBox(height: 10.h),
+                  ScheduleTravelButton(
+                    onModalOpen: () {
+                      setState(() => _isScheduleTravelModalOpen = true);
+                    },
+                    onModalClose: () {
+                      if (mounted) {
+                        setState(() => _isScheduleTravelModalOpen = false);
+                      }
+                    },
+                    onDateSelected: (selectedDate) {
+                      if (mounted) {
+                        setState(() => _scheduledPickupDate = selectedDate);
+                      }
+                    },
+                  ),
+                ],
+              ],
             ),
-          ),
+          )
         ],
       ),
     );
@@ -892,13 +1069,18 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
   Future<void> _rehydrateActiveTrip() async {
     final prefs = await SharedPreferences.getInstance();
     final String? savedMoveDataRaw = prefs.getString('active_move_data');
-    if (savedMoveDataRaw == null || savedMoveDataRaw.isEmpty) return;
+    print("🔍 [Rehydrate] Buscando 'active_move_data'. Encontrado: ${savedMoveDataRaw != null && savedMoveDataRaw.isNotEmpty}");
+    if (savedMoveDataRaw == null || savedMoveDataRaw.isEmpty) {
+      print("ℹ️ [Rehydrate] No hay datos de viaje activos persistidos.");
+      return;
+    }
 
     try {
       final Map<String, dynamic> moveData = Map<String, dynamic>.from(jsonDecode(savedMoveDataRaw) as Map);
       if (moveData.isEmpty) return;
 
       // Si los datos están incompletos (falta driverId), limpiamos para evitar el crash
+      print("🕵️ [Rehydrate] Verificando 'driverId' en moveData. driverId: ${moveData['driverId']}");
       if (moveData['driverId'] == null) {
         debugPrint("⚠️ Datos persistidos corruptos detectados. Limpiando...");
         await _clearPersistedActiveTrip();
@@ -912,10 +1094,12 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
 
       final persistedRoute = _loadPersistedRoute(prefs.getString('active_move_route'));
 
+      print("🗺️ [Rehydrate] Ruta persistida cargada: ${persistedRoute?.length ?? 0} puntos.");
       if (!mounted) return;
 
       Provider.of<GetDriverLocationViewmodel>(context, listen: false).setMoveData(moveData);
 
+      print("🔄 [Rehydrate] Actualizando estado con datos recuperados.");
       setState(() {
         _currentActiveMoveData = moveData;
         _tripOrigin = origin;
@@ -930,6 +1114,7 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
 
       final moveId = moveData['moveId'];
       if (moveId != null) {
+        print("🔗 [Rehydrate] MoveId encontrado: $moveId. Manejando asignación y polling.");
         final int parsedMoveId = moveId is int ? moveId : int.tryParse(moveId.toString()) ?? 0;
         if (parsedMoveId > 0) {
           _handleMoveAssigned(parsedMoveId);
@@ -938,6 +1123,7 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
       }
 
       if (origin != null && destination != null && (persistedRoute == null || persistedRoute.isEmpty)) {
+        print("🌐 [Rehydrate] Ruta no persistida o vacía. Intentando obtener ruta de Google.");
         await _fetchRouteFromCoords(origin, destination);
       }
     } catch (e) {

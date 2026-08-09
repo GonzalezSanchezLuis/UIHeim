@@ -222,7 +222,7 @@ class _DriverMapWidgetState extends State<DriverMapWidget> {
 
   Future<void> _loadCustomIcons() async {
     try {
-      final double adaptiveSize = 50.w;
+      final double adaptiveSize = 55.w;
 
       
       _driverIcon = await _getMarkerFromIcon(Icons.circle, Colors.greenAccent, size: adaptiveSize);

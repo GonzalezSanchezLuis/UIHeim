@@ -16,4 +16,22 @@ class UserMovingHistoryService {
       throw Exception('Error al cargar el resumen del viaje');
     }
   }
+
+
+  Future<bool> cancelMove(int moveId, int userId) async {
+
+    final url = Uri.parse('$baseUrl/$moveId/cancel');
+    final response = await http.patch(
+      url,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, int>{
+        'userId': userId,
+      }),
+    );
+
+    if (response.statusCode == 200) return true;
+    throw Exception('Error al cancelar el viaje: ${response.body}');
+  }
 }

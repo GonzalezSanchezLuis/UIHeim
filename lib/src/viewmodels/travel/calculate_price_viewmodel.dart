@@ -2,13 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:holi/src/core/enums/move_type.dart';
 import 'package:holi/src/service/location/location_service.dart';
-import 'package:holi/src/service/moves/calculate_price_service.dart';
+import 'package:holi/src/service/travel/calculate_price_service.dart';
 import 'package:holi/src/view/screens/user/home_user_view.dart';
 import 'package:holi/src/viewmodels/location/location_viewmodel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-
-
 
 class CalculatePriceViewmodel extends ChangeNotifier {
   bool isLoading = false;
@@ -17,6 +14,8 @@ class CalculatePriceViewmodel extends ChangeNotifier {
   String? distanceKm;
   String? timeMin;
   List<Map<String, double>>? route;
+  String? addressee;
+  String? recipientPhoneNumber;
 
   Future<void> handleRequestVehicle({
     required BuildContext context,
@@ -26,6 +25,8 @@ class CalculatePriceViewmodel extends ChangeNotifier {
     required String destinationAddress,
     required LocationService locationService,
     required LocationViewModel locationViewModel,
+    required String addressee,
+    required String recipientPhoneNumber,
     String? destinationPlaceId,
   }) async {
     isLoading = true;
@@ -70,17 +71,16 @@ class CalculatePriceViewmodel extends ChangeNotifier {
     }
 
     final response = await CalculatePriceService().calculatedPrice(
-      typeOfMove: typeOfMove,
-      numberOfRooms: numberOfRooms,
-      originAddress: originAddress,
-      destinationAddress: destinationAddress,
-      originLat: originCoords['latitude'],
-      originLng: originCoords['longitude'],
-      destinationLat: destinationCoords['latitude'],
-      destinationLng: destinationCoords['longitude'],
-    );
-
-   
+        typeOfMove: typeOfMove,
+        numberOfRooms: numberOfRooms,
+        originAddress: originAddress,
+        destinationAddress: destinationAddress,
+        originLat: originCoords['latitude'],
+        originLng: originCoords['longitude'],
+        destinationLat: destinationCoords['latitude'],
+        destinationLng: destinationCoords['longitude'],
+        addressee: addressee,
+        recipientPhoneNumber: recipientPhoneNumber);
 
     if (response != null) {
       try {
@@ -90,17 +90,11 @@ class CalculatePriceViewmodel extends ChangeNotifier {
 
         final routeData = List<Map<String, double>>.from(response['route'] ?? []);
 
-        final List<LatLng> route = routeData
-            .map((point) => LatLng(
-                point['lat'] ?? 0.0, 
-                point['lng'] ?? 0.0 
-                ))
-            .toList();
-            
-            for (var p in route) {
+        final List<LatLng> route = routeData.map((point) => LatLng(point['lat'] ?? 0.0, point['lng'] ?? 0.0)).toList();
+
+        for (var p in route) {
           print("📍 Punto: ${p.latitude}, ${p.longitude}");
         }
-
 
         Navigator.pushReplacement(
           context,
@@ -117,7 +111,9 @@ class CalculatePriceViewmodel extends ChangeNotifier {
               origin: LatLng(originCoords!['latitude']!, originCoords['longitude']!),
               destination: LatLng(destinationCoords!['latitude']!, destinationCoords['longitude']!),
               originName: originAddress.isEmpty ? locationViewModel.currentAddress : originAddress,
-              destinationName: destinationAddress
+              destinationName: destinationAddress,
+              addressee: addressee,
+              recipientPhoneNumber: recipientPhoneNumber,
             ),
           ),
         );
@@ -132,4 +128,3 @@ class CalculatePriceViewmodel extends ChangeNotifier {
     notifyListeners();
   }
 }
-

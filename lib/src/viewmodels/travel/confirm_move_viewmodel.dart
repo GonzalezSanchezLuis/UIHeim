@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:holi/src/core/enums/move_type.dart';
-import 'package:holi/src/service/moves/confirm_move_service.dart';
+import 'package:holi/src/service/travel/confirm_move_service.dart';
 import 'package:holi/src/viewmodels/location/location_viewmodel.dart';
 
 class ConfirmMoveViewModel with ChangeNotifier {
@@ -31,12 +31,17 @@ class ConfirmMoveViewModel with ChangeNotifier {
     required List<LatLng> route,
     required int userId,
     required LocationViewModel locationViewModel,
+    double? originLat,
+    double? originLng,
     double? destinationLat,
     double? destinationLng,
     String? originAddressText,
     String? destinationAddressText,
     String? paymentMethod,
     String? accessType,
+    DateTime? scheduledTravel,
+    String? addressee,
+    String? recipientPhoneNumber,
   }) async {
     _isLoading = true;
     _errorMessage = null;
@@ -64,12 +69,17 @@ class ConfirmMoveViewModel with ChangeNotifier {
           route: route,
           userLat: userLat,
           userLng: userLng,
+          originLat: originLat,
+          originLng: originLng,
           destinationLat: destinationLat,
           destinationLng: destinationLng,
           originAddressText: originAddressText,
           destinationAddressText: destinationAddressText,
           paymentMethod: paymentMethod,
           accessType: accessType,
+          scheduledTravel: scheduledTravel,
+          addressee: addressee,
+          recipientPhoneNumber: recipientPhoneNumber,
           userId: userId);
 
       if (result != null) {

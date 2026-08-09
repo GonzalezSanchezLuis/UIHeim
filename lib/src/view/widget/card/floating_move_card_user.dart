@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
 
-class FloatingMoveCardUser extends  StatefulWidget {
-
+class FloatingMoveCardUser extends StatefulWidget {
   final Map<String, dynamic> moveData;
-  const FloatingMoveCardUser({super.key,required this.moveData});
+  const FloatingMoveCardUser({super.key, required this.moveData});
 
   @override
-  State<FloatingMoveCardUser > createState() => _FloatingMoveCardUserSate();
+  State<FloatingMoveCardUser> createState() => _FloatingMoveCardUserSate();
 }
 
 class _FloatingMoveCardUserSate extends State<FloatingMoveCardUser> with SingleTickerProviderStateMixin {
@@ -40,11 +39,12 @@ class _FloatingMoveCardUserSate extends State<FloatingMoveCardUser> with SingleT
   }
 
   Widget _buildFloatingMoveCard(BuildContext context, Map<String, dynamic> moveData) {
-   final originRaw = moveData['origin'];
+    final originRaw = moveData['origin'];
     final destinationRaw = moveData['destination'];
+    final addressee = moveData['addressee'];
+    final recipientPhoneNumber = moveData['recipientPhoneNumber'];
 
- 
-   final String reducedOrigin = originRaw.toString().split(',').take(2).join(',').trim();
+    final String reducedOrigin = originRaw.toString().split(',').take(2).join(',').trim();
     final String reducedDestination = destinationRaw.toString().split(',').take(2).join(',').trim();
 
     return Card(
@@ -87,10 +87,37 @@ class _FloatingMoveCardUserSate extends State<FloatingMoveCardUser> with SingleT
                 ),
               ],
             ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.person, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Recibe $addressee',
+                    style: const TextStyle(color: Colors.white, fontSize: 18),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.phone_android, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Telefono $recipientPhoneNumber',
+                    style: const TextStyle(color: Colors.white, fontSize: 18),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
     );
   }
 }
-   

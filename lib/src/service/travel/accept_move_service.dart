@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:holi/src/model/move/accept_move_model.dart';
+import 'package:holi/src/model/travel/accept_move_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:holi/config/app_config.dart';
 

@@ -4,13 +4,13 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:holi/src/core/enums/connection_status.dart';
 import 'package:holi/src/core/enums/move_type.dart';
 import 'package:holi/src/core/theme/colors/app_theme.dart';
-import 'package:holi/src/view/screens/move/calculate_price_view.dart';
-import 'package:holi/src/view/screens/move/schedule_move_view.dart';
+import 'package:holi/src/view/screens/travel/calculate_price_view.dart';
 import 'package:holi/src/service/auth/auth_service.dart';
 import 'package:holi/src/view/screens/auth/login_view.dart';
+import 'package:holi/src/view/widget/card/card_schedule_travel.dart';
 import 'package:holi/src/viewmodels/driver/driver_status_viewmodel.dart';
 import 'package:holi/src/viewmodels/location/location_viewmodel.dart';
-import 'package:holi/src/viewmodels/move/confirm_move_viewmodel.dart';
+import 'package:holi/src/viewmodels/travel/confirm_move_viewmodel.dart';
 import 'package:provider/provider.dart';
 
 class ButtonCalculatePrice extends StatelessWidget {
@@ -34,32 +34,6 @@ class ButtonCalculatePrice extends StatelessWidget {
       child: const Text(
         "¡Comencemos!",
         style: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-}
-
-class ScheduleMoveWidget extends StatelessWidget {
-  const ScheduleMoveWidget({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const ScheduleMove()));
-      },
-      style: ElevatedButton.styleFrom(
-        minimumSize: Size(MediaQuery.of(context).size.width * 0.9, 60),
-        backgroundColor: Colors.black,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30),
-        ),
-      ),
-      child: const Text(
-        "Programar mudanza",
-        style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -249,6 +223,8 @@ class ConfirmButton extends StatelessWidget {
   final List<LatLng> route;
   final LocationViewModel locationViewModel;
   final VoidCallback onConfirmed;
+  final double? originLat;
+  final double? originLng;
   final double? destinationLat;
   final double? destinationLng;
   final String? originAddressText;
@@ -257,7 +233,9 @@ class ConfirmButton extends StatelessWidget {
   final String? accessType;
   final int userId;
   final String? buttonText;
-
+  final DateTime? scheduledTravel;
+  final String? addressee;
+  final String? recipientPhoneNumber;
   const ConfirmButton({
     required this.calculatedPrice,
     required this.distanceKm,
@@ -268,6 +246,8 @@ class ConfirmButton extends StatelessWidget {
     required this.locationViewModel,
     required this.onConfirmed,
     required this.userId,
+    this.originLat,
+    this.originLng,
     this.destinationLat,
     this.destinationLng,
     this.originAddressText,
@@ -275,12 +255,15 @@ class ConfirmButton extends StatelessWidget {
     this.paymentMethod,
     this.accessType,
     this.buttonText,
+    this.scheduledTravel,
+    this.addressee,
+    this.recipientPhoneNumber,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
-    print("🛠️ DEBUG BOTÓN: Origin=$originAddressText | Dest=$destinationAddressText");
+    print("🛠️ DEBUG BOTÓN: Origin=$originAddressText | Dest=$destinationAddressText | originLat=$originLat originLng=$originLng");
     final viewModel = Provider.of<ConfirmMoveViewModel>(context, listen: false);
     return SizedBox(
         width: MediaQuery.of(context).size.width * 0.9,
@@ -298,17 +281,22 @@ class ConfirmButton extends StatelessWidget {
                       estimatedTime: estimatedTime,
                       route: route,
                       locationViewModel: locationViewModel,
+                      originLat: originLat,
+                      originLng: originLng,
                       destinationLat: destinationLat,
                       destinationLng: destinationLng,
                       originAddressText: originAddressText,
                       destinationAddressText: destinationAddressText,
                       paymentMethod: paymentMethod,
                       accessType: accessType,
+                      scheduledTravel: scheduledTravel,
+                      addressee: addressee,
+                      recipientPhoneNumber: recipientPhoneNumber,
                       userId: userId);
                   onConfirmed();
                 },
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppTheme.confirmationscolor,
+            backgroundColor: AppTheme.urgentcolor,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12.r),
             ),
@@ -317,8 +305,88 @@ class ConfirmButton extends StatelessWidget {
               ? const CircularProgressIndicator(color: Colors.black)
               : Text(
                   buttonText ?? "Confirmar y continuar",
-                  style: TextStyle(fontSize: 15.sp, color: Colors.white, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 16.sp, color: Colors.white, fontWeight: FontWeight.bold),
                 ),
+        ));
+  }
+}
+
+Future<void> showScheduleTravelModal({
+  required BuildContext context,
+  VoidCallback? onModalOpen,
+  VoidCallback? onModalClose,
+  ValueChanged<DateTime>? onDateSelected,
+}) {
+  final navigator = Navigator.of(context);
+  onModalOpen?.call();
+  return Future.delayed(const Duration(milliseconds: 80), () {
+    return showModalBottomSheet<DateTime>(
+      context: navigator.context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withOpacity(0.35),
+      sheetAnimationStyle: const AnimationStyle(
+        duration: Duration(milliseconds: 420),
+        reverseDuration: Duration(milliseconds: 520),
+        curve: Curves.easeOutCubic,
+        reverseCurve: Curves.easeInOutCubic,
+      ),
+      builder: (BuildContext sheetContext) {
+        return Container(
+          height: MediaQuery.of(sheetContext).size.height * 0.2,
+          decoration: BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(25.r)),
+          ),
+          child: const CardScheduleTravel(),
+        );
+      },
+    ).then((selectedDate) {
+      if (selectedDate != null) {
+        onDateSelected?.call(selectedDate);
+      }
+    }).whenComplete(() {
+      onModalClose?.call();
+    });
+  });
+}
+
+class ScheduleTravelButton extends StatelessWidget {
+  final VoidCallback? onModalOpen;
+  final VoidCallback? onModalClose;
+  final ValueChanged<DateTime>? onDateSelected;
+
+  const ScheduleTravelButton({
+    super.key,
+    this.onModalOpen,
+    this.onModalClose,
+    this.onDateSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+        width: double.infinity,
+        height: 45.h,
+        child: ElevatedButton(
+          onPressed: () {
+            showScheduleTravelModal(
+              context: context,
+              onModalOpen: onModalOpen,
+              onModalClose: onModalClose,
+              onDateSelected: onDateSelected,
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppTheme.confirmationscolor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+          ),
+          child: Text(
+            "Programar para después",
+            style: TextStyle(fontSize: 16.sp, color: Colors.white, fontWeight: FontWeight.bold),
+          ),
         ));
   }
 }
