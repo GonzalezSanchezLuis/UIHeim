@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -35,6 +36,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // Aquí puedes inicializar servicios si es necesario, pero mantenlo ligero.
+  log("📲 [BACKGROUND HANDLER] Notificación recibida con la app cerrada: ${message.notification?.title}");
+}
+
 class HomeDriverView extends StatefulWidget {
   const HomeDriverView({super.key});
 
@@ -62,6 +70,10 @@ class _HomeDriverState extends State<HomeDriverView> {
   @override
   void initState() {
     super.initState();
+    // Registramos nuestra función para que Firebase sepa a quién llamar
+    // cuando la app no esté en primer plano.
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
     _initFcm();
     initializeStatusFromPrefs();
     BackgroundLocationService.initService();
