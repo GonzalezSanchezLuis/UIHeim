@@ -18,7 +18,9 @@ class CalculatePriceService {
     required double? destinationLat,
     required double? destinationLng,
     required String? addressee,
-    required String? recipientPhoneNumber
+    required String? recipientPhoneNumber,
+    required int? userId,
+    
    
   }) async {
     try {
@@ -34,7 +36,8 @@ class CalculatePriceService {
         if (destinationLat != null) 'destinationLat': destinationLat,
         if (destinationLng != null) 'destinationLng': destinationLng,
         "addressee":addressee,
-        "recipientPhoneNumber": recipientPhoneNumber
+        "recipientPhoneNumber": recipientPhoneNumber,
+        'userId':userId,
       };
 
       log("DATA QUE SE ENVIA PARA EL SERVIDOR $requestBody");
@@ -55,6 +58,9 @@ class CalculatePriceService {
           'formattedPrice': decoded['formattedPrice'],
           'distanceKm': decoded['formattedDistance'],
           'timeMin': decoded['formattedDuration'],
+         'discountAmount': decoded['discountAmount']?.toString() ?? "0", 
+          'discountPercentage': decoded['discountPercentage']?.toString() ?? "0",
+          'basePrice': decoded['basePrice']?.toString() ?? "0",
           'route': (decoded['route'] as List)
               .map((point) => {
                     'lat': (point['lat'] as num).toDouble(),

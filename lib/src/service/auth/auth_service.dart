@@ -137,10 +137,7 @@ class AuthService {
     }
   }
 
-  /// Valida el token con el servidor.
-  /// - `null`: no hay token o el servidor lo rechazó (401/etc).
-  /// - `{'_networkError': true}`: no se pudo contactar al servidor (no borrar sesión local).
-  /// - Map con datos de usuario: token válido.
+
   Future<Map<String, dynamic>?> validateToken() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');

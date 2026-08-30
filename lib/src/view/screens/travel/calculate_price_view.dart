@@ -6,6 +6,7 @@ import 'package:holi/src/core/theme/fonts/style_fonts_title.dart';
 import 'package:holi/src/model/predictions/prediction_mdel.dart';
 import 'package:holi/src/service/location/location_service.dart';
 import 'package:holi/src/view/widget/validate_form/validated_text_form_field.dart';
+import 'package:holi/src/viewmodels/auth/sesion_viewmodel.dart';
 import 'package:holi/src/viewmodels/travel/calculate_price_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:holi/src/viewmodels/location/location_viewmodel.dart';
@@ -267,6 +268,8 @@ class _CalculatePriceState extends State<CalculatePrice> with AnalyticsMixin {
   Widget _buildSubmitButton(LocationViewModel locationViewModel) {
     return Consumer<CalculatePriceViewmodel>(
       builder: (context, viewmodel, _) {
+        final sessionViewModel = Provider.of<SessionViewModel>(context, listen: false);
+
         return ElevatedButton(
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.black,
@@ -277,6 +280,10 @@ class _CalculatePriceState extends State<CalculatePrice> with AnalyticsMixin {
               ? null
               : () async {
                   if (_formKey.currentState!.validate()) {
+                    if (sessionViewModel.userId == null) {
+                      log("❌ Usuario no autenticado");
+                      return;
+                    }
                     trackEvent(
                       'calculate_price_requested',
                       params: {
@@ -295,6 +302,7 @@ class _CalculatePriceState extends State<CalculatePrice> with AnalyticsMixin {
                       locationViewModel: locationViewModel,
                       addressee: _addresseeController.text.trim(),
                       recipientPhoneNumber: _recipientPhoneNumberController.text.trim(),
+                      userId: sessionViewModel.userId!,
                     );
                   }
                 },

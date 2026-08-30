@@ -31,7 +31,7 @@ android {
         applicationId = "com.heim.app.co"
         minSdkVersion flutter.minSdkVersion
         targetSdk = 36
-        versionCode 27
+        versionCode 28
         versionName "1.0.0"
         multiDexEnabled true
     }

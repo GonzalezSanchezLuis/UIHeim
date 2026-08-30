@@ -5,6 +5,7 @@ class SessionViewModel extends ChangeNotifier {
   int? userId;
   String? role;
   String? token;
+  bool? hasFirstTripDiscount;
 
   bool _isInitialized = false;
   bool get isInitialized => _isInitialized;
@@ -14,13 +15,14 @@ class SessionViewModel extends ChangeNotifier {
     userId = prefs.getInt('userId');
     role = prefs.getString('role');
     token = prefs.getString('token');
+    hasFirstTripDiscount = prefs.getBool('hasFirstTripDiscount');
 
     debugPrint("🔍 userId cargado: $userId");
     debugPrint("🔍 role cargado: $role");
     debugPrint("🔍 token cargado: $token");
 
     _isInitialized = true;
-    print("✅ Sesión cargada. userId: $userId,  role: $role, isInitialized: $_isInitialized");
+    print("✅ Sesión cargada. userId: $userId,  role: $role, isInitialized: $_isInitialized , hasFirstTripDiscount: $hasFirstTripDiscount");
 
     notifyListeners();
   }
@@ -44,7 +46,7 @@ class SessionViewModel extends ChangeNotifier {
 
     userId = userData['userId'];
     role = userData['role'];
-    token = userData['token']; // El backend podría devolver un token refrescado
+    token = userData['token']; 
 
     if (userId != null) {
       await prefs.setInt('userId', userId!);

@@ -50,25 +50,32 @@ class HomeUserView extends StatefulWidget {
   final String? recipientPhoneNumber;
   final String? accessType;
   final Map<String, dynamic>? initialIncomingMoveData;
+  final String? discountAmount;
+  final String? discountPercentage;
+  final String? originalPrice;
 
-  const HomeUserView(
-      {super.key,
-      this.calculatedPrice,
-      this.distanceKm,
-      this.duration,
-      this.typeOfMove,
-      this.estimatedTime,
-      this.route,
-      this.destinationLat,
-      this.destinationLng,
-      this.origin,
-      this.destination,
-      this.originName,
-      this.destinationName,
-      this.accessType,
-      this.initialIncomingMoveData,
-      this.addressee,
-      this.recipientPhoneNumber});
+  const HomeUserView({
+    super.key,
+    this.calculatedPrice,
+    this.distanceKm,
+    this.duration,
+    this.typeOfMove,
+    this.estimatedTime,
+    this.route,
+    this.destinationLat,
+    this.destinationLng,
+    this.origin,
+    this.destination,
+    this.originName,
+    this.destinationName,
+    this.accessType,
+    this.initialIncomingMoveData,
+    this.addressee,
+    this.recipientPhoneNumber,
+    this.discountAmount,
+    this.discountPercentage,
+    this.originalPrice,
+  });
 
   @override
   _HomeUserState createState() => _HomeUserState();
@@ -77,6 +84,7 @@ class HomeUserView extends StatefulWidget {
 class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
   List<LatLng> _realRoute = [];
   String _selectedPaymentMethod = 'Nequi';
+  bool? _hasFirstTripDiscount;
 
   final LocationViewModel locationViewModel = LocationViewModel();
   late final MoveNotificationUserViewmodel _moveNotificationUserViewModel;
@@ -98,7 +106,7 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
   bool _isScheduleTravelModalOpen = false;
   bool _isPollingDriverLocation = false;
   DateTime? _scheduledPickupDate;
-  final LatLng _defaultMapCenter = const LatLng(4.709870566194833, -74.07554855445838); // Default to a central point in Bogota
+  final LatLng _defaultMapCenter = const LatLng(4.709870566194833, -74.07554855445838);
   final ActiveMoveLocationService _activeMoveLocationService = ActiveMoveLocationService();
 
   @override
@@ -132,8 +140,6 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
   Future<void> _initializeUserSession() async {
     final sessionVM = Provider.of<SessionViewModel>(context, listen: false);
     final prefs = await SharedPreferences.getInstance();
-
-    // 1. Sincronización de seguridad: Si el ID no está en el VM pero sí en disco (post-registro), cargarlo.
     if (sessionVM.userId == null || sessionVM.userId == 0) {
       final storedUserId = prefs.getInt('userId');
       if (storedUserId != null && storedUserId != 0) {
@@ -141,6 +147,9 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
         debugPrint("💾 [HomeUserView] userId sincronizado desde SharedPreferences: $storedUserId");
       }
     }
+
+    final discount = prefs.getBool('hasFirstTripDiscount');
+    if (mounted) setState(() => _hasFirstTripDiscount = discount);
 
     // 2. Extraer el ID asegurando que no sea 0 mediante un parseo robusto
     final int intUserId = (double.tryParse(sessionVM.userId?.toString() ?? '0') ?? 0).toInt();
@@ -194,7 +203,6 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('active_move_data', jsonEncode(updatedMove));
 
-        // FIX: Re-fetch and persist the route to ensure it's saved on trip acceptance.
         final origin = _latLngFromMoveData(updatedMove, isDestination: false);
         final destination = _latLngFromMoveData(updatedMove, isDestination: true);
         if (origin != null && destination != null) {
@@ -431,6 +439,7 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
   }
 
   Widget _buildTopCoverageBanner() {
+    final bool hasDiscount = _hasFirstTripDiscount == true;
     return Container(
       width: double.infinity,
       margin: EdgeInsets.symmetric(horizontal: 16.w),
@@ -438,21 +447,42 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
       decoration: BoxDecoration(
         color: const Color(0xFF1E1E24).withOpacity(0.9),
         borderRadius: BorderRadius.circular(15.r),
-        border: Border.all(color: Colors.white10),
+        border: Border.all(color: hasDiscount ? const Color(0xFF4ADE80).withOpacity(0.4) : Colors.white10),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.local_shipping_outlined, color: const Color(0xFF4ADE80), size: 20.sp),
-          SizedBox(width: 5.w),
+          Icon(
+            hasDiscount ? Icons.local_offer_outlined : Icons.local_shipping_outlined,
+            color: const Color(0xFF4ADE80),
+            size: 20.sp,
+          ),
+        if (hasDiscount) ...[
+                Text(
+                  "Tu primer viaje tiene 20% de descuento",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+              ],
+          SizedBox(width: 8.w),
           Expanded(
             child: Column(
-              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  " Precios claros. Sin sorpresas.",
-                  style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 11.sp, fontWeight: FontWeight.bold),
+                // Título
+               Text(
+                  hasDiscount ? "Pruébalo y descubre lo fácil que es mover lo que necesitas." : "Precios claros. Sin sorpresas.",
+                  style: TextStyle(
+                    color: hasDiscount ? Colors.white.withOpacity(0.8) : Colors.white.withOpacity(0.7),
+                    fontSize: 11.sp,
+                  ),
                 ),
+                SizedBox(height: 4.h),
               ],
             ),
           ),
@@ -743,327 +773,366 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
     );
   }
 
-  Widget _buildDataMove() {
+ Widget _buildDataMove() {
     print("🔢 Precio bruto recibido: ${widget.calculatedPrice}");
-    String? priceString = widget.calculatedPrice?.replaceAll(",", "");
-    Decimal correctedPrice = Decimal.tryParse(priceString ?? '0') ?? Decimal.zero;
+    print("🔢 Precio de descuento: ${widget.discountAmount}");
+    print("🔢 Porcentaje de descuento: ${widget.discountPercentage}");
+    print("🔢 Precio: ${widget.originalPrice}");
 
-    print("🔢 Precio real convertido: $correctedPrice");
+    final bool hasDiscount = widget.discountAmount != null && widget.discountAmount != "0" && widget.discountAmount != "0.0";
+
     const Color primaryTextColor = Colors.white;
     const Color secondaryTextColor = Colors.grey;
+    const Color discountColor = Color(0xFF4ADE80);
 
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  widget.calculatedPrice!,
-                  style: TextStyle(
-                    fontSize: 30.sp,
-                    fontWeight: FontWeight.w900,
-                    color: primaryTextColor,
-                  ),
-                  textAlign: TextAlign.end,
-                ),
-                Text(
-                  ' COP ',
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w500,
-                    color: secondaryTextColor,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 1.h),
-          Text('Total a pagar, precio fijo garantizado.', style: TextStyle(fontSize: 10.sp, color: Colors.white)),
-          SizedBox(height: 2.h),
-          Divider(color: Colors.grey.withOpacity(0.3), thickness: 2),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 5.w),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(children: [
-                      Icon(Icons.local_shipping_outlined, color: secondaryTextColor, size: 18.sp),
-                      SizedBox(width: 2.w),
-                      Text(
-                        "Tamaño de la carga",
-                        style: TextStyle(
-                          fontSize: 13.sp,
-                          color: secondaryTextColor,
-                        ),
-                      ),
-                    ]),
-                    SizedBox(height: 2.h),
-                    // Fila Tiempo
-                    Row(
-                      children: [
-                        Icon(Icons.schedule, color: secondaryTextColor, size: 18.sp),
-                        SizedBox(width: 4.w),
-                        Text(
-                          "Tiempo estimado",
-                          style: TextStyle(
-                            fontSize: 13.sp,
-                            color: secondaryTextColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 2.h),
-                    Row(
-                      children: [
-                        Icon(Icons.route, color: secondaryTextColor, size: 18.sp),
-                        SizedBox(width: 4.w),
-                        Text(
-                          "Distancia",
-                          style: TextStyle(
-                            fontSize: 13.sp,
-                            color: secondaryTextColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 2.h),
-                    Row(
-                      children: [
-                        Icon(Icons.person, color: secondaryTextColor, size: 18.sp),
-                        SizedBox(width: 4.w),
-                        Text(
-                          "Recibe",
-                          style: TextStyle(
-                            fontSize: 13.sp,
-                            color: secondaryTextColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 2.h),
-                    Row(
-                      children: [
-                        Icon(Icons.phone_android_rounded, color: secondaryTextColor, size: 18.sp),
-                        SizedBox(width: 4.w),
-                        Text(
-                          "Telefono",
-                          style: TextStyle(
-                            fontSize: 13.sp,
-                            color: secondaryTextColor,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    if (_scheduledPickupDate != null) ...[
-                      SizedBox(height: 5.h),
-                      GestureDetector(
-                        onTap: _openScheduleTravelModal,
-                        behavior: HitTestBehavior.opaque,
-                        child: Row(
-                          children: [
-                            Icon(Icons.event_available, color: secondaryTextColor, size: 18.sp),
-                            SizedBox(width: 4.w),
-                            Text(
-                              "Fecha programada",
-                              style: TextStyle(
-                                fontSize: 13.sp,
-                                color: secondaryTextColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(widget.typeOfMove?.displayName ?? '', style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold, color: primaryTextColor)),
-                    SizedBox(height: 2.h),
-                    Text("${widget.estimatedTime}", style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold, color: primaryTextColor)),
-                    SizedBox(height: 2.h),
-                    Text("${widget.distanceKm}", style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold, color: primaryTextColor)),
-                    SizedBox(height: 2.h),
-                    Text("${widget.addressee}", style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold, color: primaryTextColor)),
-                    SizedBox(height: 2.h),
-                    Text("${widget.recipientPhoneNumber}", style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold, color: primaryTextColor)),
-                    if (_scheduledPickupDate != null) ...[
-                      SizedBox(height: 5.h),
-                      GestureDetector(
-                        onTap: _openScheduleTravelModal,
-                        behavior: HitTestBehavior.opaque,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  _formatScheduledPickupDate(_scheduledPickupDate!),
-                                  style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold, color: primaryTextColor),
-                                ),
-                                SizedBox(width: 4.w),
-                                Icon(Icons.edit_outlined, color: secondaryTextColor, size: 14.sp),
-                              ],
-                            ),
-                            Text(
-                              "Toca para cambiar",
-                              style: TextStyle(
-                                fontSize: 10.sp,
-                                color: const Color(0xFF4ADE80),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 1.w),
-            child: _buildSettingMethodPay(
-              icon: Icons.credit_card,
-              titleWidget: Text.rich(
-                TextSpan(
-                  text: 'Mi forma de pago es con ',
-                  style: TextStyle(fontSize: 13.sp, color: secondaryTextColor),
-                  children: <TextSpan>[
-                    TextSpan(
-                      text: _selectedPaymentMethod,
-                      style: const TextStyle(
+    return SingleChildScrollView(
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (hasDiscount) ...[
+                    Text(
+                      'Tu primer viaje tiene premio 🎁',
+                      style: TextStyle(
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
-                        color: primaryTextColor,
+                        color: Colors.white,
                       ),
+                      textAlign: TextAlign.center,
                     ),
+                    SizedBox(height: 1.5.h),
+                    Text(
+                      '\$ ${_formatNumber(widget.calculatedPrice ?? '0')}',
+                      style: TextStyle(
+                        fontSize: 20.sp,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.white.withOpacity(0.3),
+                        decoration: TextDecoration.lineThrough,
+                      ),
+                      textAlign: TextAlign.end,
+                    ),
+                    SizedBox(width: 6.w),
                   ],
-                ),
-              ),
-              onTap: () async {
-                final selected = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => SelectPaymentMethod(
-                      initialMethod: _selectedPaymentMethod,
+                  Text(
+                   '\$ ${_formatNumber(widget.originalPrice ?? '0')}',
+                    style: TextStyle(
+                      fontSize: 30.sp,
+                      fontWeight: FontWeight.w900,
+                      color: hasDiscount ? discountColor : primaryTextColor,
                     ),
+                    textAlign: TextAlign.end,
                   ),
-                );
-                if (selected != null) {
-                  setState(() {
-                    _selectedPaymentMethod = selected;
-                  });
-                }
-              },
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 1.h),
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 45.h,
-                  width: double.infinity,
-                  child: ConfirmButton(
-                    typeOfMove: widget.typeOfMove!,
-                    calculatedPrice: widget.calculatedPrice ?? '',
-                    distanceKm: widget.distanceKm ?? '',
-                    duration: widget.duration ?? '',
-                    estimatedTime: widget.estimatedTime ?? '',
-                    route: widget.route ?? [],
-                    locationViewModel: locationViewModel,
-                    userId: userId ?? 0,
-                    destinationLat: widget.destinationLat,
-                    destinationLng: widget.destinationLng,
-                    originAddressText: widget.originName,
-                    destinationAddressText: widget.destinationName,
-                    paymentMethod: _selectedPaymentMethod,
-                    accessType: widget.accessType,
-                    scheduledTravel: _scheduledPickupDate,
-                    addressee: widget.addressee,
-                    recipientPhoneNumber: widget.recipientPhoneNumber,
-                    buttonText: _scheduledPickupDate != null ? "Programar viaje" : (noDriverFound ? "Reintentar búsqueda" : "Buscar vehículo ahora"),
-                    onConfirmed: () {
-                      final bool isScheduledMove = _scheduledPickupDate != null;
-
-                      // Mudanza programada: no disparar búsqueda de conductor.
-                      if (isScheduledMove) {
-                        setState(() {
-                          showPriceModal = false;
-                          isWaitingForDriver = false;
-                          noDriverFound = false;
-                          showHomeButtons = true;
-                          _scheduledPickupDate = null;
-                        });
-                        if (mounted) {
-                          Flushbar(
-                            message: "¡Todo bien! ya se programo tu viaje",
-                            backgroundColor: AppTheme.confirmationscolor,
-                            duration: const Duration(seconds: 3),
-                            flushbarPosition: FlushbarPosition.TOP,
-                            borderRadius: BorderRadius.circular(8),
-                            margin: const EdgeInsets.all(8),
-                            icon: const Icon(
-                              Icons.check_circle,
-                              color: Colors.white,
-                            ),
-                          ).show(context);
-                        }
-                        _resetMoveState(); // Clear the state after scheduling
-                        return;
-                      }
-
-                      setState(() {
-                        showPriceModal = false;
-                        isWaitingForDriver = true;
-                        noDriverFound = false;
-                      });
-                      Future.delayed(const Duration(seconds: 30), () {
-                        if (mounted && _currentActiveMoveData == null) {
-                          setState(() {
-                            isWaitingForDriver = false;
-                            showPriceModal = true;
-                            noDriverFound = true;
-                          });
-                        }
-                      });
-                    },
-                  ),
-                ),
-                if (_scheduledPickupDate == null) ...[
-                  SizedBox(height: 10.h),
-                  ScheduleTravelButton(
-                    onModalOpen: () {
-                      setState(() => _isScheduleTravelModalOpen = true);
-                    },
-                    onModalClose: () {
-                      if (mounted) {
-                        setState(() => _isScheduleTravelModalOpen = false);
-                      }
-                    },
-                    onDateSelected: (selectedDate) {
-                      if (mounted) {
-                        setState(() => _scheduledPickupDate = selectedDate);
-                      }
-                    },
+                  Text(
+                    ' COP ',
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w500,
+                      color: secondaryTextColor,
+                    ),
                   ),
                 ],
-              ],
+              ),
             ),
-          )
-        ],
+            SizedBox(height: 1.h),
+            Text('Total a pagar, precio fijo garantizado.', style: TextStyle(fontSize: 10.sp, color: Colors.white)),
+            SizedBox(height: 2.h),
+            Divider(color: Colors.grey.withOpacity(0.3), thickness: 2),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 5.w),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(children: [
+                        Icon(Icons.local_shipping_outlined, color: secondaryTextColor, size: 18.sp),
+                        SizedBox(width: 2.w),
+                        Text(
+                          "Tamaño de la carga",
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            color: secondaryTextColor,
+                          ),
+                        ),
+                      ]),
+                      SizedBox(height: 2.h),
+                      Row(
+                        children: [
+                          Icon(Icons.schedule, color: secondaryTextColor, size: 18.sp),
+                          SizedBox(width: 4.w),
+                          Text(
+                            "Tiempo estimado",
+                            style: TextStyle(
+                              fontSize: 13.sp,
+                              color: secondaryTextColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 2.h),
+                      Row(
+                        children: [
+                          Icon(Icons.route, color: secondaryTextColor, size: 18.sp),
+                          SizedBox(width: 4.w),
+                          Text(
+                            "Distancia",
+                            style: TextStyle(
+                              fontSize: 13.sp,
+                              color: secondaryTextColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 2.h),
+                      Row(
+                        children: [
+                          Icon(Icons.person, color: secondaryTextColor, size: 18.sp),
+                          SizedBox(width: 4.w),
+                          Text(
+                            "Recibe",
+                            style: TextStyle(
+                              fontSize: 13.sp,
+                              color: secondaryTextColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 2.h),
+                      Row(
+                        children: [
+                          Icon(Icons.phone_android_rounded, color: secondaryTextColor, size: 18.sp),
+                          SizedBox(width: 4.w),
+                          Text(
+                            "Telefono",
+                            style: TextStyle(
+                              fontSize: 13.sp,
+                              color: secondaryTextColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (_scheduledPickupDate != null) ...[
+                        SizedBox(height: 5.h),
+                        GestureDetector(
+                          onTap: _openScheduleTravelModal,
+                          behavior: HitTestBehavior.opaque,
+                          child: Row(
+                            children: [
+                              Icon(Icons.event_available, color: secondaryTextColor, size: 18.sp),
+                              SizedBox(width: 4.w),
+                              Text(
+                                "Fecha programada",
+                                style: TextStyle(
+                                  fontSize: 13.sp,
+                                  color: secondaryTextColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(widget.typeOfMove?.displayName ?? '', style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold, color: primaryTextColor)),
+                      SizedBox(height: 2.h),
+                      Text("${widget.estimatedTime}", style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold, color: primaryTextColor)),
+                      SizedBox(height: 2.h),
+                      Text("${widget.distanceKm}", style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold, color: primaryTextColor)),
+                      SizedBox(height: 2.h),
+                      Text("${widget.addressee}", style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold, color: primaryTextColor)),
+                      SizedBox(height: 2.h),
+                      Text("${widget.recipientPhoneNumber}", style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold, color: primaryTextColor)),
+                      if (_scheduledPickupDate != null) ...[
+                        SizedBox(height: 5.h),
+                        GestureDetector(
+                          onTap: _openScheduleTravelModal,
+                          behavior: HitTestBehavior.opaque,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    _formatScheduledPickupDate(_scheduledPickupDate!),
+                                    style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold, color: primaryTextColor),
+                                  ),
+                                  SizedBox(width: 4.w),
+                                  Icon(Icons.edit_outlined, color: secondaryTextColor, size: 14.sp),
+                                ],
+                              ),
+                              Text(
+                                "Toca para cambiar",
+                                style: TextStyle(
+                                  fontSize: 10.sp,
+                                  color: const Color(0xFF4ADE80),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 1.w),
+              child: _buildSettingMethodPay(
+                icon: Icons.credit_card,
+                titleWidget: Text.rich(
+                  TextSpan(
+                    text: 'Mi forma de pago es con ',
+                    style: TextStyle(fontSize: 13.sp, color: secondaryTextColor),
+                    children: <TextSpan>[
+                      TextSpan(
+                        text: _selectedPaymentMethod,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: primaryTextColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                onTap: () async {
+                  final selected = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SelectPaymentMethod(
+                        initialMethod: _selectedPaymentMethod,
+                      ),
+                    ),
+                  );
+                  if (selected != null) {
+                    setState(() {
+                      _selectedPaymentMethod = selected;
+                    });
+                  }
+                },
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 1.h),
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: 45.h,
+                    width: double.infinity,
+                    child: ConfirmButton(
+                      typeOfMove: widget.typeOfMove!,
+                      calculatedPrice: widget.calculatedPrice ?? '',
+                      distanceKm: widget.distanceKm ?? '',
+                      duration: widget.duration ?? '',
+                      estimatedTime: widget.estimatedTime ?? '',
+                      route: widget.route ?? [],
+                      locationViewModel: locationViewModel,
+                      userId: userId ?? 0,
+                      destinationLat: widget.destinationLat,
+                      destinationLng: widget.destinationLng,
+                      originAddressText: widget.originName,
+                      destinationAddressText: widget.destinationName,
+                      paymentMethod: _selectedPaymentMethod,
+                      accessType: widget.accessType,
+                      scheduledTravel: _scheduledPickupDate,
+                      addressee: widget.addressee,
+                      recipientPhoneNumber: widget.recipientPhoneNumber,
+                      buttonText: _scheduledPickupDate != null ? "Programar viaje" : (noDriverFound ? "Reintentar búsqueda" : "Buscar vehículo ahora"),
+                      onConfirmed: () {
+                        final bool isScheduledMove = _scheduledPickupDate != null;
+
+                        if (isScheduledMove) {
+                          setState(() {
+                            showPriceModal = false;
+                            isWaitingForDriver = false;
+                            noDriverFound = false;
+                            showHomeButtons = true;
+                            _scheduledPickupDate = null;
+                          });
+                          if (mounted) {
+                            Flushbar(
+                              message: "¡Todo bien! ya se programo tu viaje",
+                              backgroundColor: AppTheme.confirmationscolor,
+                              duration: const Duration(seconds: 3),
+                              flushbarPosition: FlushbarPosition.TOP,
+                              borderRadius: BorderRadius.circular(8),
+                              margin: const EdgeInsets.all(8),
+                              icon: const Icon(
+                                Icons.check_circle,
+                                color: Colors.white,
+                              ),
+                            ).show(context);
+                          }
+                          _resetMoveState();
+                          return;
+                        }
+
+                        setState(() {
+                          showPriceModal = false;
+                          isWaitingForDriver = true;
+                          noDriverFound = false;
+                        });
+                        Future.delayed(const Duration(seconds: 30), () {
+                          if (mounted && _currentActiveMoveData == null) {
+                            setState(() {
+                              isWaitingForDriver = false;
+                              showPriceModal = true;
+                              noDriverFound = true;
+                            });
+                          }
+                        });
+                      },
+                    ),
+                  ),
+                  if (_scheduledPickupDate == null) ...[
+                    SizedBox(height: 10.h),
+                    ScheduleTravelButton(
+                      onModalOpen: () {
+                        setState(() => _isScheduleTravelModalOpen = true);
+                      },
+                      onModalClose: () {
+                        if (mounted) {
+                          setState(() => _isScheduleTravelModalOpen = false);
+                        }
+                      },
+                      onDateSelected: (selectedDate) {
+                        if (mounted) {
+                          setState(() => _scheduledPickupDate = selectedDate);
+                        }
+                      },
+                    ),
+                  ],
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
+  }
+
+  String _formatNumber(String value) {
+    try {
+      String clean = value.replaceAll(RegExp(r'[^\d]'), '');
+      if (clean.isEmpty) return '0';
+      int num = int.parse(clean);
+      return num.toString().replaceAllMapped(
+        RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+        (match) => '${match[1]}.',
+      );
+    } catch (e) {
+      return value;
+    }
   }
 
   Future<void> _rehydrateActiveTrip() async {

@@ -159,7 +159,7 @@ class _LoginState extends State<LoginView> {
                           child: Image.asset('assets/images/support.png', width: 28.w, height: 28.w),
                         ),
                         GestureDetector(
-                          onTap: () => _showForgotPasswordModal(context), // El modal que adaptamos antes
+                          onTap: () => _showForgotPasswordModal(context), 
                           child: Text(
                             '¿Olvidaste tu contraseña?',
                             style: TextStyle(color: Colors.black, fontSize: 13.sp, fontWeight: FontWeight.w600),

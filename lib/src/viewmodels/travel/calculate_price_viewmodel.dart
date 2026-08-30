@@ -16,6 +16,8 @@ class CalculatePriceViewmodel extends ChangeNotifier {
   List<Map<String, double>>? route;
   String? addressee;
   String? recipientPhoneNumber;
+  String? discountAmount;
+  String? discountPercentage;
 
   Future<void> handleRequestVehicle({
     required BuildContext context,
@@ -28,6 +30,13 @@ class CalculatePriceViewmodel extends ChangeNotifier {
     required String addressee,
     required String recipientPhoneNumber,
     String? destinationPlaceId,
+    int? userId,
+    String? destinationLat,
+    String? destinationLng,
+    String? discountAmount,
+    String? discountPercentage,
+    String? originalPrice,
+
   }) async {
     isLoading = true;
     notifyListeners();
@@ -80,13 +89,18 @@ class CalculatePriceViewmodel extends ChangeNotifier {
         destinationLat: destinationCoords['latitude'],
         destinationLng: destinationCoords['longitude'],
         addressee: addressee,
-        recipientPhoneNumber: recipientPhoneNumber);
+        recipientPhoneNumber: recipientPhoneNumber,
+        userId: userId,
+        );
 
     if (response != null) {
       try {
         formattedPrice = response['formattedPrice'] ?? "N/A";
         distanceKm = response['distanceKm']?.toString() ?? "0.0";
         timeMin = response['timeMin']?.toString() ?? "0";
+        discountAmount = response['discountAmount']?.toString() ?? "0";
+        discountPercentage = response['discountPercentage']?.toString() ?? "0";
+        originalPrice = response['basePrice']?.toString() ?? "0";
 
         final routeData = List<Map<String, double>>.from(response['route'] ?? []);
 
@@ -114,6 +128,9 @@ class CalculatePriceViewmodel extends ChangeNotifier {
               destinationName: destinationAddress,
               addressee: addressee,
               recipientPhoneNumber: recipientPhoneNumber,
+              discountAmount: discountAmount,
+              discountPercentage: discountPercentage,
+              originalPrice: originalPrice,
             ),
           ),
         );

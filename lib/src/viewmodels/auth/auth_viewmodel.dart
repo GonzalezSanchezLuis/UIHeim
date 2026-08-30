@@ -9,7 +9,6 @@ class AuthViewModel extends ChangeNotifier {
 
   AuthViewModel(this._authService);
 
-  /// Retorna `true` solo si el login guardó token y rol correctamente.
   Future<bool> login(String email, String password) async {
     isLoading = true;
     errorMessage = null;
@@ -31,6 +30,8 @@ class AuthViewModel extends ChangeNotifier {
       final role = response['role'];
       final fullName = response['fullName'];
       final userEmail = response['email'];
+      bool hasDiscount = response['hasFirstTripDiscount'] as bool;
+
 
       print("👤 [AuthViewModel] Guardando sesión → userId=$userId, fullName=$fullName, email=$userEmail, role=$role, token=$token");
 
@@ -52,6 +53,7 @@ class AuthViewModel extends ChangeNotifier {
 
       await prefs.setString('role', role);
       await prefs.setString('token', token);
+      await prefs.setBool('hasFirstTripDiscount', hasDiscount);
       await prefs.setBool('intro_view', true);
 
       print("✅ [AuthViewModel] Sesión guardada correctamente");
@@ -91,6 +93,7 @@ class AuthViewModel extends ChangeNotifier {
 
     await prefs.setString('role', result['role'].toString());
     await prefs.setString('token', result['token'].toString());
+    await prefs.setBool('hasFirstTripDiscount', true);
 
     notifyListeners();
     return true;
