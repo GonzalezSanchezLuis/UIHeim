@@ -56,7 +56,6 @@ class _WrapperViewState extends State<WrapperView> {
       return;
     }
 
-    // Token ausente o rechazado por el servidor.
     await _goToAuthFlow(prefs, sessionViewModel, clearSession: true);
   }
 

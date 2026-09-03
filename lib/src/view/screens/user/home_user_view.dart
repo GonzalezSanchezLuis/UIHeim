@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:another_flushbar/flushbar.dart';
 import 'package:holi/src/core/analytics/analytics_mixin.dart';
-import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:holi/src/core/enums/move_type.dart';
@@ -12,6 +11,7 @@ import 'package:holi/src/service/travel/active_move_location_service.dart';
 import 'package:holi/src/service/websocket/websocket_finished_move_service.dart';
 import 'package:holi/src/service/websocket/websocket_user_service.dart';
 import 'package:holi/src/utils/to_double.dart';
+import 'package:holi/src/view/screens/onboarding/onboarding_survey_view.dart';
 import 'package:holi/src/view/screens/travel/calculate_price_view.dart';
 import 'package:holi/src/view/screens/travel/history_move_view.dart';
 import 'package:holi/src/view/screens/travel/select_payment_method_view.dart';
@@ -85,6 +85,7 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
   List<LatLng> _realRoute = [];
   String _selectedPaymentMethod = 'Nequi';
   bool? _hasFirstTripDiscount;
+  bool _hasCompletedSurvey = false;
 
   final LocationViewModel locationViewModel = LocationViewModel();
   late final MoveNotificationUserViewmodel _moveNotificationUserViewModel;
@@ -119,6 +120,7 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
     print("ORIGIN desde widget: ${widget.origin}");
     print("DESTINO desde widget: ${widget.destination}");
     _rehydrateActiveTrip();
+    _loadSurveyStatus();
 
     if (widget.origin != null && widget.destination != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -137,6 +139,15 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
     });
   }
 
+  Future<void> _loadSurveyStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        _hasCompletedSurvey = prefs.getBool('has_completed_survey') ?? false;
+      });
+    }
+  }
+
   Future<void> _initializeUserSession() async {
     final sessionVM = Provider.of<SessionViewModel>(context, listen: false);
     final prefs = await SharedPreferences.getInstance();
@@ -150,8 +161,6 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
 
     final discount = prefs.getBool('hasFirstTripDiscount');
     if (mounted) setState(() => _hasFirstTripDiscount = discount);
-
-    // 2. Extraer el ID asegurando que no sea 0 mediante un parseo robusto
     final int intUserId = (double.tryParse(sessionVM.userId?.toString() ?? '0') ?? 0).toInt();
 
     if (intUserId != 0) {
@@ -416,7 +425,6 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
                   return CustomBottomNavBar(
                     currentIndex: currentPageIndex,
                     onTap: (index) {
-                      // Rastrear la vista de pantalla solo cuando se cambia de pestaña
                       if (index == 1 && currentPageIndex != 1) {
                         trackScreenView('calculate_price_screen');
                       } else if (index == 2 && currentPageIndex != 2) {
@@ -438,7 +446,7 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
     );
   }
 
-  Widget _buildTopCoverageBanner() {
+Widget _buildTopCoverageBanner() {
     final bool hasDiscount = _hasFirstTripDiscount == true;
     return Container(
       width: double.infinity,
@@ -447,7 +455,9 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
       decoration: BoxDecoration(
         color: const Color(0xFF1E1E24).withOpacity(0.9),
         borderRadius: BorderRadius.circular(15.r),
-        border: Border.all(color: hasDiscount ? const Color(0xFF4ADE80).withOpacity(0.4) : Colors.white10),
+        border: Border.all(
+          color: hasDiscount ? const Color(0xFF4ADE80).withOpacity(0.4) : Colors.white10,
+        ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -457,32 +467,81 @@ class _HomeUserState extends State<HomeUserView> with AnalyticsMixin {
             color: const Color(0xFF4ADE80),
             size: 20.sp,
           ),
-        if (hasDiscount) ...[
-                Text(
-                  "Tu primer viaje tiene 20% de descuento",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-              ],
           SizedBox(width: 8.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Título
-               Text(
-                  hasDiscount ? "Pruébalo y descubre lo fácil que es mover lo que necesitas." : "Precios claros. Sin sorpresas.",
+                if (hasDiscount) ...[
+                  Text(
+                    "🎁 Tu primer viaje tiene 20% de descuento",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                ],
+                Text(
+                  hasDiscount ? "Queremos conocer tu negocio." : "Precios claros. Sin sorpresas.",
                   style: TextStyle(
                     color: hasDiscount ? Colors.white.withOpacity(0.8) : Colors.white.withOpacity(0.7),
                     fontSize: 11.sp,
                   ),
                 ),
-                SizedBox(height: 4.h),
+
+              if(!_hasCompletedSurvey) ...[
+                   SizedBox(height: 5.h),
+                Text(
+                  "Cuéntanos qué podemos mejorar para que podamos ofrecerte un mejor servicio.",
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.6),
+                    fontSize: 10.sp,
+                  ),
+                ),
+
+                  SizedBox(height: 5.h),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFFBC11),
+                      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.r),
+                      ),
+                    ),
+                    onPressed: () async {
+                      final completed = await Navigator.push<bool>(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const OnboardingSurveyView(),
+                      ),
+                    );
+                    if (completed == true) {
+                      final prefs = await SharedPreferences.getInstance();
+                        await prefs.setBool('has_completed_survey', true);
+
+                        setState(() {
+                          _hasCompletedSurvey = true;
+                        });
+                      }
+
+                    },
+                    child: Text(
+                      "Te escuchamos",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+              ]
+               
+            
               ],
             ),
           ),
